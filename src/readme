@@ -1,0 +1,1 @@
+This directory contains all the source code and headers for the CASPAR engine--i.e. all the C++ code that makes the underlying aspects run. Javascript will go in the main directory as I write it.
