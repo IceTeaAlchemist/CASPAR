@@ -1,0 +1,10 @@
+{
+    "name": "caspar",
+    "version": "0.0.1",
+    "private": true,
+    "gypfile": true,
+    "install": "node-gyp configure build",
+    "dependencies": {
+        "nan": "^2.15.0"
+    }
+}
