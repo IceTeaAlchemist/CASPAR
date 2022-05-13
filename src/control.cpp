@@ -127,7 +127,6 @@ bool modeshift(bool state)
  */
 void cycle()
 {
-    runflag = true;
     int mode = 2;
     bool doublehump;
     if(mode == 2)
@@ -157,15 +156,8 @@ void cycle()
     int triggertime;
     bool past_the_hump;
     delay(100);
-    wiringPiISR(2,INT_EDGE_RISING,sampletriggered);
-    cout << "Attempting to run RT step: " << endl;
-    sens1.LED_on(2);
-    D2.SetMultiplex(0,1);
-    calibrategain();
-    clearactivedata();
-    runRT();
+    // cout << "Attempting to run RT step: " << endl;
     digitalWrite(HEATER_PIN,LOW);
-    waittotemp(60);
     clearactivedata();
     delay(1000);
 
@@ -288,9 +280,8 @@ void cycle()
             coeffprev[1] = coeff[1];
             coeffprev[2] = coeff[2];
         }
-        delay(25);
+        delay(100);
     }
-    piLock(0);
     // fclose(output);
     digitalWrite(HEATER_PIN, LOW);
     digitalWrite(FAN_PIN, LOW);
