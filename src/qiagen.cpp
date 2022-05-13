@@ -85,7 +85,7 @@ string qiagen::assemble(unsigned int reg, char rw, vector<unsigned int> command)
 	{
 		command.insert(command.begin(),03);
 	}
-	else if(rw = 'w')
+	else if(rw == 'w')
 	{
 		command.insert(command.begin(),06);
 	}
