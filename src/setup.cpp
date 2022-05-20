@@ -30,6 +30,13 @@ int datapoints = 0;
 double run_start = 0;
 
 bool RTdone = false;
+bool recordflag = false;
+
+string ts = timestamp();
+
+string coeffstorage = "./data/coeff" + ts + ".txt";
+string pcrstorage = "./data/pcr" + ts + ".txt";
+string rawstorage = "./data/binaryoutput" + ts + ".bin";
 
 /* Sets up the Pi's GPIO pins and initiates wiringPi's library for GPIO communications.
  */
@@ -40,6 +47,7 @@ void setupPi(void)
 	pinMode(3,OUTPUT);
     pinMode(HEATER_PIN, OUTPUT);
     pinMode(FAN_PIN, OUTPUT);
+    wiringPiISR(2,INT_EDGE_RISING,sampletriggered);
 }
 
 /* Sets up the Qiagen using default settings. Note that the qiagen itself is initialized externally. In the future this function will factor UI/recipe details.
@@ -58,7 +66,6 @@ void setupQiagen(void)
     sens1.LED_off(1);
     sens1.setMode(0);
 	sens1.setMethod(1);
-    sens1.LED_on(2);
     sens2.setMode(0);
     sens2.setMethod(1);
 }
@@ -111,8 +118,6 @@ void calibrategain()
  */
 void openFiles()
 {
-    string coeffstorage("tb6apr29.txt");
-    string pcrstorage("tb6apr29pcr.txt");
     coeff_out.open(coeffstorage,std::ios_base::out);
     pcr_out.open(pcrstorage,std::ios_base::out);
     pcr_out << "Time    " << "FAM   " << "Cy5   " << endl;
@@ -125,9 +130,16 @@ void openFiles()
         cout << "Failed to open " << pcrstorage << endl;
     }
 
-    output = fopen("binaryoutput6tbapr29.bin","wb");
+    output = fopen(rawstorage.c_str(),"wb");
 	if(output == NULL)
 	{
 		cout << "File failed to open." << endl;
 	} 
+}
+
+void closeFiles()
+{
+    coeff_out.close();
+    pcr_out.close();
+    fclose(output);
 }
