@@ -8,11 +8,15 @@
 #include "ADC.h"
 #include "qiagen.h"
 #include <fstream>
+#include <string>
 
 using namespace std;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 using std::chrono::system_clock;
+
+bool pcrReady = false;
+vector<double> pcrValues;
 
 /* Averages a deque, specifically of doubles. This doesn't exist at base for some reason but we need it for the moving average filter.
  *
@@ -53,6 +57,8 @@ void clearactivedata()
  */
 void sampletriggered(void)
 {
+    if(recordflag == true)
+    {
     // Be sure to lock the thread here. This prevents the thread from interfering with global variables while they're being used by other portions of the program.
     piLock(0);
     auto millisecs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
@@ -83,8 +89,27 @@ void sampletriggered(void)
     reading *ptr = &now;
     fwrite(ptr, sizeof(reading), 1, output);
     piUnlock(0);
+    }
+    else
+    {
+        //do nothing
+    }
 }
 
+
+string timestamp()
+{
+    time_t now = time(0);
+    tm* ltm = localtime(&now);
+    string currenttime = to_string(1900 + ltm->tm_year);
+    currenttime += to_string(1 + ltm->tm_mon);
+    currenttime += to_string(ltm->tm_mday);
+    currenttime += "_";
+    currenttime += to_string(ltm->tm_hour);
+    currenttime += to_string(ltm->tm_min);
+    currenttime += to_string(ltm->tm_sec);
+    return currenttime;
+}
 
 /* Reads all 3 PCR values and writes them to file. This will need to be updated to also feed data to the UI and be impacted by recipe. 
  */
@@ -98,6 +123,7 @@ void readPCR()
     double PCRread = sens1.measure();
     sens1.stopMethod();
     pcr_out << PCRread << ",";
+    pcrValues.push_back(PCRread);
     sens1.LED_off(1);
 
     sens2.LED_on(1);
@@ -107,6 +133,7 @@ void readPCR()
     PCRread = sens2.measure();
     sens2.stopMethod();
     pcr_out << PCRread << ",";
+    pcrValues.push_back(PCRread);
     sens2.LED_off(1); 
 
 /*    sens2.LED_on(2);
@@ -116,9 +143,11 @@ void readPCR()
     PCRread = sens2.measure();
     sens2.stopMethod();
     pcr_out << PCRread;
+    pcrValues.push_back(PCRread);
     sens2.LED_off(2); */
 
     pcr_out << endl;
     sens1.LED_on(2);
+    pcrReady = true;
     delay(1000);
 }
