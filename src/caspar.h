@@ -4,12 +4,13 @@
 #include "qiagen.h"
 #include <deque>
 #include <vector>
+#include <string>
 
 #define DEVICE_ID 0x48
 #define TEMP_ID 0x49
 #define HEATER_PIN 21
 #define FAN_PIN 22
-#define SMOOTHING 125
+#define SMOOTHING 50
 #define CONVERGENCE_THRESHOLD 1
 #define RT_LENGTH 600
 #define CALIBRATION_MIN 400
@@ -48,15 +49,24 @@ extern int cycles;
 extern FILE *output;
 extern int datapoints;
 extern double run_start;
+extern bool recordflag;
+extern bool pcrReady;
+extern vector<double> pcrValues;
+extern string pcrstorage;
+extern string coeffstorage;
+extern string rawstorage;
 
-//setup.cpp function definitions. These handle the initial set up of each component of the gamma instrument. 
+//setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
+
 void setupPi(void);
 void setupQiagen(void);
 void openFiles(void);
 void setupADC(void);
 void calibrategain(void);
+void closeFiles();
 
 //heat.cpp function definitions. These handle generation of fluoresence based heat curves and temperature-based control.
+
 double heatquery(double temp);
 double fluorquery(double fluor);
 void waittotemp(double temp);
@@ -64,6 +74,7 @@ void heatgen(const double coeff[3], bool trigger);
 void holdtemp(double temp, double time);
 
 //control.cpp function definitions. These handle the control loop for cycling and RT.
+
 void runRT(void);
 void cycle();
 int delaytocycleend(const double coeff[3], double thresh);
@@ -75,6 +86,7 @@ double mean(const deque<double> queue);
 void clearactivedata(void);
 void sampletriggered(void);
 void readPCR(void);
+string timestamp(void);
 
 
 // This function will be removed when we shift to the node api.
