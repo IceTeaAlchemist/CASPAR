@@ -45,6 +45,7 @@ extern deque<double> yaverage;
 extern deque<double> derivaverage;
 extern fstream coeff_out;
 extern fstream pcr_out;
+extern fstream runtime_out;
 extern int cycles;
 extern FILE *output;
 extern int datapoints;
@@ -55,6 +56,7 @@ extern vector<double> pcrValues;
 extern string pcrstorage;
 extern string coeffstorage;
 extern string rawstorage;
+extern string runlog;
 
 //setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
 

@@ -3,7 +3,7 @@
 #include "caspar.h"
 #include <nan.h>
 
-namespace demo 
+namespace caspar 
 {
 
     using namespace Nan;
@@ -18,8 +18,6 @@ namespace demo
     int iterate = 0;
 
 
-    void startRun();
-
     class CASPARCycler : public AsyncWorker{
         public:
         CASPARCycler(Callback *callback) : AsyncWorker(callback){}
@@ -28,7 +26,6 @@ namespace demo
         void Execute()
         {
             cycles = 0;
-            //openFiles();
             clearactivedata();
             recordflag = true;
             setupADC();
@@ -44,13 +41,6 @@ namespace demo
     };
 
 
-
-    void Method(const FunctionCallbackInfo<Value>& args)
-    {
-        Isolate* isolate = args.GetIsolate();
-        args.GetReturnValue().Set(String::NewFromUtf8(isolate, "world").ToLocalChecked());
-    }
-
     void initializePCR(const FunctionCallbackInfo<Value>& args)
     {
         setupPi();
@@ -58,16 +48,6 @@ namespace demo
         openFiles();
     }
 
-    void Iteration(const FunctionCallbackInfo<Value>& args)
-    {
-        Isolate* isolate = args.GetIsolate();
-        for(int i = 0; i < 5; i++)
-        {
-            iterate++;
-        }
-        Local<Number> num = Number::New(isolate, iterate);
-        args.GetReturnValue().Set(num);
-    }
 
     void readoutData(const FunctionCallbackInfo<Value>& args)
     {
@@ -113,7 +93,6 @@ namespace demo
             for(int i = 0; i < pcrValues.size(); i++)
             {
                 Nan::Set(pcrhandoff, i, New<v8::Number>(pcrValues[i]));
-                //pcrhandoff->Set(i, Number::New(isolate,pcrValues[i]));
             }
             pcrValues.clear();
             pcrReady = false;
@@ -124,25 +103,27 @@ namespace demo
             for(int i = 0; i < pcrValues.size(); i++)
             {
                 Nan::Set(pcrhandoff, i, New<v8::Number>(-1));
-                //pcrhandoff->Set(i, Number::New(isolate,pcrValues[i]));
             }
         }
         args.GetReturnValue().Set(pcrhandoff);
     }
 
-
-
-    void startRun(const FunctionCallbackInfo<Value>& args)
+    void readoutFilenames(const FunctionCallbackInfo<Value> & args)
     {
-        
+        Isolate* isolate = args.GetIsolate();
+        v8::Local<v8::Array> filehandoff = New<v8::Array>(4);
+        Nan::Set(filehandoff, 0, New<v8::String>(runlog.c_str()).ToLocalChecked());
+        Nan::Set(filehandoff, 1, New<v8::String>(coeffstorage.c_str()).ToLocalChecked());
+        Nan::Set(filehandoff, 2, New<v8::String>(pcrstorage.c_str()).ToLocalChecked());
+        Nan::Set(filehandoff, 3, New<v8::String>(rawstorage.c_str()).ToLocalChecked());
+        args.GetReturnValue().Set(filehandoff);
     }
+
 
     void stopRun(const FunctionCallbackInfo<Value>& args)
     {
         runflag = false;
         recordflag = false;
-        //D2.resetI2C();
-        //closeFiles();
         sens1.LED_off(1);
         sens1.LED_off(2);
         sens2.LED_off(1);
@@ -178,15 +159,13 @@ namespace demo
     void Initialize(Local<Object> exports)
     {
         Nan::Set(exports, New<String>("start").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Ignition)).ToLocalChecked());
-        NODE_SET_METHOD(exports, "hello", Method);
-        NODE_SET_METHOD(exports, "sum_up", Iteration);
         NODE_SET_METHOD(exports, "initializePCR", initializePCR);
-        //NODE_SET_METHOD(exports, "start", startRun);
         NODE_SET_METHOD(exports,"stop", stopRun);
         NODE_SET_METHOD(exports, "readdata", readoutData);
         NODE_SET_METHOD(exports, "readtemp", readoutTemp);
         NODE_SET_METHOD(exports, "readPCR", readoutPCR);
         NODE_SET_METHOD(exports, "changefiles", reopenFiles);
+        NODE_SET_METHOD(exports, "getfiles", readoutFilenames);
     }
 
     NODE_MODULE(casparengine, Initialize)
