@@ -8,8 +8,8 @@
 
 #define DEVICE_ID 0x48
 #define TEMP_ID 0x49
-#define HEATER_PIN 21
-#define FAN_PIN 22
+#define HEATER_PIN 7
+#define FAN_PIN 4
 #define SMOOTHING 50
 #define CONVERGENCE_THRESHOLD 1
 #define RT_LENGTH 600
@@ -77,8 +77,9 @@ void holdtemp(double temp, double time);
 
 //control.cpp function definitions. These handle the control loop for cycling and RT.
 
+void premelt(void);
 void runRT(void);
-void cycle();
+void cycle(void);
 int delaytocycleend(const double coeff[3], double thresh);
 bool modeshift(bool state);
 
@@ -89,10 +90,6 @@ void clearactivedata(void);
 void sampletriggered(void);
 void readPCR(void);
 string timestamp(void);
-
-
-// This function will be removed when we shift to the node api.
-void writetograph(void);
 
 
 

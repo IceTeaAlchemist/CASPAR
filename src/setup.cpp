@@ -66,12 +66,11 @@ void setupPi(void)
 {
     wiringPiSetup();
     // Set pins for Alert, heating and cooling.
-	pinMode(2,INPUT);
-	pinMode(3,OUTPUT);
+	pinMode(3,INPUT);
     pinMode(HEATER_PIN, OUTPUT);
     pinMode(FAN_PIN, OUTPUT);
     // Set up the interrupt for sample reading. Note that these CANNOT be turned off once started, so wrapping them in a boolean with a flag is a good idea.
-    wiringPiISR(2,INT_EDGE_RISING,sampletriggered);
+    wiringPiISR(3,INT_EDGE_RISING,sampletriggered);
     // Open the runtime log file for appending and print the initialization time to it. 
     runtime_out.open(runlog, std::ios_base::app | std::ios_base::in);
     runtime_out << "PCR Session initialized at " << timestamp() << endl;
@@ -116,7 +115,7 @@ void setupADC(void)
 	D2.SetSPS(5);
 	D2.SetCompPol(1);
 	D2.SetCompQueue(0);
-    D2.SetMultiplex(0,1);
+    D2.SetMultiplex(1,3);
     // Setup the ADC for the temperature. See the ADC class for documentation.
     TEMP.SetGain(1);
 	TEMP.SetMode(0);

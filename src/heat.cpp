@@ -98,14 +98,15 @@ void holdtemp(double temp, double time)
 
     // Retrieve our target fluoresence from our heating curves.
     double fluortarget = heatquery(temp);
-    while(y[y.size()-1] < fluortarget) // While we're below the temperature of interest, heat:
+    cout << "Target fluor: " << fluortarget << endl;
+    while(y[y.size()-1] < fluortarget && runflag == true) // While we're below the temperature of interest, heat:
     {
         delay(10);
     }
     int start = 0;
     double ycurrent;
     cout << "Activate hold." << endl; // Log that we're holding to the console.
-    while(start < time * 100)
+    while(start < time * 100 && runflag == true)
     {
         ycurrent = y[y.size()-1];
         if (ycurrent < fluortarget - 20) // If our current fluoresence is below the target minus 20:

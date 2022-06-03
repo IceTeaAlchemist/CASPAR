@@ -19,6 +19,8 @@ bool pcrReady = false;
 vector<double> pcrValues;
 
 /* Averages a deque, specifically of doubles. This doesn't exist at base for some reason but we need it for the moving average filter.
+ * 
+ * Note that errors can result if the deque is altered while averaging is occurring.
  *
  * Args:
  *  queue: deque to be averaged.

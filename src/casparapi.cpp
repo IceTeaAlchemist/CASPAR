@@ -31,6 +31,8 @@ namespace caspar
             setupADC();
             calibrategain();
             runflag = true;
+            premelt();
+            runRT();
             cycle();
         }
 

@@ -10,36 +10,40 @@ using namespace std;
 
 bool runflag = false;
 
-
-/* Runs the RT algorithm and also does the premelt for heatgen. That needs to be detangled.
+/* Runs a premelt to calculate the thermal fluoresence values (for our current RT implementation) and ensure good annealing of L-DNA. 
  */
-void runRT()
+void premelt()
 {
-    /*sens1.LED_off(2);
-    sens1.LED_power(1,170);
-    sens1.LED_on(1);*/
-    bool tempflag = false;
-    double temp_frac = 0.786;
-    double coeff[3];
-    double iter;
-    double coeffprev[3];
-    clearactivedata();
-    delay(1000);
-    int sec_hold = RT_LENGTH;
+    bool tempflag = false; // Indicates that the melt hasn't been finished yet.
+
+    // Declare variables for fitting algorithm:
+    double coeff[3]; // Fitting coefficients
+    double iter; // Iterations required to find a fit
+    double coeffprev[3]; // Previous coefficients (for convergence purposes)
+    double beta0[3] = {0,0,2}; // Initial guess for the fit
+    bool past_the_hump = false; // Are we past the hump of the current fit?
+    bool dtrigger = true; // Flag for double hump options
+
+    clearactivedata();     // Clear any data out of the fitting algorithm target vectors
+
+    // Turn the heater on and the fan off, then delay to allow the data to fill again.
     digitalWrite(HEATER_PIN, HIGH);
     digitalWrite(FAN_PIN, LOW);
-    double beta0[3] = {0,0,2};
-    bool past_the_hump = false;
-    bool doubleheight = false;
-    bool dtrigger = false;
-    while(tempflag == false)
+    delay(1000);
+
+    while(tempflag == false && runflag == true) // While we haven't finished the melt and the user hasn't cancelled the run:
     {
-        piLock(0);
+        piLock(0); // Lock the thread to run a fit
+
+        // Find the maximum element in the fitting day, and use that as our guess for midpoint and amplitude of gaussian.
         auto maxlocation = max_element(begin(derivs), end(derivs));
         beta0[0] = *maxlocation;
         beta0[1] = x[distance(derivs.begin(), maxlocation)];
+
+        // Fit the data
         GaussNewton3(xderivs, derivs, beta0, min_vals, max_vals, coeff, &iter);
-        if(coeff[1] <= x[x.size()-1])
+
+        if(coeff[1] <= x[x.size()-1]) // If we're past the hump by the fitted data, change our flag to match.
         {
             past_the_hump = true;
         }
@@ -47,51 +51,49 @@ void runRT()
         {
             past_the_hump = false;
         }
-        piUnlock(0);
-        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 5)  
+        piUnlock(0); // Unlock the thread so it can keep taking samples.
+
+        if (iter < 24 && abs(coeff[0]) > 5 && coeff[1] > 5)  // If we found a fit and it's not just a flat line or existing before known data:
         {
+            // If we're past the hump and this fit is within a reasonable threshold of the previous one:
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {
+                // Accept the fit and log the coefficients.
                 cout << "Coeff: " << coeff[0] << " " << coeff[1] << " " << coeff[2] << endl;
-                /*double comparative = 1000;
-                int stopindex;
-                int i = 1;
-                while(comparative > 1 && i < derivs.size()-2)
-                {
-                    if(derivs[derivs.size()-i] < comparative)
-                    {
-                        comparative = derivs[derivs.size()-i];
-                        stopindex = derivs.size()-i + 60;
-                    }
-                    i++;
-                }*/
+                // Keep going until we've found the endpoint of the current gaussian.
                 delaytocycleend(coeff, 0.005);
-                heatgen(coeff, dtrigger);
-                if(dtrigger == false)
+                //Generate the heating curve for this gaussian.
+                heatgen(coeff,false);
+                if(dtrigger == false) // If we're on the first hump:
                 {
-                    clearactivedata();
-                    dtrigger = true;
+                    clearactivedata(); // Clear our data.
+                    dtrigger = true; // Tell the machine we're now fitting the second hump.
                 }
                 else
                 {
-                    digitalWrite(HEATER_PIN, LOW);
-                    tempflag = true;
-                    clearactivedata();
+                    digitalWrite(HEATER_PIN, LOW); // Turn the heater off.
+                    tempflag = true; // Say that we're done generating the heat curves and doing the heat melt.
+                    clearactivedata(); // Clear our data.
                 }
-                /* double maxfluor = y[y.size()-1];
-                double minfluor = y[stopindex];*/
             }
+
+            // Move current fit to previous fit.
             coeffprev[0] = coeff[0];
             coeffprev[1] = coeff[1];
             coeffprev[2] = coeff[2];
         }
+        // Wait to try fitting again.
         delay(25);
     }
-    RTdone = true;
-    //holdtemp(65, 600);
-    //holdtemp(90,60);
-    /*sens1.LED_off(1);
-    sens1.LED_power(1,45);*/
+}
+
+
+/* Runs the RT algorithm.
+ */
+void runRT()
+{
+    int sec_hold = RT_LENGTH;
+    holdtemp(65, RT_LENGTH);
 }
 
 // Delays to a point based on the fitted coefficients and the value of the derivative, depending on a fraction of peak threshold. Returns the time in milliseconds after program start.
@@ -156,7 +158,6 @@ void cycle()
     int triggertime;
     bool past_the_hump;
     delay(100);
-    // cout << "Attempting to run RT step: " << endl;
     digitalWrite(HEATER_PIN,LOW);
     clearactivedata();
     delay(1000);
@@ -193,6 +194,7 @@ void cycle()
         if(x[x.size()-1] > 75)
         {
             cout << "Cycled for too long, error thrown." << endl;
+            runtime_out << "Cycled for too long." << endl;
             digitalWrite(FAN_PIN,LOW);
             digitalWrite(HEATER_PIN,LOW);
             runflag = false;
