@@ -10,10 +10,11 @@
 #define TEMP_ID 0x49
 #define HEATER_PIN 7
 #define FAN_PIN 4
-#define SMOOTHING 50
+#define BOX_FAN 5
+#define SMOOTHING 25
 #define CONVERGENCE_THRESHOLD 1
 #define RT_LENGTH 600
-#define CALIBRATION_MIN 400
+#define CALIBRATION_MIN 350
 
 const double max_vals[3] = {500, 60, 10};
 const double min_vals[3] = {-500, -60, -10};
@@ -90,6 +91,7 @@ void clearactivedata(void);
 void sampletriggered(void);
 void readPCR(void);
 string timestamp(void);
+void retrieveSample(void);
 
 
 

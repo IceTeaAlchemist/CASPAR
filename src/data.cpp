@@ -105,6 +105,54 @@ void sampletriggered(void)
     }
 }
 
+void retrieveSample()
+{
+    if(recordflag == true)
+    {
+    // Locking the thread here prevents it from interfering with global variables while they're being used by other portions of the program that lock the same thread.
+    piLock(0);
+    // Get the current time in milliseconds.
+    auto millisecs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    // Declare a reading object and put our timestamp and fluoresence inside, then push it into our data vector.
+    reading now;
+    now.timestamp = millisecs;
+    now.voltage = sens1.measure();
+    data.push_back(now);
+    // If it's our first entry this fitting, set the starting time for our fit to our current reading.
+    if(x.size() == 0)
+    {
+        run_start = now.timestamp;
+    }
+
+    // Push our start-adjusted x into our value queue.
+    x.push_back((now.timestamp - run_start)/1000.0);
+    // Get the current fluoresence reading from the struct and convert it to mV.
+    double ycurrent = now.voltage;
+    if(yaverage.size() >= SMOOTHING) // If our moving average filter is full:
+    { 
+        yaverage.pop_front(); // Remove the oldest value.
+    }
+    yaverage.push_back(ycurrent); // Push the new value onto the averaging stack.
+    double average = mean(yaverage); // Average the filter values.
+    y.push_back(average); // Push the average into the y stack.
+    if(y.size() > SMOOTHING) // If our values are no longer being affected by 0--i.e., the moving average filter is full:
+    {
+        xderivs.push_back((now.timestamp - run_start)/1000.0); // Push a time value for this derivative onto the xderiv vector.
+        double deriv = (y[y.size() - 1] - y[y.size() - 2])*10; // Calculate the derivative and push it onto the stack. (y1-y2)/(delta T).
+        derivs.push_back(deriv);
+    }
+    // Create a pointer to our reading.
+    reading *ptr = &now;
+    // Write the data into our binary file.
+    fwrite(ptr, sizeof(reading), 1, output);
+    piUnlock(0);
+    }
+    else
+    {
+        // do nothing
+    }
+}
+
 /* Returns the current time as a string of the format YYYYMMDD_HHMMSS.
 */
 string timestamp()
@@ -130,8 +178,12 @@ string timestamp()
 void readPCR()
 {
     // Turn off the cycling LED.
+    recordflag = false;
+    piLock(0);
+    sens1.stopMethod();
     sens1.LED_off(2);
 
+    cout << "Sampling first. " << endl;
     // Take our first detector value. Each of these follows the same format, so I'll only comment the first.
     sens1.LED_on(1); // Turn the relevant LED on.
     sens1.setMethod(1); // Set our method to the relevant one.
@@ -143,6 +195,7 @@ void readPCR()
     pcrValues.push_back(PCRread); // Push the PCR value onto the result array.
     sens1.LED_off(1); // Turn the LED off.
 
+    cout << "Sampling second. " << endl;
     sens2.LED_on(1);
     sens2.setMethod(1);
     sens2.startMethod();
@@ -153,7 +206,7 @@ void readPCR()
     pcrValues.push_back(PCRread);
     sens2.LED_off(1); 
 
-/*    sens2.LED_on(2);
+    sens2.LED_on(2);
     sens2.setMethod(3);
     sens2.startMethod();
     delay(500);
@@ -161,10 +214,18 @@ void readPCR()
     sens2.stopMethod();
     pcr_out << PCRread;
     pcrValues.push_back(PCRread);
-    sens2.LED_off(2); */
+    sens2.LED_off(2); 
 
     pcr_out << endl; // Send a new line to the file to get ready for the next cycle.
-    sens1.LED_on(2); // Turn the cycling LED back on.
+    sens1.setMethod(3);
+    sens1.writeqiagen(0, {255,255});
+    sens1.startMethod();
+    sens1.LED_on(2);
+    piUnlock(0);
+
+    delay(500);
+     // Turn the cycling LED back on.
+    recordflag = true;
     pcrReady = true; // Say that our PCR readings are ready for output to the gui.
-    delay(1000); // Wait for a second to allow the moving average filters to fill back up. 
+    delay(3000); // Wait for a second to allow the moving average filters to fill back up. 
 }

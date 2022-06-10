@@ -252,7 +252,7 @@ double qiagen::measure()
 	string val = readqiagen(260+(active_method-1)*2,2);
 	int store = stoul(val.substr(6,8),nullptr,16);
 	double fluor = store*2500.0/8388607.0;
-	cout << "Val: " << fluor << endl;
+//	cout << "Val: " << fluor << endl;
 	return fluor;
 } 
 	

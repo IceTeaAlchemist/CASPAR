@@ -29,7 +29,7 @@ void premelt()
     // Turn the heater on and the fan off, then delay to allow the data to fill again.
     digitalWrite(HEATER_PIN, HIGH);
     digitalWrite(FAN_PIN, LOW);
-    delay(1000);
+    delay(3000);
 
     while(tempflag == false && runflag == true) // While we haven't finished the melt and the user hasn't cancelled the run:
     {
@@ -61,7 +61,7 @@ void premelt()
                 // Accept the fit and log the coefficients.
                 cout << "Coeff: " << coeff[0] << " " << coeff[1] << " " << coeff[2] << endl;
                 // Keep going until we've found the endpoint of the current gaussian.
-                delaytocycleend(coeff, 0.005);
+                delaytocycleend(coeff, 0.05);
                 //Generate the heating curve for this gaussian.
                 heatgen(coeff,false);
                 if(dtrigger == false) // If we're on the first hump:
@@ -113,13 +113,15 @@ bool modeshift(bool state)
     if(state == true)
     {
         digitalWrite(HEATER_PIN, LOW);
+        // digitalWrite(BOX_FAN, LOW),
         digitalWrite(FAN_PIN, HIGH);
         return false;
     }
     else
-    { 
+    {
         digitalWrite(FAN_PIN,LOW);
         readPCR();
+        // digitalWrite(BOX_FAN,HIGH);
         digitalWrite(HEATER_PIN, HIGH);
         return true;
     }
@@ -285,6 +287,7 @@ void cycle()
         delay(100);
     }
     // fclose(output);
+    runflag = false;
     digitalWrite(HEATER_PIN, LOW);
     digitalWrite(FAN_PIN, LOW);
     sens1.LED_off(2);

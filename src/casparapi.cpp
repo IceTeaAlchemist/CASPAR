@@ -1,6 +1,7 @@
 #include <node.h>
 #include <unistd.h>
 #include "caspar.h"
+#include <wiringPi.h>
 #include <nan.h>
 
 namespace caspar 
@@ -17,6 +18,19 @@ namespace caspar
     using v8::Value;
     int iterate = 0;
 
+    void pollSample()
+    {
+        while(runflag == true)
+        {
+            retrieveSample();
+            delay(10);
+        }
+    }
+    
+    PI_THREAD (sampler)
+    {
+        pollSample();
+    }
 
     class CASPARCycler : public AsyncWorker{
         public:
@@ -30,9 +44,11 @@ namespace caspar
             recordflag = true;
             setupADC();
             calibrategain();
+            sens1.startMethod();
             runflag = true;
-            premelt();
-            runRT();
+             piThreadCreate(sampler);
+            // premelt();
+            // runRT();
             cycle();
         }
 
@@ -50,11 +66,18 @@ namespace caspar
         openFiles();
     }
 
+    void turnOffBoxFan(const FunctionCallbackInfo<Value>& args)
+    {
+        digitalWrite(BOX_FAN, LOW);
+    }
+
 
     void readoutData(const FunctionCallbackInfo<Value>& args)
     {
         Isolate* isolate = args.GetIsolate();
+        v8::Local<v8::Array> datahandoff = New<v8::Array>(2);
         double jsoutput;
+        double derivoutput = 0;
         if(runflag == true && recordflag == true)
         {
             jsoutput = y[y.size()-1];
@@ -63,8 +86,18 @@ namespace caspar
         {
             jsoutput = 0;
         }
-        Local<Number> num = Number::New(isolate, jsoutput);
-        args.GetReturnValue().Set(num);
+        if(derivs.size() > 5 && runflag == true && recordflag == true)
+        {
+            derivoutput = derivs[derivs.size() - 1];
+        }
+        else
+        {
+            derivoutput = 0;
+        }
+        // Local<Number> num = Number::New(isolate, jsoutput);
+         Nan::Set(datahandoff, 0, New<v8::Number>(jsoutput));
+        Nan::Set(datahandoff, 1, New<v8::Number>(derivoutput));
+        args.GetReturnValue().Set(datahandoff);
     }
 
     void readoutTemp(const FunctionCallbackInfo<Value>& args)
@@ -110,6 +143,18 @@ namespace caspar
         args.GetReturnValue().Set(pcrhandoff);
     }
 
+    /*
+     * Accessible method to retrieve the current filenames and return them to the server.
+     * 
+     * Args:
+     * None
+     * 
+     * Returns:
+     * return[0]: Error log
+     * return[1]: Coefficient log
+     * return[2]: PCR data storage
+     * return[3]: Raw data storage
+     */
     void readoutFilenames(const FunctionCallbackInfo<Value> & args)
     {
         Isolate* isolate = args.GetIsolate();
@@ -121,7 +166,8 @@ namespace caspar
         args.GetReturnValue().Set(filehandoff);
     }
 
-
+    /* Accessible method to turn off the LEDs and recording algorithms.
+     */
     void stopRun(const FunctionCallbackInfo<Value>& args)
     {
         runflag = false;
@@ -132,6 +178,13 @@ namespace caspar
         sens2.LED_off(2);
     }
 
+    /*
+     * Accessible method for the server to change filenames. Takes a string from the node server and reopens the data output files with that filename.
+     * 
+     * Args:
+     * args[0]: The new filename key.
+     * 
+     */
     void reopenFiles(const FunctionCallbackInfo<Value>& args)
     {
         Isolate* isolate = args.GetIsolate();
@@ -168,6 +221,7 @@ namespace caspar
         NODE_SET_METHOD(exports, "readPCR", readoutPCR);
         NODE_SET_METHOD(exports, "changefiles", reopenFiles);
         NODE_SET_METHOD(exports, "getfiles", readoutFilenames);
+        NODE_SET_METHOD(exports, "boxfanoff", turnOffBoxFan);
     }
 
     NODE_MODULE(casparengine, Initialize)

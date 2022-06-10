@@ -69,9 +69,11 @@ void setupPi(void)
 	pinMode(3,INPUT);
     pinMode(HEATER_PIN, OUTPUT);
     pinMode(FAN_PIN, OUTPUT);
+    pinMode(BOX_FAN, OUTPUT);
     // Set up the interrupt for sample reading. Note that these CANNOT be turned off once started, so wrapping them in a boolean with a flag is a good idea.
-    wiringPiISR(3,INT_EDGE_RISING,sampletriggered);
+    // wiringPiISR(3,INT_EDGE_RISING,sampletriggered);
     // Open the runtime log file for appending and print the initialization time to it. 
+    digitalWrite(BOX_FAN, HIGH);
     runtime_out.open(runlog, std::ios_base::app | std::ios_base::in);
     runtime_out << "PCR Session initialized at " << timestamp() << endl;
 }
@@ -80,9 +82,11 @@ void setupPi(void)
  */
 void setupQiagen(void)
 {
-    // Set Qiagen 1 sample protocol--Respectively, 4 samples with minimum delay between them.
-    sens1.writeqiagen(0, {00,04});
+    // Set Qiagen 1 sample protocol--Maximum samples with minimum delay between them. This is so we can use it for cycling.
+    sens1.writeqiagen(0, {255,255});
     sens1.writeqiagen(1, {00,00});
+    sens1.writeqiagen(32,{01,244});
+    sens1.writeqiagen(5,{01,00});
     // Set Qiagen 2 sample protocol-- 200 samples with minimum delay between them.
     sens2.writeqiagen(0, {00,200});
     sens2.writeqiagen(1, {00,00});   
@@ -100,7 +104,7 @@ void setupQiagen(void)
 
     // Set mode (beginning sampling routine after the LEDs are turned on) and method (which detector will be read).
     sens1.setMode(0);
-	sens1.setMethod(1);
+	sens1.setMethod(3);
     sens2.setMode(0);
     sens2.setMethod(1);
 }
@@ -170,7 +174,7 @@ void openFiles()
     coeff_out.open(coeffstorage,std::ios_base::out);
     pcr_out.open(pcrstorage,std::ios_base::out);
     //Dump column headings into the PCR file. Commas are so Excel will see this as a CSV.
-    pcr_out << "Time," << "FAM," << "Cy5," << endl;
+    pcr_out << "Time," << "FAM," << "HEX," << "Cy5," << endl;
     // Check that both fstreams are open, log any failures.
     if(!coeff_out.is_open())
     {
