@@ -121,6 +121,7 @@ wss.on('connection', function connection(ws) {
                 // Log that the server is turning off and tell the client as much.
                 console.log("Server disconnected.");
                 ws.send(JSON.stringify({id: "connect", status: "Server disconnected."}));
+                engine.boxfanoff();
                 // Hard shutdown. There should be a better way.
                 process.exit();
         }
@@ -132,10 +133,11 @@ wss.on('connection', function connection(ws) {
 function sendit()
 {
     // Create a struct of thermal and fluoresence data and send them to the client(s).
+    var cyclingdata = engine.readdata();
     var datastruct = {
         id: "cycledata",
-        fluor: engine.readdata(),
-        temp: 0 // engine.readtemp()
+        fluor: cyclingdata[0],
+        temp: cyclingdata[1]
     };
     wss.clients.forEach(function dataupdate(ws) {ws.send(JSON.stringify(datastruct));});
     
@@ -153,8 +155,10 @@ function sendPCR()
         var datastruct = {
             id: "PCRdata",
             fam: PCRinfo[0],
-            cyfive: PCRinfo[1]
+            hex: PCRinfo[1],
+            cy5: PCRinfo[2]
         };
+        console.log(datastruct);
         wss.clients.forEach(function pcrupdate(ws) {ws.send(JSON.stringify(datastruct));});
     }
     else
