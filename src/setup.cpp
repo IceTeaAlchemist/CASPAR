@@ -50,6 +50,8 @@ double run_start = 0;
 // Set up flags for threads.
 bool RTdone = false;
 bool recordflag = false;
+int runerror;
+int temperrors;
 
 // Get initialization time.
 string ts = timestamp();
@@ -94,7 +96,7 @@ void setupQiagen(void)
 
     // Set the LED power for the PCR wavelengths. Cycling sensing (sens1 LED 2) is set by the calibrator.
     sens1.LED_power(1,50);
-    sens2.LED_power(2,95);
+    sens2.LED_power(2,120);
     sens2.LED_power(1,40);
 
     // Make sure all the LEDs besides the cycling one are off.

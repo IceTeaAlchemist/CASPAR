@@ -22,7 +22,7 @@ void premelt()
     double coeffprev[3]; // Previous coefficients (for convergence purposes)
     double beta0[3] = {0,0,2}; // Initial guess for the fit
     bool past_the_hump = false; // Are we past the hump of the current fit?
-    bool dtrigger = true; // Flag for double hump options
+    bool dtrigger = false; // Flag for double hump options
 
     clearactivedata();     // Clear any data out of the fitting algorithm target vectors
 
@@ -63,7 +63,7 @@ void premelt()
                 // Keep going until we've found the endpoint of the current gaussian.
                 delaytocycleend(coeff, 0.05);
                 //Generate the heating curve for this gaussian.
-                heatgen(coeff,false);
+                heatgen(coeff,dtrigger);
                 if(dtrigger == false) // If we're on the first hump:
                 {
                     clearactivedata(); // Clear our data.
@@ -93,7 +93,8 @@ void premelt()
 void runRT()
 {
     int sec_hold = RT_LENGTH;
-    holdtemp(65, RT_LENGTH);
+    holdtemp(60, RT_LENGTH);
+    waittotemp(55);
 }
 
 // Delays to a point based on the fitted coefficients and the value of the derivative, depending on a fraction of peak threshold. Returns the time in milliseconds after program start.
@@ -129,7 +130,7 @@ bool modeshift(bool state)
 
 /* Current version of the core PCR paradigm. Needs serious updates to match UI.
  */
-void cycle()
+int cycle()
 {
     int mode = 2;
     bool doublehump;
@@ -152,13 +153,14 @@ void cycle()
     double thresh = 0.005;
     double threshcool = 0.135;
     double dthreshheat = 0.1;
-    double dthreshcool = 0.5;
+    double dthreshcool = 0.7;
     coeffprev[0] = 0;
     coeffprev[1] = 0;
     coeffprev[2] = 0;
     int cutoff = 40;
     int triggertime;
     bool past_the_hump;
+    temperrors = 0;
     delay(100);
     digitalWrite(HEATER_PIN,LOW);
     clearactivedata();
@@ -194,15 +196,45 @@ void cycle()
             past_the_hump = false;
         }
         if(x[x.size()-1] > 75)
-        {
-            cout << "Cycled for too long, error thrown." << endl;
-            runtime_out << "Cycled for too long." << endl;
-            digitalWrite(FAN_PIN,LOW);
-            digitalWrite(HEATER_PIN,LOW);
-            runflag = false;
+        {   
+            if(state == true)
+            {
+                temperrors++;
+                cout << "Heated for too long, error thrown." << endl;
+                runtime_out << "Heated for too long." << endl;
+                digitalWrite(HEATER_PIN,LOW);
+                digitalWrite(FAN_PIN, HIGH);
+                state = false;
+                dtrigger = false;
+                clearactivedata();
+            }
+            else
+            {
+                temperrors++;
+                cout << "Cooled for too long, error thrown." << endl;
+                runtime_out << "Cooled for too long." << endl;
+                digitalWrite(FAN_PIN,LOW);
+                digitalWrite(HEATER_PIN, HIGH);
+                dtrigger = false;
+                state = true;
+                clearactivedata();
+            }
+            if(temperrors > allowed_temp_errors)
+            {
+                cout << "Too many heating failures--cycling ended." << endl;
+                runtime_out << "Algorithm failed too many times. Cycling ended." << endl;
+                runflag = false;
+                digitalWrite(HEATER_PIN, LOW);
+                digitalWrite(FAN_PIN, LOW);
+                piUnlock(0);
+                delay(100);
+                sens1.stopMethod();
+                sens1.LED_off(2);
+                return 1;
+            }
         }
         piUnlock(0);
-        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1)  
+        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 2.5)  
         {
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {
@@ -291,5 +323,6 @@ void cycle()
     digitalWrite(HEATER_PIN, LOW);
     digitalWrite(FAN_PIN, LOW);
     sens1.LED_off(2);
+    return 0;
 }
 
