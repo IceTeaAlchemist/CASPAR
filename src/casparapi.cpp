@@ -3,6 +3,7 @@
 #include "caspar.h"
 #include <wiringPi.h>
 #include <nan.h>
+#include <iostream>
 
 namespace caspar 
 {
@@ -41,20 +42,25 @@ namespace caspar
         {
             cycles = 0;
             clearactivedata();
-            recordflag = true;
             setupADC();
             calibrategain();
             sens1.startMethod();
             runflag = true;
-             piThreadCreate(sampler);
-            // premelt();
-            // runRT();
-            cycle();
+            piThreadCreate(sampler);
+            delay(100);
+            recordflag = true;
+            premelt();
+            runRT();
+            runerror = cycle();
         }
 
         void HandleOKCallback()
         {
             Nan::HandleScope scope;
+            v8::Local<v8::Array> results = New<v8::Array>(1);
+            Nan::Set(results,0,New<v8::Number>(runerror));
+            Local<Value> argv[] = {Null(), results};
+            callback->Call(2,argv);
         }
     };
 
