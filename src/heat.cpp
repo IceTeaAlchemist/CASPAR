@@ -131,9 +131,10 @@ void holdtemp(double temp, double time)
  */
 void waittotemp(double temp)
 {
+    digitalWrite(HEATER_PIN, LOW);
     double fluortarget = heatquery(temp); // Retrieve the target fluoresence from the curves. 
     cout << "Falling." << endl; // Log that we're falling.
-    while(y[y.size()-1] > fluortarget)
+    while(y[y.size()-1] > fluortarget && runflag == true)
     {
         delay(10); // Wait until we've dropped enough.
     }
