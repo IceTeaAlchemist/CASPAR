@@ -19,6 +19,7 @@
 const double max_vals[3] = {500, 60, 10};
 const double min_vals[3] = {-500, -60, -10};
 const int iter_thresh = 24;
+const int allowed_temp_errors = 3;
 
 //Declare reading struct.
 struct reading
@@ -58,6 +59,8 @@ extern string pcrstorage;
 extern string coeffstorage;
 extern string rawstorage;
 extern string runlog;
+extern int runerror;
+extern int temperrors;
 
 //setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
 
@@ -80,7 +83,7 @@ void holdtemp(double temp, double time);
 
 void premelt(void);
 void runRT(void);
-void cycle(void);
+int cycle(void);
 int delaytocycleend(const double coeff[3], double thresh);
 bool modeshift(bool state);
 
