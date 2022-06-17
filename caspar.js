@@ -42,7 +42,37 @@ wss.on('connection', function connection(ws) {
                 if(isRunning === false)
                 {
                     // Start the PCR cycling if it's not.
-                    engine.start(function (){});
+                    engine.start(function (err, errorvalue){
+                        console.log(errorvalue);
+                        clearInterval(DataIntervId);
+                        clearInterval(PCRIntervId);
+                        sendPCR();
+                        engine.stop();
+                        isRunning = false;
+                        console.log('Cycling shutdown.');
+                        if(errorvalue[0] > 0)
+                        {
+                            var errorreport = {
+                                id: "errorreport",
+                                value: errorvalue[0]
+                            }
+                            ws.send(JSON.stringify(errorreport));
+                        }
+                        var mailOptions = {
+                            from: 'caspar@casparvu.com',
+                            to: 'kick767@gmail.com',
+                            subject: 'CASPAR run finished.',
+                            text: 'Sample finished.',
+                        };
+                        // Send the email and log info.
+                        transporter.sendMail(mailOptions, function(error, info){
+                            if (error) {
+                                console.log(error);
+                            } else {
+                                console.log('Email sent: ' + info.response);
+                            }
+                        });
+                    });
                     isRunning = true;
                     console.log('Ignition started.');
                     // Start the periodic cycling data send and PCR data check.
