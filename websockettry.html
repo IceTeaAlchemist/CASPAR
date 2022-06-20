@@ -22,7 +22,7 @@
 <div id="div_pcr" style="width:1200px; height:600px;"></div>
 <script type="text/javascript">
 
-const ws = new WebSocket('ws://10.8.129.234:7071/ws');
+const ws = new WebSocket('ws://10.68.201.201:7071/ws');
 
 //Declare data vectors for graphs and push initial values into them.
 var data = [];
@@ -30,7 +30,7 @@ var data2 =[];
 var cycleno = 0;                                // Cycle the next set of PCR data will be from.
 var t = new Date();                             // Current time.
 data.push([t, 0, 0]);
-data2.push([cycleno, 0, 0]);
+data2.push([cycleno, 0,0,0]);
 
 // Harness a variable to each button to handle events later.
 var b_startPCR = document.getElementById("start_PCR");
@@ -79,8 +79,9 @@ ws.onmessage = function(event){
             case "PCRdata":
                   cycleno = cycleno + 1; //Increase PCR cycle on receipt of PCR data.
                   fam = msg.fam; //Retrieve FAM fluoresence.
-                  cy5 = msg.cyfive; //Retrieve Cy5 fluoresence.
-                  data2.push([cycleno, fam, cy5]); //Push the new data onto the graph source.
+		      hex = msg.hex; //Retrieve HEX fluoresence.
+                  cy5 = msg.cy5; //Retrieve Cy5 fluoresence.
+                  data2.push([cycleno, fam, hex, cy5]); //Push the new data onto the graph source.
                   pcr.updateOptions( {'file': data2 } ); //Update it.
             break;
             case "filestatus":
@@ -123,7 +124,7 @@ var g = new Dygraph(document.getElementById("div_g"), data,
 // Declare the graph for PCR data.
 var pcr = new Dygraph(document.getElementById("div_pcr"), data2,
 {
-      labels: ['Cycle','FAM','Cy5'],
+      labels: ['Cycle','FAM','HEX','Cy5'],
       series: {
             'FAM': {
                   axis:'y1'
@@ -131,6 +132,9 @@ var pcr = new Dygraph(document.getElementById("div_pcr"), data2,
             'HEX': {
                   axis:'y1'
             },
+	      'Cy5': {
+		      axis:'y1'
+	      },
       },
       axes: {
             'y1': {
