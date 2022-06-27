@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1"> <!--scales to client device size-->
+  <title> CASPAR </title>
+
+  <script src="https://www.puck-js.com/puck.js"></script>
+  <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.css" />
+
+<style>
+  /* Purely stylistic so it looks pretty */
+  body{font-family: verdana, Arial;}
+  .tab button {font-size:120%; background-color:#f0f0f0; margin-top:8px; margin-right:8px; padding:5px; cursor:pointer;
+   border-width:2px; border-radius: 3px}
+    .tab button:hover {background-color: #b4b4b4;}
+    .tab button.active {background-color: #787878; color: #f0f0f0}
+  .tabcontent {}
+  .inrbtn{display: block; font-size: 125%; background-color:#b4b4b4; padding: 12px; cursor: pointer;
+   border-width: 2px; border-radius: 3px; margin: 53px auto;}
+    .inrbtn2{display: block; font-size: 125%; background-color:#b4b4b4; padding: 12px; cursor: pointer;
+    border-width: 2px; border-radius: 3px; margin:auto; margin-top: 48px; margin-bottom: 48px;}
+    .inrbtn3{display: block; font-size: 150%; background-color:#b4b4b4; padding: 12px; cursor: pointer;
+    border-width: 2px; border-radius: 3px; margin:auto; margin-top: 48px; margin-bottom: 48px;}
+    .btmbtn{display: inline; font-size: 150%; background-color:#b4b4b4; padding: 5px; cursor: pointer;
+    border-width: 2px; border-radius: 3px;}
+  .inrtxt{font-size: 110%; text-align: center; margin:35px}
+    .inrtxt2{font-size: 110%; text-align: center; margin:30px}
+    .inrtxt3{font-size: 110%; margin:15px}
+    .inrtxt4{font-size: 115%; margin-top:40px; margin-bottom: 20px;}
+    .inrtxt5{font-size: 105%; margin-top:40px; margin-bottom: 20px;}
+    .inrtxt6{font-size: 110%; margin:15px; margin-left: 20px; display: inline;}
+    .inrtxt7{font-size: 110%; margin:15px; margin-bottom: 25px;}
+  .inrinp{width: 85%; height:25px; font-size:12pt; border-width: 1px; padding:3px 8px;}
+    .inrinp1{width: 17%; height:25px; font-size:12pt; border-width: 1px; padding:3px 8px;}
+    .inrinp2{width: 50%; height:25px; font-size:12pt; border-width: 1px; padding:3px 8px; display: inline; margin-bottom: 5px;}
+    .btminp{width: 30%; height:50%; font-size:12pt; border-width: 1px; padding:3px 8px; resize: none; display:inline;}
+
+  /* grids/layouts for each tab (1,2,3) */
+  .container1 {display: grid;
+  grid-template-columns: 0.75fr 0.75fr 1fr 1fr 1fr 1fr 1fr 1fr 0.75fr 0.75fr;
+  grid-template-rows: 1.1fr 1.1fr 1.1fr 1.1fr 1.1fr 1.1fr 0.4fr;
+  grid-column-gap: 8px;
+  grid-row-gap: 8px;}
+  .div1-1 { grid-area: 1 / 1 / 6 / 3; border-style:solid; border-width: 2px} /*left content */
+  .div2-1 { grid-area: 1 / 3 / 6 / 9; border-style:solid; border-width: 2px} /*middle content */
+  .div3-1 { grid-area: 1 / 9 / 6 / 11; border-style:solid; border-width: 2px} /*right content */
+  .div4-1 { grid-area: 6 / 1 / 8 / 11; border-style:solid; border-width: 2px} /*bottom content */
+
+  .container2 {display: grid;
+  grid-template-columns: 0.77fr 0.78fr 1fr 1fr 1fr 1fr 1fr 1fr 0.75fr 0.75fr;
+  grid-template-rows: 1.1fr 1.1fr 1.1fr 1.1fr 1.1fr 1.1fr 0.4fr;
+  grid-column-gap: 8px;
+  grid-row-gap: 8px;} /*same grid as container1*/
+  .div1-2 { grid-area: 1 / 1 / 6 / 3; border-style:solid; border-width: 2px} /*left content */
+  .div2-2 { grid-area: 1 / 3 / 6 / 9; border-style:solid; border-width: 2px} /*middle content */
+  .div3-2 { grid-area: 1 / 9 / 6 / 11; border-style:solid; border-width: 2px} /*right content */
+  .div4-2 { grid-area: 6 / 1 / 8 / 11; border-style:solid; border-width: 2px} /*bottom content */
+
+  .container3 {display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
+    grid-column-gap: 8px;
+    grid-row-gap: 8px;}
+  .div1-3 { grid-area: 1 / 1 / 5 / 3; border-style:solid; border-width: 2px} /*left content */
+  .div2-3 { grid-area: 1 / 3 / 5 / 5; border-style:solid; border-width: 2px} /*right content */
+
+  /* Specific CSS Classes for the dropdown on the first tab */
+  .custom-select {position: relative; width: 99%; height:33px; border-width: 1px; font-size:12pt; background-color: #FFFFFF; padding:3px 3px;}
+    .custom-select::after {position: relative; width: 99%; height:33px; border-width: 1px; font-size:12pt; background-color: #FFFFFF; padding:3px 3px;}
+</style>
+</head>
+
+<body>
+
+  <div class="tab">
+    <button class="tablinks" id = "tab1" onclick="show(event, 'tab1c')">Main</button>
+    <button class="tablinks" id = "tab2" onclick="show(event, 'tab2c')">Run Summary</button>
+    <button class="tablinks" id = "tab3" onclick="show(event, 'tab3c')">Configuration</button>
+    <button id="help" style="float:right" onclick="help()"> Help </button>
+    <button id="close" style = "float:right;" onclick = "closeConfirmation()"> Close Website </button>
+    <button id="closeServer" style="float:right" onclick = "shutdownConfirmation()"> Shutdown Server (DO NOT PRESS) </button>
+    <button id="serverStatus" style="float:right;"
+      onClick="document.location.reload(true)"> Server Status: <span style = "font-weight:bold;"> Not Connected </span> </button>
+  </div>
+
+  <div id="divider" style="width:100%; height:8px; margin: auto;"></div>
+
+  <div id="tab1c" class="tabcontent">
+    <div class="container1">
+      <div class="div1-1"  style = "text-align:center;">
+        <p class="inrtxt2">Project Name:</p>
+          <input class = "inrinp" type="text" id="projName"> <!--Value Can Change-->
+        <p class="inrtxt2">Operator:</p>
+          <input class = "inrinp" type="text" id="opName"> <!--Value Can Change-->
+        <p class="inrtxt2">Experiment Name:</p>
+          <input class = "inrinp" type="text" id="expName"> <!--Value Can Change-->
+        <p class="inrtxt2">Configuration:</p>
+          <div id = "dropdown" style="width:93%; margin:0 auto; margin-bottom: 30px;"> <!--Value Can Change-->
+            <select id = "configDropdown" class="custom-select" style="text-align:left;" onclick = "loadDataRequest()"> <!--Options Change-->
+            </select>
+          </div>
+      </div>
+
+      <div class="div2-1" id="divPCR" style="width:100%; height:100%; display:block;"></div> <!--graph goes here-->
+
+      <div class="div3-1">
+        <button class="inrbtn" id="startStopPCR" onclick = "startStopConfirmation()"
+          style = "font-size: 160%; padding: 20px; margin: 80px auto; background-color: LimeGreen">Start PCR</button> <!--Changes-->
+        <p class="inrtxt">Current Cycle:</p>
+          <p class="inrtxt" id="currentCycle" style="font-weight:bold; font-size:120%; margin-bottom:48px;"> 0 </p> <!--Changes-->
+        <p class="inrtxt">Total Cycles:</p>
+          <p class="inrtxt" id="totalCycles" style="font-weight:bold; font-size:120%"> - </p> <!--Changing will be implemented-->
+      </div>
+
+      <div class="div4-1">
+        <p class="inrtxt3" style="margin-top: 42px; display:inline; float:left; font-size:110%; margin-left:20px;"> <br> Comments:</p>
+          <textarea class = "btminp" id="comments" style="display:inline-flex; margin-top: 40px; float:left;"></textarea> <!--Value Can Change-->
+        <p class="inrtxt3" id="systemStatus" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> System Status:
+          <br> <br> <span style= "font-weight: bold; font-size:110%;"> &ensp;Not Running </span></p> <!--Changes-->
+        <p class="inrtxt3" id="startTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Start Time:
+          <br> <br> <span style= "font-weight: bold; font-size:110%"> &ensp; Not Started </span></p> <!--Changes-->
+        <p class="inrtxt3" id="estFinTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Est. Finish Time:
+          <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; &ensp; - </span></p> <!--Changing will be implemented-->
+        <p class="inrtxt3" id="finTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Finish Time:
+          <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; - </span></p> <!--Changes-->
+      </div>
+
+    </div>
+  </div>
+
+  <div id="tab2c" class="tabcontent">
+    <div class="container2">
+
+      <div class="div1-2">
+        <p class="inrtxt4" style="font-weight:bold; text-align: center; margin-top: 20px;">Experiment Info:</p>
+          <p class="inrtxt7" id="esStatus" style="font-size:105%;"> <span style = "text-decoration: underline;"> Status: </span> Not Running <br></p>  <!--Changes-->
+          <p class="inrtxt7" id="esErrors" style="font-size:105%;"> <span style = "text-decoration: underline;"> Errors:</span> No Errors Found <br> </p>  <!--Changing will be implemented-->
+          <p class="inrtxt7" id="esConfig" style="font-size:105%;"> <span style = "text-decoration: underline;"> Configuration:</span> - <br> </p>  <!--Changes-->
+          <p class="inrtxt7" id="esProj" style="font-size:105%;"> <span style = "text-decoration: underline;"> Project Name:</span> - <br> </p>  <!--Changes-->
+          <p class="inrtxt7" id="esExp" style="font-size:105%;"> <span style = "text-decoration: underline;"> Experiment Name:</span> - <br> </p>  <!--Changes-->
+          <p class="inrtxt7" id="esOpName" style="font-size:105%;"> <span style = "text-decoration: underline;"> Operator Name:</span> - <br> </p>  <!--Changes-->
+          <p class="inrtxt7" id="esStart" style="font-size:105%;"> <span style = "text-decoration: underline;"> Start Time:</span> - <br>  </p>  <!--Changes-->
+          <p class="inrtxt7" id="esEstFin" style="font-size:105%;"> <span style = "text-decoration: underline;"> Est. Finish Time:</span> - <br> </p>  <!--Changing will be implemented-->
+          <p class="inrtxt7" id="esFin" style="font-size:105%;"> <span style = "text-decoration: underline;"> Finish Time:</span> - <br> </p>  <!--Changes-->
+      </div>
+
+      <div class="div2-2" id="divCYC" style="width:100%; height:100%; display:block;"> </div> <!--graph goes here-->
+
+      <div class="div3-2">
+        <p class="inrtxt4" style="font-weight:bold; text-align: center; margin-top: 20px;">Error Status:</p>
+          <p class = 'inrtxt3' id="errorInfo"> No errors found</p> <!--Changing will be implemented-->
+      </div>
+
+      <div class="div4-2">
+        <p class="inrtxt3" style="margin-top: 42px; display:inline; float:left; font-size:110%; margin-left:20px;"> Save Data Filename:</p>
+          <input class = "inrinp1" type="text" id="filename" style="display:inline-flex; margin-top: 40px; float:left;" value=""> <!--Value Can Change-->
+        <button class="inrbtn2" id="downloadData" onclick = "downloadData()" style = "display:inline; margin-top: 28px; margin-left:55px;
+          float:left; margin-bottom: 10px;"> Download Data </button>
+        <p class="inrtxt3" style="margin-top: 42px; display:inline; float:left; font-size:110%; margin-left:45px;"> Enter Email:</p>
+          <input class = "inrinp1" type="text" id="email" style="display:inline-flex; margin-top: 40px; float:left;" value=""> <!--Value Can Change-->
+          <button class="inrbtn2" id="emailData" onclick = "sendFiles()" style = "display:inline; margin-top: 28px; margin-left:55px; float:left;
+          margin-bottom: 10px;"> Email Data </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab3c" class="tabcontent">
+    <div class="container3">
+
+      <div class="div1-3">
+        <h2 style = "text-align: center;"> Configuration Information </h2>
+          <p class = 'inrtxt7' id="ciconfig"> <span style = "text-decoration: underline;"> Configuration Name:</span> Default <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="ciopName"> <span style = "text-decoration: underline;"> Default Operator Name:</span> <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="ciemail"> <span style = "text-decoration: underline;"> Default Email:</span> <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="ciprojName"> <span style = "text-decoration: underline;"> Default Project Name:</span> <br> </p> <!--Changes-->
+        <p class="inrtxt4" style="font-weight:bold; text-align: left; margin-left: 10px;">Device Info:</p>
+          <p class="inrtxt5" id="deviceInfo">&emsp;Model 1.0</p> <!--Hardcoded-->
+        <p class="inrtxt4" style="font-weight:bold; text-align: left; margin-left: 10px;">Version Info:</p>
+          <p class="inrtxt5" id="versionInfo">&emsp;Version 1.0</p>  <!--Hardcoded-->
+      </div>
+
+      <div class="div2-3">
+        <h2 style = "text-align: center;"> Create Configuration </h2>
+          <p class = 'inrtxt6'> Configuration Name: </p>
+            <input class = "inrinp2" type="text" id="configName" value = " " style = ""> <!--Value Can Change-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div> <!-- Divs are necessary to ensure we havea linebreak-->
+          <p class = 'inrtxt6' style= "display: inline-block;">  <br> Default Operator Name: </p>
+            <input class = "inrinp2" type="text" id="defOpName" value = " "> <!--Value Can Change-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> Default Email: </p>
+            <input class = "inrinp2" type="text" id="defEmail" value = " "> <!--Value Can Change-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> Default Project Name: </p>
+            <input class = "inrinp2" type="text" id="defProjName" value = " "> <!--Value Can Change-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+        <button class="inrbtn3" id="saveConfig" onclick="saveConfig()" style= "display: inline; float:left; margin-left: 70px;
+          margin-bottom: 20px;"> Save <br> This <br> Configuration </button>
+        <button class="inrbtn3" id="devMode" style= "display: inline; float:right;
+          margin-right: 70px; margin-bottom: 20px;"> Launch <br> Developer <br> Mode </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const ws = new WebSocket('ws://10.68.206.224:7071/ws'); //Address can change. Hardcoded
+
+    //We will start by declaring major variables
+    //Declare data vectors for graphs and push initial values into them.
+    var data = [];
+    var data2 = [];
+    var cycleNo = 0;             // Cycle the next set of PCR data will be from.
+    var t = new Date();         // Current time.
+    data.push([t, 0, 0]);
+    data2.push([cycleNo, 0, 0, 0]);
+    var taxisIncrement = 10 * 1000; // axis increment in milliseconds
+
+    // Initialize variables for data handling.
+    var x = 0;
+    var y = 0;
+    var fam;
+    var cy5;
+    var cycleNo = 0;
+    var dateWinMin = t.getTime();
+    var dateWinMax = dateWinMin + 2*taxisIncrement;
+
+    // Declare the graph for PCR data.
+    var pcr = new Dygraph(document.getElementById("divPCR"), data2,
+      {labels: ['Cycle','FAM','HEX','Cy5'],
+       series: {
+         'FAM': {
+          axis:'y1'},
+         'HEX': {
+          axis:'y1'},
+         'Cy5': {
+          axis:'y1'},
+          },
+          axes: {
+            'y1': {},
+          },
+          title: 'PCR Output',
+          xlabel: 'Cycle',
+          ylabel: 'Fluoresence (mV)',
+          drawPoints: true,
+          showRoller: true,
+          digitsAfterDecimal: 3,
+          dateWindow: [0,40], //This locks the x axis to 0-40.
+          showRangeSelector: true,
+          axisLabelFontSize: 14,
+    });
+
+    // Declare our graph for cycling data.
+    var cyc = new Dygraph(document.getElementById("divCYC"), data,
+      {labels: ['Time','F','Temp'],
+       series: {
+          'F': {
+          axis:'y1'}, // Put our fluoresence on the left axis.
+          'Temp': {
+          axis:'y2'}, // Put our temperature on the right axis.
+          },
+          axes: { // Declare two sets of axes.
+            'y1': {},
+            'y2': {},
+          },
+          title: 'Cycling Information',
+          xlabel: 'Time',
+          ylabel: 'Fluoresence (mV)',
+          y2label: 'Temperature (Celsius)',
+          drawPoints: true,
+          showRoller: true,
+          digitsAfterDecimal: 3,
+          dateWindow: [dateWinMin, dateWinMax],
+          showRangeSelector: true,
+          axisLabelFontSize: 12,
+    });
+
+    var isRunning = false; //Keeps track of whether the system is actually running. NOT the same as clientStarted, which is when the client presses start
+    var runFinished = false; //Keeps track if the run is currently finished. Important for __ insert reason.
+    var dropdownID = document.getElementById("configDropdown"); //important because we reference the inner text in the dropdown very often
+    var namearray; //will be used for save configuration safety
+    var clientPressedStart = false; // Keeps Track of if the client pressed start. NOT the same as isRunning, which tracks whether or not the sysem is on.
+    var senddefproj; //to send
+    var senddefop; //to send
+    var senddefem; //to send
+    // Handles the events coming from the websocket. Format switches off the id blank on the json variable being sent.
+    ws.onmessage = function(event){
+      var msg = JSON.parse(event.data);
+        switch(msg.id){
+
+          case "connect":
+          //Logs if the system is running and changes the website
+            isRunning = msg.running;
+            console.log(msg.status);
+              document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
+
+            //Changes the System Status based on the isRunning variable
+            if (isRunning == "true"){
+              document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:LimeGreen;font-weight:bold;> &ensp;"
+              + "In Progress" + "</span>";
+              document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> In Progress";}
+            else if(isRunning == "false"){
+              document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;font-weight:bold;> &ensp;"
+              + "Not Running" + "</span>";
+              document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> Not Running";}
+
+            //This code extracts all the configuration names and puts it in the dropdown on the first page
+            var allnames = (msg.configs).substring(5);
+            var count = (((allnames.match(/:;:;:/g) || []).length)+1);
+            namearray = allnames.split(":;:;:");
+            let select = document.getElementById('configDropdown');
+              for (var i=0; i<count; i++){
+                var option = document.createElement("option");
+                option.text = namearray[i].trim();
+                option.value = String(namearray[i].trim());
+                option.id = String(namearray[i].trim());
+                select.add(option);
+              }
+
+            onConnect(msg.running, msg.starttime, msg.projectname, msg.operatorname, msg.experimentname, msg.configname, msg.comments, msg.filename, msg.defproj, msg.defop, msg.defem);
+          break;
+
+          case "loadconfig": //loads the config that is selected on the dropdown on the first page
+            var dataarray = msg.data.split(":;:;:"); //graps all data and puts it in an array
+            //Updates info on first and second tabs
+            document.getElementById("projName").value = dataarray[2].substring(6).trim();
+            document.getElementById("opName").value = dataarray[0].substring(6).trim();
+            document.getElementById('email').value = dataarray[1].substring(6).trim();
+            //Updates info on third tab
+            document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" + " " + dataarray[2].substring(6).trim();
+            document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" + " " + dataarray[0].substring(6).trim();
+            document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" + " " + dataarray[1].substring(6).trim();
+            senddefproj = dataarray[2].substring(6).trim();
+            senddefop = dataarray[0].substring(6).trim();
+            senddefem = dataarray[1].substring(6).trim();
+          break;
+
+          case "PCRdata": //In the future, msg.cycleNo will give us the real cycleNo
+            isRunning = msg.running;
+            cycleNo = cycleNo + 1; //Increase PCR cycle on receipt of PCR data.
+              document.getElementById("currentCycle").innerHTML =  "<span style='font-weight:bold; font-size:110%'>" + cycleNo + "</span>"; //Changes Cycle Number
+            fam = msg.fam; //Retrieve FAM fluoresence.
+            cy5 = msg.cy5; //Retrieve Cy5 fluoresence.
+            hex = msg.hex; //Retrieve HEX fluoresence.
+            data2.push([cycleNo, fam, hex, cy5]); //Push the new data onto the graph source.
+            pcr.updateOptions( {'file': data2 } ); //Update it.
+
+              //Changes the System Status based on the isRunning variable
+            if (isRunning == "true"){
+              document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:LimeGreen;font-weight:bold;> &ensp;"
+                + "In Progress" + "</span>";
+              document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> In Progress";}
+            else if(isRunning == "false"){
+              document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;font-weight:bold;> &ensp;"
+                + "Not Running" + "</span>";
+              document.getElementById("esStatus").innerHTML = "Status: Not Running";}
+          break;
+
+          case "cycledata":
+            isRunning = msg.running;
+            x = new Date();  // Get current time
+            y = msg.fluor; // Get fluoresence.
+            temp = msg.temp; // Get temperature.
+          //Move the window if needed:
+            if (x.getTime() >= dateWinMax) {
+              dateWinMin += taxisIncrement;
+              dateWinMax += taxisIncrement;
+              cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } )};
+          //Update the data, then graph it.
+            if(y > -100)
+              {data.push([x,y,temp]);
+               cyc.updateOptions( { 'file': data } );};
+
+            //Changes the System Status based on the isRunning variable
+            if (isRunning == "true"){
+               document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:LimeGreen;font-weight:bold;> &ensp;"
+               + "In Progress" + "</span>";
+               document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'>Status:</span> In Progress";}
+            else if(isRunning == "false"){
+               document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;font-weight:bold;> &ensp;"
+               + "Not Running" + "</span>";
+               document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'>Status:</span> In Progress";}
+          break;
+
+          default:
+            console.log(msg); //If the message doesn't match any of our cases, log the message in the console.
+          }};
+
+//Functions Begin
+
+      //Updates the UI when it connects, whether in the middle of an experiment or initially.
+      function onConnect(run, start, project, operator, experiment, config, comments, filename, saveddefproj, saveddefop, saveddefem){
+        if(run == "true"){
+          //Updates major values
+          dropdownID.value = config;
+          document.getElementById("startTime").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
+          start.bold() + "</span>";
+          document.getElementById("projName").value = project;
+          document.getElementById("opName").value = operator;
+          document.getElementById('expName').value = experiment;
+          document.getElementById('comments').value = comments;
+          document.getElementById('filename').value = filename;
+
+          //Updates values in tab 2: experiment info
+          document.getElementById("esConfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration:</span>" + " "  + config;
+          document.getElementById("esProj").innerHTML = "<span style = 'text-decoration: underline;'> Project Name:</span>" + " "  + project;
+          document.getElementById("esExp").innerHTML = "<span style = 'text-decoration: underline;'> Experiment Name:</span>" + " "  + experiment;
+          document.getElementById("esOpName").innerHTML = "<span style = 'text-decoration: underline;'> Operator Name:</span>" + " "  + operator;
+          document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + " "  + start;
+
+          //Updates values in tab 3
+          document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configruation Name:</span>" + " " + dropdownID.options[dropdownID.selectedIndex].text;
+          document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" + " " + saveddefproj;
+          document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" + " " + saveddefop;
+          document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" + " " + saveddefem;
+
+          //Disables inputs
+          document.getElementById('projName').disabled = true;
+          document.getElementById('opName').disabled = true;
+          document.getElementById('expName').disabled = true;
+          document.getElementById("dropdown").style.pointerEvents = "none";
+           document.getElementById("dropdown").style.opacity = "0.6";
+          document.getElementById('filename').disabled = true;
+         //Changes start/stop button
+          document.getElementById('startStopPCR').innerHTML = "Stop PCR";
+          document.getElementById('startStopPCR').style.backgroundColor = 'Tomato';
+          clientPressedStart = true;
+          runFinished = false;
+          }
+       }
+
+       //This function sends the server a request to view and eventually display the information for a certain configuration thats clicked
+       function loadDataRequest(){
+         document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configruation Name:</span>" + " " + dropdownID.options[dropdownID.selectedIndex].text;
+         var msg = {
+           id: "configrequest",
+           config: dropdownID.options[dropdownID.selectedIndex].text,
+         };
+         ws.send(JSON.stringify(msg));
+       }
+
+      //Checks if project name, operator name, and configuration are filled out before run can begin
+      function conditionsForStart()
+      { if (String(document.getElementById("projName").value).trim().length == 0){
+          alert("\nPlease fill out the Project Name.");
+          return false;}
+
+        else if ((String(document.getElementById("opName").value).trim().length == 0)) {
+          alert("\nPlease fill out the Operator Name.");
+          return false;}
+
+        else if ((String(dropdownID.options[dropdownID.selectedIndex].text).trim().length == 0)) {
+          alert("\nPlease select/create a Configuration.");
+          return false;}
+
+        else {return true;}
+      }
+
+      //These variables ensure that the same file name isn't used for two runs in a row
+      var oldFileName;
+      var newFileName = " ";
+
+      //opens a window prompt to confirm whether the user wants to start the program
+      function startStopConfirmation() {
+         if(conditionsForStart()) { //function only runs if true;
+            if(String(document.getElementById('startStopPCR').innerHTML) == "Start PCR"){
+              var displayFileName1;
+              var timeStarted1 = new Date();
+                //Sets the default file name to display if there is no file name entered or if old and new file names match
+                if (String(document.getElementById("filename").value).trim().length == 0 || oldFileName == newFileName) {
+                  var nameOfProject = document.getElementById("projName").value;
+                  var date = ("0" + (timeStarted1.getMonth()+1).toString()).slice(-2) + "-" + ("0" + timeStarted1.getDate().toString()).slice(-2)  + "-" +
+                    timeStarted1.getFullYear().toString().slice(-2);
+                  var time = ("0" + timeStarted1.getHours()).slice(-2)  + "." +  ("0" + timeStarted1.getMinutes()).slice(-2);
+                  var dateTime = date+ "_" + time;
+                  displayFileName1 = nameOfProject + "_" + dateTime;
+                  }
+                else {displayFileName1 = document.getElementById("filename").value;
+                  }
+              let text = "Are you sure you want to start this PCR?\n\nAll previous data will be cleared and you will be starting this experiment with the following parameters:\n\n" +
+                "Save Data Filename: " + displayFileName1  + "\nOperator Name: " + document.getElementById("opName").value + "\nExperiment Name: " +
+                document.getElementById("expName").value + "\nConfiguration: " + dropdownID.options[dropdownID.selectedIndex].text + "\n\nPress 'OK' to confirm.";
+                if (confirm(text) == true) {
+                  //Changes Button and System Vars
+                  document.getElementById('startStopPCR').innerHTML = "Stop PCR";
+                    document.getElementById('startStopPCR').style.backgroundColor = 'Tomato';
+                  clientPressedStart = true;
+                  runFinished = false;
+                  startStopPCR();
+                }
+                else {}
+            }
+            else{
+              let text = "\nAttention: you are currently losing data. \n\nAre you sure you want to stop this PCR? \n\n If you do, the experiment will end.";
+                if (confirm(text) == true) {
+                  //Changes Button and System Vars
+                  document.getElementById('startStopPCR').innerHTML = "Start PCR";
+                    document.getElementById('startStopPCR').style.backgroundColor = 'LimeGreen';
+                  clientPressedStart = false;
+                  runFinished = true;
+                  startStopPCR();
+                }
+                else{}
+            }
+          }
+        }
+
+    var timeStartDisplay; //Important if we ever want to send it
+    var defaultFileName; //Important if we ever want to send it
+
+    // Start or stop the PCR depending on its current state.
+    function startStopPCR() {
+      if (clientPressedStart){ //Changes the file name between runs if its the exact same
+        if (oldFileName == newFileName){
+          newFileName = " ";
+          document.getElementById('filename').value = " ";
+        }
+        //Displays Start Time
+        var timeStarted = new Date(); //initialize Start Time
+        timeStartDisplay = timeStarted.toLocaleTimeString();
+        document.getElementById("startTime").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
+        timeStartDisplay.bold() + "</span>";
+        document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + " " + timeStartDisplay;
+        document.getElementById("finTime").innerHTML =  "<br> Finish Time: <br> <br> <span style=font-size:110%> &emsp;  &emsp; &emsp; -" + "</span>";
+        //This code alters the default file name.
+          if (String(document.getElementById("filename").value).trim().length == 0){
+            var nameOfProject = document.getElementById("projName").value;
+            var date = ("0" + (timeStarted.getMonth()+1).toString()).slice(-2) + "-" + ("0" + timeStarted.getDate().toString()).slice(-2)  + "-" +
+              timeStarted.getFullYear().toString().slice(-2);
+            var time = ("0" + timeStarted.getHours()).slice(-2)  + "." +  ("0" + timeStarted.getMinutes()).slice(-2);
+            var dateTime = date+ "_" + time;
+            defaultFileName = nameOfProject + "_" + dateTime;
+            document.getElementById('filename').value = defaultFileName;
+          }
+          newFileName = String(document.getElementById('filename').value);
+          //This code disables all major entry fields
+            document.getElementById('projName').disabled = true;
+            document.getElementById('opName').disabled = true;
+            document.getElementById('expName').disabled = true;
+            document.getElementById("dropdown").style.pointerEvents = "none";
+              document.getElementById("dropdown").style.opacity = "0.6";
+            document.getElementById('filename').disabled = true;
+          //Code to reset graph related things
+          data = [];
+          data2 = [];
+          cycleNo = 0;
+            document.getElementById("currentCycle").innerHTML =  "<span style='font-weight:bold; font-size:110%'>" + cycleNo + "</span>";
+          t = new Date();
+            dateWinMin = t.getTime();
+            dateWinMax = dateWinMin + 2*taxisIncrement;
+            cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );
+          data.push([t, 0, 0]);
+          data2.push([cycleNo, 0, 0, 0]);
+          cyc.updateOptions({ 'file': data});
+          pcr.updateOptions({ 'file': data2});
+
+          changeFile();
+          clientPressedStart = false;
+
+          //updates the info on the second tab info
+          document.getElementById("esConfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration:</span>" + " "  + dropdownID.options[dropdownID.selectedIndex].text;
+          document.getElementById("esProj").innerHTML = "<span style = 'text-decoration: underline;'> Project Name:</span>" + " "  + document.getElementById("projName").value;
+          document.getElementById("esExp").innerHTML = "<span style = 'text-decoration: underline;'> Experiment Name:</span>" + " "  + document.getElementById('expName').value;
+          document.getElementById("esOpName").innerHTML = "<span style = 'text-decoration: underline;'> Operator Name:</span>" + " "  + document.getElementById("opName").value;
+
+          //Sends important data to server for storage (for safety reasons incase client leaves)
+          let msg = {
+            id: "startSave",
+            startTime: timeStartDisplay,
+            projectName: document.getElementById("projName").value,
+            operator: document.getElementById("opName").value,
+            experimentName: document.getElementById('expName').value,
+            config: dropdownID.options[dropdownID.selectedIndex].text,
+            comments: document.getElementById('comments').value,
+            filename: document.getElementById('filename').value,
+            defproj: senddefproj,
+            defop: senddefop,
+            defem: senddefem,
+          };
+          ws.send(JSON.stringify(msg)); //sends message
+
+      }
+      else{
+        //This code enables all major entry fields
+        document.getElementById('projName').disabled = false;
+        document.getElementById('opName').disabled = false;
+        document.getElementById('expName').disabled = false;
+        document.getElementById("dropdown").style.pointerEvents = "auto";
+          document.getElementById("dropdown").style.opacity = "1";
+        document.getElementById('filename').disabled = false;
+        oldFileName = newFileName; //for storing purposes
+        clientPressedStart = true;
+        finishRun();
+        }
+      var msg = {
+        id: "start/stop",
+      };
+      ws.send(JSON.stringify(msg)); //sends message
+    }
+
+    var timeFinishDisplay; //Important if we ever want to send it
+
+    //This function is called if the client manually presses stop or if the experiment ends
+    // Needs to be implemented in the future with the run finish signal
+    function finishRun() {
+      runFinished = true;
+      //Displays Finish Time
+      var timeFinished = new Date(); //initialize Start Time
+      timeFinishDisplay = timeFinished.toLocaleTimeString();
+      document.getElementById("finTime").innerHTML =  "<br> Finish Time: <br> <br> <span style=font-size:110%> &emsp;" +
+      timeFinishDisplay.bold() + "</span>";
+      document.getElementById("esFin").innerHTML =  "<span style = 'text-decoration: underline;'> Finish Time:</span> " + " " +
+      timeFinishDisplay;
+
+      var msg = {
+        id: "savefinish",
+        comments: document.getElementById('comments').value,
+        finishtime: timeFinishDisplay,
+      };
+      ws.send(JSON.stringify(msg));
+    }
+
+      //Changes file name based off the textbox on the page and sends the name to the server.
+      //This Function should run prior to the actual start. Never called on outside of a function.
+      function changeFile()
+        {var nameforchange = document.getElementById("filename").value;
+          var msg = {
+            id: "filename",
+            newname: nameforchange};
+          ws.send(JSON.stringify(msg));}
+
+      //Need to implement this feature that will send the files to the chosen address --> Should be error prone.
+      //Currently Emails the files to Nick
+      //This function should only be called when Email Data is pressed.
+      function sendFiles() {
+        if(runFinished){
+          if((String(document.getElementById("email").value).trim().length == 0) || ((!String(document.getElementById("email").value).trim().includes("@")))){
+            alert("Please enter a valid email address");
+          }
+          else{
+            var msg = {
+              id: "sendemail",
+              address: (String(document.getElementById("email").value))};
+            ws.send(JSON.stringify(msg));
+            alert("\nEmail sent!")
+          }
+        }
+        else{
+          alert("Please wait for the run to be finished.");
+        }
+      }
+
+      var namesJustGiven = []; //This is to ensure the user doesn't accidently press save twice
+      //or if the user makes two of the same configuration names in the same session
+
+      //Safety feature to ensure the person saves the configuration correctly
+      // Will add more here
+      function configSafety(){
+        if ((String(document.getElementById("configName").value).trim().length == 0)){
+            alert("\nPlease fill out the Configuration Name");
+            return false;}
+        else if ((String(document.getElementById("defProjName").value).trim().length == 0) && (String(document.getElementById("defEmail").value).trim().length == 0) && (String(document.getElementById("defOpName").value).trim().length == 0)){
+            alert("\nPlease fill out atleast one other input");
+            return false;}
+        else if (namearray.includes(String(document.getElementById("configName").value.trim()))) {
+            alert("\nThis configuration name already exists");
+            return false;}
+        else if (namesJustGiven.includes(String(document.getElementById("configName").value.trim()))){
+            alert("\nThis configuration name has already been created.");
+            return false;}
+          else {return true;}
+      }
+
+      // This runs when the person presses the save configuration button. It sends data to the server
+      function saveConfig()
+      {
+        if(configSafety()){
+          namesJustGiven.push(String(document.getElementById("configName").value)); //pushes the accepted name into the array that was declared above
+          var msg = {
+            id: "saveconfiguration",
+            name: String(document.getElementById("configName").value),
+            defaultoperator: String(document.getElementById("defOpName").value),
+            defaultemail: String(document.getElementById("defEmail").value),
+            defaultproject: String(document.getElementById("defProjName").value),
+            };
+          ws.send(JSON.stringify(msg));
+          alert("\nConfiguration Saved! \n\nPlease reload the page to update the system.")
+        }
+      }
+
+      //opens a window prompt to confirm whether the user meant to close the website
+      function closeConfirmation() {
+        let text = "\nAre you sure you want to close this website?\n\n If currently running, the machine will continue to run.\n\nPress 'OK' to confirm.";
+        if (confirm(text) == true) {
+          window.close();
+        } else {}
+        }
+
+      //opens a window prompt to confirm whether the user meant to shutdown the server.
+      function shutdownConfirmation() {
+        let text = "\nAre you sure you want to shutdown this Server?\n\nIf you do Nick will be mad.\n\nPress 'OK' to confirm.";
+        if (confirm(text) == true) {
+          stopServer();
+        } else {}
+        }
+
+      //Turns the server off. This function should usually NEVER be called.
+      function stopServer() {
+        var msg = {
+          id: "shutdown"};
+        ws.send(JSON.stringify(msg));
+      }
+
+      //Opens a new page so the user can get Help (Implement it so its the manual) --> change in the future
+      function help(){
+        window.open("https://my.vanderbilt.edu/haseltonlab/");
+      }
+
+      //Need to implement a function that calculates the Estimated Finish Time
+      function estFinishTime(data)
+      {return "Calculating...";}
+
+      //Need to implement a feature that downloads data --> Should be error prone.
+      //This function should only be called when Download Data is pressed.
+      function downloadData(){
+        if(runFinished){
+          var msg = {
+            id: "downloadDataRequest",};
+          ws.send(JSON.stringify(msg));
+        }
+        else{
+          alert("\nPlease wait for the run to be finished.");
+        }
+      }
+
+// Code for the tabs starts
+      function show(evt, contentid) { //Shows content tabs when tabs are clicked
+        var i, tabcontent, tablinks;
+          tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].style.display = "none";
+            }
+          tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+              tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+        document.getElementById(contentid).style.display = "block";
+        evt.currentTarget.className += " active"; }
+
+        document.getElementById("tab1").click(); //By Default, the first tab is shown.
+// Code for the tabs ends
+
+  // Safety Feature if someone accidently refreshes or leaves the page
+  window.onbeforeunload = function leaving() {
+    return "Are you sure you want to leave this page?";};
+
+//Functions End
+
+  </script>
+</body>
+</html>
