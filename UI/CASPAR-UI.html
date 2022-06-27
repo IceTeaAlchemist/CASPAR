@@ -138,7 +138,7 @@
 
       <div class="div1-2">
         <p class="inrtxt4" style="font-weight:bold; text-align: center; margin-top: 20px;">Experiment Info:</p>
-          <p class="inrtxt7" id="esStatus" style="font-size:105%;"> <span style = "text-decoration: underline;"> Status: </span> Not Running <br></p>  <!--Changes-->
+          <p class="inrtxt7" id="esStatus" style="font-size:105%;"> <span style = "text-decoration: underline;"> Status:</span> Not Running <br></p>  <!--Changes-->
           <p class="inrtxt7" id="esErrors" style="font-size:105%;"> <span style = "text-decoration: underline;"> Errors:</span> No Errors Found <br> </p>  <!--Changing will be implemented-->
           <p class="inrtxt7" id="esConfig" style="font-size:105%;"> <span style = "text-decoration: underline;"> Configuration:</span> - <br> </p>  <!--Changes-->
           <p class="inrtxt7" id="esProj" style="font-size:105%;"> <span style = "text-decoration: underline;"> Project Name:</span> - <br> </p>  <!--Changes-->
@@ -188,7 +188,7 @@
         <h2 style = "text-align: center;"> Create Configuration </h2>
           <p class = 'inrtxt6'> Configuration Name: </p>
             <input class = "inrinp2" type="text" id="configName" value = " " style = ""> <!--Value Can Change-->
-              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div> <!-- Divs are necessary to ensure we havea linebreak-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div> <!-- Divs are necessary to ensure we have a linebreak-->
           <p class = 'inrtxt6' style= "display: inline-block;">  <br> Default Operator Name: </p>
             <input class = "inrinp2" type="text" id="defOpName" value = " "> <!--Value Can Change-->
               <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
@@ -287,13 +287,25 @@
     var senddefproj; //to send
     var senddefop; //to send
     var senddefem; //to send
+
+    //Heartbeat variables
+    var sendPing; //the constant ping interval
+    var verifyPong; //the interval to verify the pong was recieved
+    var pongRecieved = false;
     // Handles the events coming from the websocket. Format switches off the id blank on the json variable being sent.
     ws.onmessage = function(event){
       var msg = JSON.parse(event.data);
         switch(msg.id){
 
+          case "pong":
+            pongRecieved = true;
+            document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
+          break;
+
           case "connect":
-          //Logs if the system is running and changes the website
+            sendPing = setInterval(sendThePing, 10000); //Every 10 seconds, a ping is sent
+
+            //Logs if the system is running and changes the website
             isRunning = msg.running;
             console.log(msg.status);
               document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
@@ -337,6 +349,7 @@
             senddefproj = dataarray[2].substring(6).trim();
             senddefop = dataarray[0].substring(6).trim();
             senddefem = dataarray[1].substring(6).trim();
+            document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
           break;
 
           case "PCRdata": //In the future, msg.cycleNo will give us the real cycleNo
@@ -358,6 +371,8 @@
               document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;font-weight:bold;> &ensp;"
                 + "Not Running" + "</span>";
               document.getElementById("esStatus").innerHTML = "Status: Not Running";}
+
+            document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
           break;
 
           case "cycledata":
@@ -384,13 +399,49 @@
                document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;font-weight:bold;> &ensp;"
                + "Not Running" + "</span>";
                document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'>Status:</span> In Progress";}
+
+            document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
           break;
 
           default:
             console.log(msg); //If the message doesn't match any of our cases, log the message in the console.
           }};
 
+      //When websocket closes, the server status updates
+      ws.onclose = function (event) {
+        document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold;''> Not Connected </span>";
+        console.log('The connection has been closed successfully.');
+      };
+
 //Functions Begin
+
+      //Sends the Ping
+      function sendThePing(){
+        var msg = {
+          id: "ping",
+        }
+        try{ //try it first
+          ws.send(JSON.stringify(msg));
+          verifyPong = setInterval(verifyThePong, 15000);
+        }
+       catch (error){ //if it doesn't work, the client prolly doesnt have internet. Throw an error.
+          document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold;''> Not Connected </span>";
+          clearInterval(sendPing);
+        }
+      }
+
+      //Verifies if a pong was recieved
+      function verifyThePong(){
+        if (pongRecieved){
+          document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
+        }
+        else{
+          document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold;''> Not Connected </span>";
+          clearInterval(sendPing);
+        }
+        pongRecieved = false;
+        clearInterval(verifyPong);
+      }
 
       //Updates the UI when it connects, whether in the middle of an experiment or initially.
       function onConnect(run, start, project, operator, experiment, config, comments, filename, saveddefproj, saveddefop, saveddefem){
@@ -413,7 +464,7 @@
           document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + " "  + start;
 
           //Updates values in tab 3
-          document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configruation Name:</span>" + " " + dropdownID.options[dropdownID.selectedIndex].text;
+          document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" + " " + dropdownID.options[dropdownID.selectedIndex].text;
           document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" + " " + saveddefproj;
           document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" + " " + saveddefop;
           document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" + " " + saveddefem;
