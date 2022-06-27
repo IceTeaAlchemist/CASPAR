@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--Tab setup for CASPAR-->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1"> <!--scales to client device size-->
+  <title> CASPAR </title>
+
+<style>
+  /* Purely stylistic so it looks pretty*/
+  body{font-family: verdana, Arial;}
+  .header {padding:3px; background-color: LightGray; text-align: center}
+  .tab button { font-size: 120%; background-color:#f0f0f0; margin-top: 8px; margin-right:8px; padding: 5px; cursor: pointer;
+   border-width: 2px; border-radius: 3px}
+  .tab button:hover {background-color: #b4b4b4;}
+  .tab button.active {background-color: #787878;}
+  .tabcontent {display: none;}
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <h1> CASPAR </h1>
+  </div>
+
+  <div class="tab">
+    <button class="tablinks" onclick="Show(event, 'Tab1C')">Tab1</button>
+    <button class="tablinks" onclick="Show(event, 'Tab2C')">Tab2</button>
+    <button class="tablinks" onclick="Show(event, 'Tab3C')">Tab3</button>
+  </div>
+
+  <div id="Tab1C" class="tabcontent">
+    <p> Content 1 </p>
+  </div>
+
+  <div id="Tab2C" class="tabcontent">
+    <p> Content 2 </p>
+  </div>
+
+  <div id="Tab3C" class="tabcontent">
+    <p> Content 3 </p>
+  </div>
+
+  <script>
+    function Show(evt, contentid) {
+      var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+          }
+        tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+          }
+      document.getElementById(contentid).style.display = "block";
+      evt.currentTarget.className += " active"; }
+  </script>
+
+</body>
+</html>
