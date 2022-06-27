@@ -126,7 +126,12 @@ wss.on('connection', function connection(ws) {
                     console.log('Cycling shutdown.');
                 }
                 break;
-
+            //Kunal (5): new case "ping" that sends the client a pong
+            case "ping":
+                var msg = {
+                    id:"pong",
+                }
+                ws.send(JSON.stringify(msg));
             //Kunal (12): removed case "filename", completely --> already error prone on client side. replaced with case "startSave"
             case "startSave":
                 savedStartTime = msg.startTime;
