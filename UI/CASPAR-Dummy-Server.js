@@ -44,7 +44,7 @@ wss.on('connection', function connection(ws) {
     let currentdata = fs.readFileSync('./configurations/configs.txt', 'utf8');
     var array = currentdata.toString().split("\n");
 
-    for (i = 0; i<array.length; i++) {
+    for (var i = 0; i<array.length; i++) {
         if (array[i].includes("cname: ")){
             configstrings = configstrings + ":;:;:" + (array[i].substring(array[i].lastIndexOf("cname: ") + 7)).trim(); //sends all names in one string with a seperator
         }
@@ -69,6 +69,7 @@ wss.on('connection', function connection(ws) {
         defop: savedDefOp,
         defem: savedDefEm,
     }  ;
+    //console.log(connect);
     ws.send(JSON.stringify(connect));
 
     console.log("Connected to client.");
@@ -96,7 +97,7 @@ wss.on('connection', function connection(ws) {
                     var configloader = {
                         id: "loadconfig",
                         data: requestdata,
-                    }
+                    };
                     ws.send(JSON.stringify(configloader)); // data sent back to client
                 }
                 else{}
@@ -126,12 +127,13 @@ wss.on('connection', function connection(ws) {
                     console.log('Cycling shutdown.');
                 }
                 break;
-            //Kunal (5): new case "ping" that sends the client a pong
+            //Kunal (6): new case "ping" that sends the client a pong
             case "ping":
-                var msg = {
+                var pongmsg = {
                     id:"pong",
-                }
-                ws.send(JSON.stringify(msg));
+                };
+                ws.send(JSON.stringify(pongmsg));
+                break;
             //Kunal (12): removed case "filename", completely --> already error prone on client side. replaced with case "startSave"
             case "startSave":
                 savedStartTime = msg.startTime;
@@ -157,10 +159,10 @@ wss.on('connection', function connection(ws) {
                 let newConfig = "cname: " + msg.name + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n \n";
                 fs.appendFile('./configurations/configs.txt', newConfig, (err) => { //adds to the file
                     if (err) {
-                        console.error(err)
-                        return
+                        console.error(err);
+                        return;
                     }
-                })
+                });
                 break;
 
             case "sendemail":
@@ -218,7 +220,7 @@ wss.on('connection', function connection(ws) {
         // Log request received.
         console.log('received: %s', data);
     });
-})
+});
 
 function sendit()
 {
