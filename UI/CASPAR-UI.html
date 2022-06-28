@@ -85,7 +85,7 @@
     <button id="close" style = "float:right;" onclick = "closeConfirmation()"> Close Website </button>
     <button id="closeServer" style="float:right" onclick = "shutdownConfirmation()"> Shutdown Server (DO NOT PRESS) </button>
     <button id="serverStatus" style="float:right;"
-      onClick="document.location.reload(true)"> Server Status: <span style = "font-weight:bold;"> Not Connected </span> </button>
+      onClick="document.location.reload(true)"> Server Status: <span style = "font-weight:bold; color: tomato;"> Not Connected </span> </button>
   </div>
 
   <div id="divider" style="width:100%; height:8px; margin: auto;"></div>
@@ -384,11 +384,11 @@
             if (x.getTime() >= dateWinMax) {
               dateWinMin += taxisIncrement;
               dateWinMax += taxisIncrement;
-              cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } )};
+              cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );}
           //Update the data, then graph it.
             if(y > -100)
               {data.push([x,y,temp]);
-               cyc.updateOptions( { 'file': data } );};
+               cyc.updateOptions( { 'file': data } );}
 
             //Changes the System Status based on the isRunning variable
             if (isRunning == "true"){
@@ -409,7 +409,7 @@
 
       //When websocket closes, the server status updates
       ws.onclose = function (event) {
-        document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold;''> Not Connected </span>";
+        document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold;color: tomato;'> Not Connected </span>";
         console.log('The connection has been closed successfully.');
       };
 
@@ -419,13 +419,13 @@
       function sendThePing(){
         var msg = {
           id: "ping",
-        }
+        };
         try{ //try it first
           ws.send(JSON.stringify(msg));
           verifyPong = setInterval(verifyThePong, 15000);
         }
        catch (error){ //if it doesn't work, the client prolly doesnt have internet. Throw an error.
-          document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold;''> Not Connected </span>";
+          document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold; color: tomato;'> Not Connected </span>";
           clearInterval(sendPing);
         }
       }
@@ -436,7 +436,7 @@
           document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
         }
         else{
-          document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold;''> Not Connected </span>";
+          document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold; color: tomato;'> Not Connected </span>";
           clearInterval(sendPing);
         }
         pongRecieved = false;
@@ -633,7 +633,6 @@
             defem: senddefem,
           };
           ws.send(JSON.stringify(msg)); //sends message
-
       }
       else{
         //This code enables all major entry fields
@@ -697,7 +696,7 @@
               id: "sendemail",
               address: (String(document.getElementById("email").value))};
             ws.send(JSON.stringify(msg));
-            alert("\nEmail sent!")
+            alert("\nEmail sent!");
           }
         }
         else{
@@ -739,7 +738,7 @@
             defaultproject: String(document.getElementById("defProjName").value),
             };
           ws.send(JSON.stringify(msg));
-          alert("\nConfiguration Saved! \n\nPlease reload the page to update the system.")
+          alert("\nConfiguration Saved! \n\nPlease reload the page to update the system.");
         }
       }
 
