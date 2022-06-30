@@ -20,6 +20,7 @@ npm install every package in 'require' except casparengine<br>
     npm install ws<br>
     npm install nodemailer<br>
     npm install fs<br>
+    npm install -g node-gyp<br>
 <br>
 node-gyp configure
 <br>
