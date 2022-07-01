@@ -164,7 +164,7 @@ int cycle()
     delay(100);
     digitalWrite(HEATER_PIN,LOW);
     clearactivedata();
-    delay(1000);
+    delay(3000);
 
     // Begin heating.
     digitalWrite(HEATER_PIN, HIGH);

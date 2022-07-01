@@ -52,6 +52,7 @@ bool RTdone = false;
 bool recordflag = false;
 int runerror;
 int temperrors;
+bool RTflag = false;
 
 // Get initialization time.
 string ts = timestamp();
@@ -136,6 +137,10 @@ void setupADC(void)
  */
 void calibrategain()
 {
+    sens1.LED_off(1);
+    sens1.LED_off(2);
+    sens1.setMethod(3);
+    sens1.writeqiagen(0, {255,255});
     // Start at our minimum gain for this qiagen.
     int basegain = 80;
     double readinval;
@@ -156,13 +161,15 @@ void calibrategain()
         sens1.LED_off(2);
         sens1.LED_power(2,basegain);
         sens1.LED_on(2);
-        delay(200);
+        sens1.startMethod();
+        delay(400);
         // Measure what gain we receive.
-        readinval = (D2.getreading()/32768.0)*4096.0;
+        readinval = sens1.measure();
         // Log what reading we receive to console.
         cout << "Reading: " << readinval << endl;
         // Increase the gain.
         basegain += 10;
+        sens1.stopMethod();
     } while (readinval < CALIBRATION_MIN); // Continue while we haven't reached our requested minimum calibration fluoresence. This is defined in the header.
 }
 

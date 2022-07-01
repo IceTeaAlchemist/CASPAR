@@ -182,8 +182,9 @@ void readPCR()
     piLock(0);
     sens1.stopMethod();
     sens1.LED_off(2);
-
-    cout << "Sampling first. " << endl;
+    auto millisecs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    pcrValues.push_back(cycles);
+    pcrValues.push_back(millisecs);
     // Take our first detector value. Each of these follows the same format, so I'll only comment the first.
     sens1.LED_on(1); // Turn the relevant LED on.
     sens1.setMethod(1); // Set our method to the relevant one.
@@ -195,7 +196,6 @@ void readPCR()
     pcrValues.push_back(PCRread); // Push the PCR value onto the result array.
     sens1.LED_off(1); // Turn the LED off.
 
-    cout << "Sampling second. " << endl;
     sens2.LED_on(1);
     sens2.setMethod(1);
     sens2.startMethod();

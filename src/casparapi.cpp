@@ -49,8 +49,10 @@ namespace caspar
             piThreadCreate(sampler);
             delay(100);
             recordflag = true;
-            premelt();
-            runRT();
+            if(RTflag){
+                premelt();
+                runRT();
+            }
             runerror = cycle();
         }
 
@@ -84,7 +86,7 @@ namespace caspar
         v8::Local<v8::Array> datahandoff = New<v8::Array>(2);
         double jsoutput;
         double derivoutput = 0;
-        if(runflag == true && recordflag == true)
+        if(runflag == true && recordflag == true && y.size() > 0)
         {
             jsoutput = y[y.size()-1];
         }
@@ -178,6 +180,8 @@ namespace caspar
     {
         runflag = false;
         recordflag = false;
+        digitalWrite(HEATER_PIN,LOW);
+        digitalWrite(FAN_PIN,LOW);
         sens1.LED_off(1);
         sens1.LED_off(2);
         sens2.LED_off(1);

@@ -61,6 +61,7 @@ extern string rawstorage;
 extern string runlog;
 extern int runerror;
 extern int temperrors;
+extern bool RTflag;
 
 //setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
 
