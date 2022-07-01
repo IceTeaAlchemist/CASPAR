@@ -34,6 +34,10 @@ var savedFinishTime = "";
 var savedDefProj = "";
 var savedDefOp = "";
 var savedDefEm = "";
+var savedFAM = "";
+var savedCY5 = "";
+var savedHEX = "";
+var savedRT = "";
 var lastRequest = "";
 
 // WebSocket initialization upon client connection and declaration of events for handling WS messages from the client.
@@ -68,6 +72,10 @@ wss.on('connection', function connection(ws) {
         defproj: savedDefProj,
         defop: savedDefOp,
         defem: savedDefEm,
+        fam: savedFAM,
+        cy5: savedCY5,
+        hex: savedHEX,
+        rt: savedRT,
     }  ;
     //console.log(connect);
     ws.send(JSON.stringify(connect));
@@ -89,11 +97,13 @@ wss.on('connection', function connection(ws) {
                     let alldata = fs.readFileSync('./configurations/configs.txt', 'utf8'); //read file
                     var dataarray = alldata.toString().split("\n");
                     for (i = 0; i<dataarray.length; i++) {
-                        if (dataarray[i].includes("cname: " + msg.config)){
-                            requestdata = dataarray[i+1] + ":;:;:" + dataarray[i+2] + ":;:;:" + dataarray[i+3]; //sends all necessary data in one string with a seperator
+                        if (dataarray[i].includes("cname: ") && (dataarray[i].includes(msg.config)))
+                        {
+                            requestdata = dataarray[i+1] + ":;:;:" + dataarray[i+2] + ":;:;:" + dataarray[i+3] + ":;:;:" + dataarray[i+4] + ":;:;:" + dataarray[i+5] + ":;:;:" + dataarray[i+6] + ":;:;:" + dataarray[i+7]; //sends all necessary data in one string with a seperator
+                            console.log(requestdata);
                         }
                     }
-
+                    console.log(requestdata);
                     var configloader = {
                         id: "loadconfig",
                         data: requestdata,
@@ -146,6 +156,10 @@ wss.on('connection', function connection(ws) {
                 savedDefProj = msg.defproj;
                 savedDefOp = msg.defop;
                 savedDefEm = msg.defem;
+                savedFAM = msg.fam;
+                savedCY5 = msg.cy5;
+                savedHEX = msg.hex;
+                savedRT = msg.rt;
                 break;
 
             //Kunal (4): new case "save finish" that saves comments and finish time when the run ends
@@ -156,7 +170,8 @@ wss.on('connection', function connection(ws) {
 
             //Kunal (9): new case "saveconfiguration" saves the new configuration the client wants in the configs document
             case "saveconfiguration":
-                let newConfig = "cname: " + msg.name + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n \n";
+                let newConfig = "cname: " + msg.name + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" +
+                    "fam:::" + msg.fam + "\n" + "cy5:::" + msg.cy5 + "\n" + "rtval:" + msg.rt + "\n \n";
                 fs.appendFile('./configurations/configs.txt', newConfig, (err) => { //adds to the file
                     if (err) {
                         console.error(err);

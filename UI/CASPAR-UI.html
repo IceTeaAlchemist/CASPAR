@@ -33,11 +33,11 @@
     .inrtxt3{font-size: 110%; margin:15px}
     .inrtxt4{font-size: 115%; margin-top:40px; margin-bottom: 20px;}
     .inrtxt5{font-size: 105%; margin-top:40px; margin-bottom: 20px;}
-    .inrtxt6{font-size: 110%; margin:15px; margin-left: 20px; display: inline;}
+    .inrtxt6{font-size: 110%; margin-top:10px; margin-left: 20px; display: inline;}
     .inrtxt7{font-size: 110%; margin:15px; margin-bottom: 25px;}
   .inrinp{width: 85%; height:25px; font-size:12pt; border-width: 1px; padding:3px 8px;}
     .inrinp1{width: 17%; height:25px; font-size:12pt; border-width: 1px; padding:3px 8px;}
-    .inrinp2{width: 50%; height:25px; font-size:12pt; border-width: 1px; padding:3px 8px; display: inline; margin-bottom: 5px;}
+    .inrinp2{width: 50%; height:25px; font-size:12pt; border-width: 1px; padding:3px 8px; display: inline;}
     .btminp{width: 30%; height:50%; font-size:12pt; border-width: 1px; padding:3px 8px; resize: none; display:inline;}
 
   /* grids/layouts for each tab (1,2,3) */
@@ -178,6 +178,10 @@
           <p class = 'inrtxt7' id="ciopName"> <span style = "text-decoration: underline;"> Default Operator Name:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciemail"> <span style = "text-decoration: underline;"> Default Email:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciprojName"> <span style = "text-decoration: underline;"> Default Project Name:</span> <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="ciFAM"> <span style = "text-decoration: underline;"> FAM:</span> <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="ciCY5"> <span style = "text-decoration: underline;"> CY5:</span> <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="ciHEX"> <span style = "text-decoration: underline;"> HEX:</span> <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="ciRT"> <span style = "text-decoration: underline;"> RT Step On?:</span> <br> </p> <!--Changes-->
         <p class="inrtxt4" style="font-weight:bold; text-align: left; margin-left: 10px;">Device Info:</p>
           <p class="inrtxt5" id="deviceInfo">&emsp;Model 1.0</p> <!--Hardcoded-->
         <p class="inrtxt4" style="font-weight:bold; text-align: left; margin-left: 10px;">Version Info:</p>
@@ -198,6 +202,20 @@
           <p class = 'inrtxt6' style= "display: inline-block;"> <br> Default Project Name: </p>
             <input class = "inrinp2" type="text" id="defProjName" value = " "> <!--Value Can Change-->
               <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+              <!--NEW Code-->
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> FAM: </p>
+            <input class = "inrinp2" type="text" id="FAM" value = " "> <!--Value Can Change-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> CY5: </p>
+            <input class = "inrinp2" type="text" id="CY5" value = " "> <!--Value Can Change-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> HEX: </p>
+            <input class = "inrinp2" type="text" id="HEX" value = " "> <!--Value Can Change-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> RT On: </p>
+            <input type="checkbox" id="RT" style="display: inline; width: 23px; height:23px; border-width: 1px; margin-right: 4px; margin-top: 5px;"> <!--Value Can Change-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+
         <button class="inrbtn3" id="saveConfig" onclick="saveConfig()" style= "display: inline; float:left; margin-left: 70px;
           margin-bottom: 20px;"> Save <br> This <br> Configuration </button>
         <button class="inrbtn3" id="devMode" style= "display: inline; float:right;
@@ -287,6 +305,10 @@
     var senddefproj; //to send
     var senddefop; //to send
     var senddefem; //to send
+    var sendfam;
+    var sendcy5;
+    var sendhex;
+    var sendrt;
 
     //Heartbeat variables
     var sendPing; //the constant ping interval
@@ -333,11 +355,12 @@
                 select.add(option);
               }
 
-            onConnect(msg.running, msg.starttime, msg.projectname, msg.operatorname, msg.experimentname, msg.configname, msg.comments, msg.filename, msg.defproj, msg.defop, msg.defem);
+            onConnect(msg.running, msg.starttime, msg.projectname, msg.operatorname, msg.experimentname, msg.configname, msg.comments, msg.filename, msg.defproj, msg.defop, msg.defem, msg.fam, msg.cy5, msg.hex, msg.rt);
           break;
 
           case "loadconfig": //loads the config that is selected on the dropdown on the first page
             var dataarray = msg.data.split(":;:;:"); //graps all data and puts it in an array
+            console.log(msg);
             //Updates info on first and second tabs
             document.getElementById("projName").value = dataarray[2].substring(6).trim();
             document.getElementById("opName").value = dataarray[0].substring(6).trim();
@@ -346,9 +369,17 @@
             document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" + " " + dataarray[2].substring(6).trim();
             document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" + " " + dataarray[0].substring(6).trim();
             document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" + " " + dataarray[1].substring(6).trim();
+            document.getElementById('ciFAM').innerHTML = "<span style = 'text-decoration: underline;'> FAM:</span>" + " " + dataarray[3].substring(6).trim();
+            document.getElementById('ciCY5').innerHTML = "<span style = 'text-decoration: underline;'> CY5:</span>" + " " + dataarray[4].substring(6).trim();
+            document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + " " + dataarray[5].substring(6).trim();
+            document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> RT Step On?:</span>" + " " + dataarray[6].substring(6).trim();
             senddefproj = dataarray[2].substring(6).trim();
             senddefop = dataarray[0].substring(6).trim();
             senddefem = dataarray[1].substring(6).trim();
+            sendfam = dataarray[3].substring(6).trim();
+            sandcy5 = dataarray[4].substring(6).trim();
+            sendhex = dataarray[5].substring(6).trim();
+            sendrt = dataarray[6].substring(6).trim();
             document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
           break;
 
@@ -444,8 +475,9 @@
       }
 
       //Updates the UI when it connects, whether in the middle of an experiment or initially.
-      function onConnect(run, start, project, operator, experiment, config, comments, filename, saveddefproj, saveddefop, saveddefem){
-        if(run == "true"){
+      function onConnect(run, start, project, operator, experiment, config, comments, filename, saveddefproj, saveddefop, saveddefem, savedfam, savedcy5, savedhex, savedrt){
+        if(run == "true")
+        {
           //Updates major values
           dropdownID.value = config;
           document.getElementById("startTime").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
@@ -468,6 +500,10 @@
           document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" + " " + saveddefproj;
           document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" + " " + saveddefop;
           document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" + " " + saveddefem;
+          document.getElementById('ciFAM').innerHTML = "<span style = 'text-decoration: underline;'> FAM:</span>" + " " + savedfam;
+          document.getElementById('ciCY5').innerHTML = "<span style = 'text-decoration: underline;'> CY5:</span>" + " " + savedcy5;
+          document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + " " + savedhex;
+          document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> RT:</span>" + " " + savedrt;
 
           //Disables inputs
           document.getElementById('projName').disabled = true;
@@ -526,9 +562,9 @@
                   var nameOfProject = document.getElementById("projName").value;
                   var date = ("0" + (timeStarted1.getMonth()+1).toString()).slice(-2) + "-" + ("0" + timeStarted1.getDate().toString()).slice(-2)  + "-" +
                     timeStarted1.getFullYear().toString().slice(-2);
-                  var time = ("0" + timeStarted1.getHours()).slice(-2)  + "." +  ("0" + timeStarted1.getMinutes()).slice(-2);
-                  var dateTime = date+ "_" + time;
-                  displayFileName1 = nameOfProject + "_" + dateTime;
+                  //var time = ("0" + timeStarted1.getHours()).slice(-2)  + "." +  ("0" + timeStarted1.getMinutes()).slice(-2);
+                  //var dateTime = date+ "_" + time;
+                  displayFileName1 = nameOfProject + "_" + date;
                   }
                 else {displayFileName1 = document.getElementById("filename").value;
                   }
@@ -582,9 +618,9 @@
             var nameOfProject = document.getElementById("projName").value;
             var date = ("0" + (timeStarted.getMonth()+1).toString()).slice(-2) + "-" + ("0" + timeStarted.getDate().toString()).slice(-2)  + "-" +
               timeStarted.getFullYear().toString().slice(-2);
-            var time = ("0" + timeStarted.getHours()).slice(-2)  + "." +  ("0" + timeStarted.getMinutes()).slice(-2);
-            var dateTime = date+ "_" + time;
-            defaultFileName = nameOfProject + "_" + dateTime;
+            //var time = ("0" + timeStarted.getHours()).slice(-2)  + "." +  ("0" + timeStarted.getMinutes()).slice(-2);
+            //var dateTime = date+ "_" + time;
+            defaultFileName = nameOfProject + "_" + date;
             document.getElementById('filename').value = defaultFileName;
           }
           newFileName = String(document.getElementById('filename').value);
@@ -631,6 +667,10 @@
             defproj: senddefproj,
             defop: senddefop,
             defem: senddefem,
+            fam: sendfam,
+            cy5: sendcy5,
+            hex: sendhex,
+            rt: sendrt,
           };
           ws.send(JSON.stringify(msg)); //sends message
       }
@@ -713,9 +753,6 @@
         if ((String(document.getElementById("configName").value).trim().length == 0)){
             alert("\nPlease fill out the Configuration Name");
             return false;}
-        else if ((String(document.getElementById("defProjName").value).trim().length == 0) && (String(document.getElementById("defEmail").value).trim().length == 0) && (String(document.getElementById("defOpName").value).trim().length == 0)){
-            alert("\nPlease fill out atleast one other input");
-            return false;}
         else if (namearray.includes(String(document.getElementById("configName").value.trim()))) {
             alert("\nThis configuration name already exists");
             return false;}
@@ -736,6 +773,10 @@
             defaultoperator: String(document.getElementById("defOpName").value),
             defaultemail: String(document.getElementById("defEmail").value),
             defaultproject: String(document.getElementById("defProjName").value),
+            fam: String(document.getElementById("FAM").value),
+            cy5: String(document.getElementById("CY5").value),
+            hex: String(document.getElementById("HEX").value),
+            rt: String(document.getElementById("RT").checked),
             };
           ws.send(JSON.stringify(msg));
           alert("\nConfiguration Saved! \n\nPlease reload the page to update the system.");
