@@ -4,6 +4,7 @@ const WebSocket = require('ws');
 const { clearInterval } = require('timers');
 var nodemailer = require('nodemailer');
 const fs = require('fs');
+const httpserver = require('http');
 
 // Initialize the PCR engine and print some brief informational messages to the console. 
 engine.initializePCR();
@@ -11,8 +12,17 @@ console.log("Welcome to CASPAR--C-based Analysis of Samples by PCR with Adaptive
 console.log("----------Runtime Status----------");
 console.log("Server running.");
 
+const hostname = '192.168.0.10';
+var serverforip = httpserver.createServer();
+
+
 // Initialize the websocket server. Port doesn't matter as long as it matches on the website, 7071 is usually unoccupied.
-const wss = new WebSocket.Server({ port: 7071});
+serverforip.listen(7071,hostname, () => {
+    console.log(`Server running at http://${hostname}:7071`)
+});
+const wss = new WebSocket.Server({ server: serverforip });
+
+
 
 // These are for handling the SetInterval functions.
 let DataIntervId;
