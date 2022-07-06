@@ -6,11 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"> <!--scales to client device size-->
   <title> CASPAR </title>
 
-  <script src="https://www.puck-js.com/puck.js"></script>
-  <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.css" />
+  <script src="http://192.168.0.10/src/jquery-1.9.1.min.js"></script>
+  <script src="http://192.168.0.10/src/jquery-3.5.1.min.js"></script>
+  <script src="http://192.168.0.10/src/dygraph.js"></script>
+  <link rel="stylesheet" href="http://192.168.0.10/src/dygraph.css" />
 
 <style>
   /* Purely stylistic so it looks pretty */
@@ -208,7 +207,7 @@
   </div>
 
   <script>
-    const ws = new WebSocket('ws://10.68.206.188:7071/ws'); //Address can change. Hardcoded
+    const ws = new WebSocket('ws://192.168.0.10:7071/ws'); //Address can change. Hardcoded
 
     //We will start by declaring major variables
     //Declare data vectors for graphs and push initial values into them.
