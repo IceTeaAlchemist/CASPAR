@@ -9,6 +9,8 @@
 #include "qiagen.h"
 #include <fstream>
 #include <string>
+#include <iomanip>
+#include <sstream>
 
 using namespace std;
 using std::chrono::duration_cast;
@@ -30,7 +32,7 @@ vector<double> pcrValues;
  */
 double mean(const deque<double> queue)
 {
-    double sum;
+    double sum=0.0;
     for(int i = 0; i < queue.size(); i++)
     {
         sum += queue[i];
@@ -159,18 +161,11 @@ string timestamp()
 {
     time_t now = time(0); // Get the time.
     tm* ltm = localtime(&now); // Set a pointer to the LOCAL time.
-
-    // Retrieve each member and put them into our string.
-    string currenttime = to_string(1900 + ltm->tm_year); 
-    currenttime += to_string(1 + ltm->tm_mon);
-    currenttime += to_string(ltm->tm_mday);
-    currenttime += "_";
-    currenttime += to_string(ltm->tm_hour);
-    currenttime += to_string(ltm->tm_min);
-    currenttime += to_string(ltm->tm_sec);
-
+    stringstream currenttime;
+    const char* tformat = "%Y%m%d_%H%M%S";
+    currenttime << put_time(ltm, tformat);
     // Return the string.
-    return currenttime;
+    return currenttime.str();
 }
 
 /* Reads all 3 PCR values and writes them to file. This will need to be updated to also feed data to the UI and be impacted by recipe. 
