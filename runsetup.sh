@@ -1,19 +1,32 @@
 #!/usr/bin/env bash
 
-npm init
-npm install ws
-npm install nodemailer
-npm install fs
-npm install http
+# Function that echos the command to the terminal.
+domod () {
+        echo "$@"
+        $@
+}
 
-# sudo npm install -g node-gyp
-node-gyp configure
-node-gyp build
 
-mkdir data
-mkdir configurations
-touch ./configurations/configs.txt
+domod npm init
+domod npm install ws
+domod npm install nodemailer
+domod npm install fs
+domod npm install http
 
-sudo cp -i ./UI/CASPAR-UI.html /var/www/html/
+# Test that node-gyp is installed.  Which returns 0 if it finds it, 1 if not.
+which node-gyp
+if [ $? != 0 ]; then
+    domod sudo npm install -g node-gyp
+fi
+
+# node-gyp rebuild includes clean, configure, then build.
+# node-gyp configure
+domod node-gyp rebuild
+
+domod mkdir data
+domod mkdir configurations
+domod touch ./configurations/configs.txt
+
+domod sudo cp -i ./UI/CASPAR-UI.html /var/www/html/
 
 
