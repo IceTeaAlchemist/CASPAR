@@ -42,10 +42,11 @@ namespace caspar
         {
             cycles = 0;
             clearactivedata();
+            data.clear();
             setupADC();
+            runflag = true;
             calibrategain();
             sens1.startMethod();
-            runflag = true;
             piThreadCreate(sampler);
             delay(100);
             recordflag = true;

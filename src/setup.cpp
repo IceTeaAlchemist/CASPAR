@@ -170,7 +170,7 @@ void calibrategain()
         // Increase the gain.
         basegain += 10;
         sens1.stopMethod();
-    } while (readinval < CALIBRATION_MIN); // Continue while we haven't reached our requested minimum calibration fluoresence. This is defined in the header.
+    } while (readinval < CALIBRATION_MIN && runflag == true); // Continue while we haven't reached our requested minimum calibration fluoresence. This is defined in the header.
 }
 
 
