@@ -80,6 +80,16 @@ namespace caspar
         digitalWrite(BOX_FAN, LOW);
     }
 
+    void RTon(const FunctionCallbackInfo<Value>& args)
+    {
+        RTflag = true;
+    }
+
+    void RToff(const FunctionCallbackInfo<Value>& args)
+    {
+        RTflag = false;
+    }
+
 
     void readoutData(const FunctionCallbackInfo<Value>& args)
     {
@@ -233,6 +243,8 @@ namespace caspar
         NODE_SET_METHOD(exports, "changefiles", reopenFiles);
         NODE_SET_METHOD(exports, "getfiles", readoutFilenames);
         NODE_SET_METHOD(exports, "boxfanoff", turnOffBoxFan);
+        NODE_SET_METHOD(exports, "RToff", RToff);
+        NODE_SET_METHOD(exports, "RTon", RTon);
     }
 
     NODE_MODULE(casparengine, Initialize)
