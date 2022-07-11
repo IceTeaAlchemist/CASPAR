@@ -44,6 +44,10 @@ var savedDefProj = "";
 var savedDefOp = "";
 var savedDefEm = "";
 var lastRequest = "";
+var savedFAM = "";
+var savedCY5 = "";
+var savedHEX = "";
+var savedRT = "";
 
 // Vectors for storing PCR data server side. 
 var timestamprecord = [];
@@ -56,14 +60,14 @@ var cy5record = [];
 wss.on('connection', function connection(ws) {
 
     //Kunal (10): Reading configuration file and then sending that data to the client
-    var configstrings = "";
+    var configstrings = [];
 
     let currentdata = fs.readFileSync('./configurations/configs.txt', 'utf8');
     let array = currentdata.toString().split("\n");
 
     for (var i = 0; i<array.length; i++) {
         if (array[i].includes("cname: ")){
-            configstrings = configstrings + ":;:;:" + (array[i].substring(array[i].lastIndexOf("cname: ") + 7)).trim(); //sends all names in one string with a seperator
+            configstrings.push((array[i].substring(array[i].lastIndexOf("cname: ") + 7)).trim()); //sends all names in one string with a seperator
         }
     }
 
@@ -84,9 +88,13 @@ wss.on('connection', function connection(ws) {
         defproj: savedDefProj,
         defop: savedDefOp,
         defem: savedDefEm,
+        fam: savedFAM,
+        cy5: savedCY5,
+        hex: savedHEX,
+        rt: savedRT,
         FAMdata: FAMrecord,
         HEXdata: HEXrecord,
-        cy5data: cy5record,
+        cy5data: cy5record,       
     };
     ws.send(JSON.stringify(connect));
     
@@ -100,13 +108,31 @@ wss.on('connection', function connection(ws) {
         switch(msg.id){
             //Kunal (20): new case "config request" that gets a request to load a configuration and then reads the file to load it
             case "configrequest":
+                console.log(msg);
                 if(lastRequest != msg.config){ //ensures we dont load it if we just loaded it
-                    var requestdata = "";
+                    // var requestdata = "";
+                    var requestdata = [];
                     let alldata = fs.readFileSync('./configurations/configs.txt', 'utf8'); //read file
                     var dataarray = alldata.toString().split("\n");
                     for (i = 0; i<dataarray.length; i++) {
+                        console.log(dataarray[i]);
                         if (dataarray[i].includes("cname: " + msg.config)){
-                            requestdata = dataarray[i+1] + ":;:;:" + dataarray[i+2] + ":;:;:" + dataarray[i+3]; //sends all necessary data in one string with a seperator
+                            let j = i+1;
+                            while(j < dataarray.length)
+                            {
+                                if(dataarray[j].includes("cname: ") == false)
+                                {
+                                    console.log(dataarray[j]);
+                                    requestdata.push(dataarray[j].substring(dataarray[j].indexOf(":")+1).trim());
+                                    console.log(requestdata[requestdata.length-1]);
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                                j++;
+                            }
+ //                           requestdata = dataarray[i+1] + ":;:;:" + dataarray[i+2] + ":;:;:" + dataarray[i+3]; //sends all necessary data in one string with a separator
                         }
                     }
 
@@ -114,12 +140,21 @@ wss.on('connection', function connection(ws) {
                         id: "loadconfig",
                         data: requestdata,
                     };
+                    console.log(configloader);
                     ws.send(JSON.stringify(configloader)); // data sent back to client
                 }
-                else{}
+               // else{}
                 lastRequest = msg.config;
                 break;
             case "start/stop":
+                if(savedRT === "true")
+                {
+                    engine.RTon();
+                }
+                else
+                {
+                    engine.RToff();
+                }
                 if(isRunning === false)
                 {
                     // Start the PCR cycling if it's not.
@@ -197,6 +232,10 @@ wss.on('connection', function connection(ws) {
                 savedDefProj = msg.defproj;
                 savedDefOp = msg.defop;
                 savedDefEm = msg.defem;
+                savedFAM = msg.fam;
+                savedCY5 = msg.cy5;
+                savedHEX = msg.hex;
+                savedRT = msg.rt;
                 break;
             case "filename":
                 // Change the filename.
@@ -219,7 +258,7 @@ wss.on('connection', function connection(ws) {
                 break;
                 //Kunal (9): new case "saveconfiguration" saves the new configuration the client wants in the configs document
             case "saveconfiguration":
-                let newConfig = "cname: " + msg.name + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n \n";
+                let newConfig = "cname: " + msg.name + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "rtval:" + msg.rt + "\n \n";
                 fs.appendFile('./configurations/configs.txt', newConfig, (err) => { //adds to the file
                     if (err) {
                         console.error(err);
@@ -270,7 +309,6 @@ wss.on('connection', function connection(ws) {
                 ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
                 // Log that the server is turning off and tell the client as much.
                 console.log("Server disconnected.");
-                ws.send(JSON.stringify({id: "connect", status: "Server disconnected."}));
                 engine.boxfanoff();
                 // Hard shutdown. There should be a better way.
                 process.exit();
