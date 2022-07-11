@@ -29,4 +29,4 @@ domod touch ./configurations/configs.txt
 
 domod sudo cp -i ./UI/CASPAR-UI.html /var/www/html/
 
-
+domod sudo cp -i ./JS\ Libraries/src /var/www/html/
