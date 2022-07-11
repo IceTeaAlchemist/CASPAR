@@ -29,4 +29,9 @@ node-gyp build<br>
 node caspar.js (be sure to create ./data/ directory by hand)<br>
 <br>
 
+After updating software, maybe restarting the RPi, we found we needed to restart hostapd and dnsmasq to restart the wifi as access point:<br>
+sudo systemctl restart dnsmasq<br>
+sudo systemctl restart hostapd<br>
+<br>
+
 This contains the current, weekly updated version of the CASPAR device code until someone makes me change the name.
