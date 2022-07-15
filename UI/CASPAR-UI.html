@@ -266,7 +266,7 @@
           drawPoints: true,
           showRoller: true,
           digitsAfterDecimal: 3,
-          dateWindow: [0,40], //This locks the x axis to 0-40.
+          dateWindow: [0,50], //This locks the x axis to 0-40.
           showRangeSelector: true,
           axisLabelFontSize: 14,
     });
@@ -428,7 +428,6 @@
           break;
 
           case "cycledata":
-            isRunning = true;
             x = new Date();  // Get current time
             y = msg.fluor; // Get fluoresence.
             temp = msg.temp; // Get temperature.
@@ -442,6 +441,10 @@
               {data.push([x,y,temp]);
                cyc.updateOptions( { 'file': data } );}
           break;
+
+          case "runcomplete":
+            finishRun();
+            break;
 
           default:
             console.log(msg); //If the message doesn't match any of our cases, log the message in the console.
@@ -706,6 +709,12 @@
     // Needs to be implemented in the future with the run finish signal
     function finishRun() {
       runFinished = true;
+      document.getElementById('projName').disabled = false;
+      document.getElementById('opName').disabled = false;
+      document.getElementById('expName').disabled = false;
+      document.getElementById("dropdown").style.pointerEvents = "auto";
+      document.getElementById("dropdown").style.opacity = "1";
+      document.getElementById('filename').disabled = false;
       //Displays Finish Time
       var timeFinished = new Date(); //initialize Start Time
       timeFinishDisplay = timeFinished.toLocaleTimeString();
@@ -713,6 +722,10 @@
       timeFinishDisplay.bold() + "</span>";
       document.getElementById("esFin").innerHTML =  "<span style = 'text-decoration: underline;'> Finish Time:</span> " + " " +
       timeFinishDisplay;
+      document.getElementById('startStopPCR').innerHTML = "Start PCR";
+      document.getElementById('startStopPCR').style.backgroundColor = 'LimeGreen';
+      clientPressedStart = true;
+      runFinished = true;
 
       var msg = {
         id: "savefinish",
@@ -852,7 +865,9 @@
               tablinks[i].className = tablinks[i].className.replace(" active", "");
             }
         document.getElementById(contentid).style.display = "block";
-        evt.currentTarget.className += " active"; }
+        evt.currentTarget.className += " active"; 
+        pcr.resize();
+        cyc.resize();}
 
         document.getElementById("tab1").click(); //By Default, the first tab is shown.
 // Code for the tabs ends
