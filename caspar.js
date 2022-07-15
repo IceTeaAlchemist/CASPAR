@@ -124,7 +124,6 @@ wss.on('connection', function connection(ws) {
                                 {
                                     console.log(dataarray[j]);
                                     requestdata.push(dataarray[j].substring(dataarray[j].indexOf(":")+1).trim());
-                                    console.log(requestdata[requestdata.length-1]);
                                 }
                                 else
                                 {
@@ -135,6 +134,8 @@ wss.on('connection', function connection(ws) {
  //                           requestdata = dataarray[i+1] + ":;:;:" + dataarray[i+2] + ":;:;:" + dataarray[i+3]; //sends all necessary data in one string with a separator
                         }
                     }
+
+                    console.log(requestdata);
 
                     var configloader = {
                         id: "loadconfig",
@@ -175,6 +176,7 @@ wss.on('connection', function connection(ws) {
                             }
                             ws.send(JSON.stringify(errorreport));
                         }
+                        ws.send(JSON.stringify({id: "runcomplete"}));
                         var mailOptions = {
                             from: 'caspar@casparvu.com',
                             to: 'kick767@gmail.com',
@@ -258,7 +260,7 @@ wss.on('connection', function connection(ws) {
                 break;
                 //Kunal (9): new case "saveconfiguration" saves the new configuration the client wants in the configs document
             case "saveconfiguration":
-                let newConfig = "cname: " + msg.name + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "rtval:" + msg.rt + "\n \n";
+                let newConfig = "cname: " + msg.name.trim() + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "rtval:" + msg.rt + "\n \n";
                 fs.appendFile('./configurations/configs.txt', newConfig, (err) => { //adds to the file
                     if (err) {
                         console.error(err);
@@ -304,19 +306,30 @@ wss.on('connection', function connection(ws) {
                 break;
             case "shutdown": 
                 // Turn off the engine if it's running.
-                engine.stop();
+                clearInterval(DataIntervId);
+                clearInterval(PCRIntervId);
                 isRunning = false;
                 ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
+                wss.close();
+                wss.clients.forEach(function closeconnection(servclient) {servclient.close();});
+                serverforip.close();
+                engine.stop();
                 // Log that the server is turning off and tell the client as much.
                 console.log("Server disconnected.");
                 engine.boxfanoff();
+                console.log("Delaying to allow threads to wrap up. Closing in ten seconds.");
                 // Hard shutdown. There should be a better way.
-                process.exit();
+                setTimeout(killserver,10000);
         }
         // Log request received.
         console.log('received: %s', data);
     });
 })
+
+function killserver()
+{
+    process.exit();
+}
 
 function sendit()
 {
