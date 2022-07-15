@@ -9,8 +9,6 @@
 #include "qiagen.h"
 #include <fstream>
 #include <string>
-#include <iomanip>
-#include <sstream>
 
 using namespace std;
 using std::chrono::duration_cast;
@@ -32,7 +30,7 @@ vector<double> pcrValues;
  */
 double mean(const deque<double> queue)
 {
-    double sum=0.0;
+    double sum;
     for(int i = 0; i < queue.size(); i++)
     {
         sum += queue[i];
@@ -49,6 +47,7 @@ void clearactivedata()
     y.clear();
     xderivs.clear();
     derivs.clear();
+    yaverage.clear();
 }
 
 
@@ -140,7 +139,8 @@ void retrieveSample()
     if(y.size() > SMOOTHING) // If our values are no longer being affected by 0--i.e., the moving average filter is full:
     {
         xderivs.push_back((now.timestamp - run_start)/1000.0); // Push a time value for this derivative onto the xderiv vector.
-        double deriv = (y[y.size() - 1] - y[y.size() - 2])*10; // Calculate the derivative and push it onto the stack. (y1-y2)/(delta T).
+        // double deriv = (y[y.size() - 1] - y[y.size() - 2])*10; // Calculate the derivative and push it onto the stack. (y1-y2)/(delta T). Single stencil. Replaced with 5 7/14/22 NAS
+        double deriv = (-y[y.size() - 1] + 8*y[y.size() - 2] - 8*y[y.size() - 4] + y[y.size()-5])/(0.1*12.0);
         derivs.push_back(deriv);
     }
     // Create a pointer to our reading.
@@ -161,11 +161,18 @@ string timestamp()
 {
     time_t now = time(0); // Get the time.
     tm* ltm = localtime(&now); // Set a pointer to the LOCAL time.
-    stringstream currenttime;
-    const char* tformat = "%Y%m%d_%H%M%S";
-    currenttime << put_time(ltm, tformat);
+
+    // Retrieve each member and put them into our string.
+    string currenttime = to_string(1900 + ltm->tm_year); 
+    currenttime += to_string(1 + ltm->tm_mon);
+    currenttime += to_string(ltm->tm_mday);
+    currenttime += "_";
+    currenttime += to_string(ltm->tm_hour);
+    currenttime += to_string(ltm->tm_min);
+    currenttime += to_string(ltm->tm_sec);
+
     // Return the string.
-    return currenttime.str();
+    return currenttime;
 }
 
 /* Reads all 3 PCR values and writes them to file. This will need to be updated to also feed data to the UI and be impacted by recipe. 

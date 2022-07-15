@@ -157,7 +157,7 @@ int cycle()
     coeffprev[0] = 0;
     coeffprev[1] = 0;
     coeffprev[2] = 0;
-    int cutoff = 40;
+    int cutoff = 50;
     int triggertime;
     bool past_the_hump;
     temperrors = 0;
