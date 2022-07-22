@@ -107,13 +107,15 @@
 
       <div class="div2-1" id="divPCR" style="width:100%; height:100%; display:block;"></div> <!--graph goes here-->
 
-      <div class="div3-1">
+      <div class="div3-1" style = "text-align:center;">
         <button class="inrbtn" id="startStopPCR" onclick = "startStopConfirmation()"
-          style = "font-size: 160%; padding: 20px; margin: 80px auto; background-color: LimeGreen">Start PCR</button> <!--Changes-->
+          style = "font-size: 160%; padding: 20px; margin: 50px auto; background-color: LimeGreen">Start PCR</button> <!--Changes-->
         <p class="inrtxt">Current Cycle:</p>
-          <p class="inrtxt" id="currentCycle" style="font-weight:bold; font-size:120%; margin-bottom:48px;"> 0 </p> <!--Changes-->
+          <p class="inrtxt" id="currentCycle" style="font-weight:bold; font-size:120%; margin-bottom:40px;"> 0 </p> <!--Changes-->
         <p class="inrtxt">Total Cycles:</p>
-          <p class="inrtxt" id="totalCycles" style="font-weight:bold; font-size:120%"> - </p> <!--Changing will be implemented-->
+          <input class = "inrinp" style = "width: 15%; text-align: center; font-size:120%; font-weight:bold;" type="text" id="totCycles"> <!--Value Can Change-->
+        <p class="inrtxt">Reverse Transcription:</p>
+          <input type="checkbox" id="RTMain" style="display: inline; width: 23px; height:23px; border-width: 1px; margin-right: 4px; margin-bottom: 30px;">
       </div>
 
       <div class="div4-1">
@@ -143,6 +145,8 @@
           <p class="inrtxt7" id="esProj" style="font-size:105%;"> <span style = "text-decoration: underline;"> Project Name:</span> - <br> </p>  <!--Changes-->
           <p class="inrtxt7" id="esExp" style="font-size:105%;"> <span style = "text-decoration: underline;"> Experiment Name:</span> - <br> </p>  <!--Changes-->
           <p class="inrtxt7" id="esOpName" style="font-size:105%;"> <span style = "text-decoration: underline;"> Operator Name:</span> - <br> </p>  <!--Changes-->
+          <p class="inrtxt7" id="esTotalCycles" style="font-size:105%;"> <span style = "text-decoration: underline;"> Total Cycles:</span> - <br> </p>  <!--Changes-->
+          <p class="inrtxt7" id="esRT" style="font-size:105%;"> <span style = "text-decoration: underline;"> Reverse Transcription:</span> - <br> </p>  <!--Changes-->
           <p class="inrtxt7" id="esStart" style="font-size:105%;"> <span style = "text-decoration: underline;"> Start Time:</span> - <br>  </p>  <!--Changes-->
           <p class="inrtxt7" id="esEstFin" style="font-size:105%;"> <span style = "text-decoration: underline;"> Est. Finish Time:</span> - <br> </p>  <!--Changing will be implemented-->
           <p class="inrtxt7" id="esFin" style="font-size:105%;"> <span style = "text-decoration: underline;"> Finish Time:</span> - <br> </p>  <!--Changes-->
@@ -177,6 +181,7 @@
           <p class = 'inrtxt7' id="ciopName"> <span style = "text-decoration: underline;"> Default Operator Name:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciemail"> <span style = "text-decoration: underline;"> Default Email:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciprojName"> <span style = "text-decoration: underline;"> Default Project Name:</span> <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="citotalCycles"> <span style = "text-decoration: underline;"> Total Cycles:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciFAM"> <span style = "text-decoration: underline;"> FAM:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciCY5"> <span style = "text-decoration: underline;"> CY5:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciHEX"> <span style = "text-decoration: underline;"> HEX:</span> <br> </p> <!--Changes-->
@@ -202,7 +207,10 @@
             <input class = "inrinp2" type="text" id="defProjName" value = " "> <!--Value Can Change-->
               <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
               <!--NEW Code-->
-          <p class = 'inrtxt6' style= "display: inline-block;"> <br> FAM: </p>
+        <p class = 'inrtxt6' style= "display: inline-block;"> <br> Total Cycles: </p>
+          <input class = "inrinp2" type="text" id="totalCycles" value = " "> <!--Value Can Change-->
+            <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+        <p class = 'inrtxt6' style= "display: inline-block;"> <br> FAM: </p>
           <input class = "inrinp2" type="text" id="FAM" value = " "> <!--Value Can Change-->
             <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
         <p class = 'inrtxt6' style= "display: inline-block;"> <br> CY5: </p>
@@ -211,7 +219,7 @@
         <p class = 'inrtxt6' style= "display: inline-block;"> <br> HEX: </p>
           <input class = "inrinp2" type="text" id="HEX" value = " "> <!--Value Can Change-->
             <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
-        <p class = 'inrtxt6' style= "display: inline-block;"> <br> RT On: </p>
+        <p class = 'inrtxt6' style= "display: inline-block;"> <br> Reverse Transcription On?: </p>
           <input type="checkbox" id="RT" style="display: inline; width: 23px; height:23px; border-width: 1px; margin-right: 4px; margin-top: 5px;"> <!--Value Can Change-->
             <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
 
@@ -266,7 +274,7 @@
           drawPoints: true,
           showRoller: true,
           digitsAfterDecimal: 3,
-          dateWindow: [0,50], //This locks the x axis to 0-40.
+          dateWindow: [0,50], //This locks the x axis to 0-50.
           showRangeSelector: true,
           axisLabelFontSize: 14,
     });
@@ -308,6 +316,7 @@
     var sendcy5;
     var sendhex;
     var sendrt;
+    var sendtotcycles;
 
     //Heartbeat variables
     var sendPing; //the constant ping interval
@@ -379,14 +388,26 @@
             document.getElementById("projName").value = dataarray[2];
             document.getElementById("opName").value = dataarray[0];
             document.getElementById('email').value = dataarray[1];
+            document.getElementById('totCycles').value = (dataarray[7]).trim();
+            if(dataarray[6].trim() == "true"){
+              document.getElementById("RTMain").checked = true;
+            }
             //Updates info on third tab
+            let dispRT = "";
+              if (dataarray[6].trim() == "true"){
+                dispRT = "ON";
+              }
+              else{
+                dispRT = "OFF";
+              }
             document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" + " " + dataarray[2];
             document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" + " " + dataarray[0];
             document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" + " " + dataarray[1];
             document.getElementById('ciFAM').innerHTML = "<span style = 'text-decoration: underline;'> FAM:</span>" + " " + dataarray[3];
             document.getElementById('ciCY5').innerHTML = "<span style = 'text-decoration: underline;'> CY5:</span>" + " " + dataarray[4];
             document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + " " + dataarray[5];
-            document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> RT Step On?:</span>" + " " + dataarray[6];
+            document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" + " " + dispRT;
+            document.getElementById('citotalCycles').innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " " + dataarray[7];
             senddefproj = dataarray[2];
             senddefop = dataarray[0];
             senddefem = dataarray[1];
@@ -394,6 +415,7 @@
             sendcy5 = dataarray[4];
             sendhex = dataarray[5];
             sendrt = dataarray[6];
+            sendtotcycles = dataarray[7];
             document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
           break;
 
@@ -410,7 +432,7 @@
             {
               document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;font-weight:bold;> &ensp;"
                 + "Not Running" + "</span>";
-              document.getElementById("esStatus").innerHTML = "Status: Not Running";
+              document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> Not Running";
             }
 
             document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
@@ -498,14 +520,34 @@
           document.getElementById('expName').value = msg.experimentname;
           document.getElementById('comments').value = msg.comments;
           document.getElementById('filename').value = msg.filename;
-
+          document.getElementById('totCycles').value = msg.totcycles;
+          if(msg.rt.trim() == "true")
+          {
+            document.getElementById('RTMain').checked = true;
+          }
+          let dispRT1 = "";
+              if (msg.rt.trim() == "true"){
+                dispRT1 = "ON";
+              }
+              else{
+                dispRT1 = "OFF";
+              }
           //Updates values in tab 2: experiment info
           document.getElementById("esConfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration:</span>" + " "  + msg.configname;
           document.getElementById("esProj").innerHTML = "<span style = 'text-decoration: underline;'> Project Name:</span>" + " "  + msg.projectname;
           document.getElementById("esExp").innerHTML = "<span style = 'text-decoration: underline;'> Experiment Name:</span>" + " "  + msg.experimentname;
           document.getElementById("esOpName").innerHTML = "<span style = 'text-decoration: underline;'> Operator Name:</span>" + " "  + msg.operatorname;
+          document.getElementById("esTotalCycles").innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " "  + msg.totcycles;
+          document.getElementById("esRT").innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" + " "  + dispRT1;
           document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + " "  + msg.starttime;
-
+          
+          let dispRT2 = "";
+              if (msg.defrt.trim() == "true"){
+                dispRT2 = "ON";
+              }
+              else{
+                dispRT2 = "OFF";
+              }
           //Updates values in tab 3
           document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" + " " + msg.configname;
           document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" + " " + msg.defproj;
@@ -514,7 +556,8 @@
           document.getElementById('ciFAM').innerHTML = "<span style = 'text-decoration: underline;'> FAM:</span>" + " " + msg.fam;
           document.getElementById('ciCY5').innerHTML = "<span style = 'text-decoration: underline;'> CY5:</span>" + " " + msg.cy5;
           document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + " " + msg.hex;
-          document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> RT:</span>" + " " + msg.rt;
+          document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" + " " + dispRT2;
+          document.getElementById('citotalCycles').innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " " + msg.deftotcycles;
 
           //Disables inputs
           document.getElementById('projName').disabled = true;
@@ -523,6 +566,8 @@
           document.getElementById("dropdown").style.pointerEvents = "none";
            document.getElementById("dropdown").style.opacity = "0.6";
           document.getElementById('filename').disabled = true;
+          document.getElementById('totCycles').disabled = true;
+          document.getElementById('RTMain').disabled = true;
          //Changes start/stop button
           document.getElementById('startStopPCR').innerHTML = "Stop PCR";
           document.getElementById('startStopPCR').style.backgroundColor = 'Tomato';
@@ -531,14 +576,19 @@
           }
        }
 
+       var lastRequest = " ";
        //This function sends the server a request to view and eventually display the information for a certain configuration thats clicked
        function loadDataRequest(){
+        if (lastRequest != dropdownID.options[dropdownID.selectedIndex].text)
+        {
          document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" + " " + dropdownID.options[dropdownID.selectedIndex].text;
          var msg = {
            id: "configrequest",
            config: dropdownID.options[dropdownID.selectedIndex].text,
          };
          ws.send(JSON.stringify(msg));
+        }
+        lastRequest = dropdownID.options[dropdownID.selectedIndex].text;
        }
 
       //Checks if project name, operator name, and configuration are filled out before run can begin
@@ -554,6 +604,20 @@
         else if ((String(dropdownID.options[dropdownID.selectedIndex].text).trim().length == 0)) {
           alert("\nPlease select/create a Configuration.");
           return false;}
+
+        else if ((String(document.getElementById("totCycles").value).trim()).length == 0){
+            alert("\nPlease fill out Total Cycles");
+            return false;
+        }
+
+        else if (!(/^\d+$/.test((String(document.getElementById("totCycles").value).trim())))){
+            alert("\nPlease enter Total Cycles AS AN INTEGER.");
+            return false;
+        }
+        else if ((parseInt(String(document.getElementById("totCycles").value).trim()) < 30 || parseInt(String(document.getElementById("totCycles").value).trim()) > 60)){
+            alert("\nPlease enter Total Cycles as an integer BETWEEN 30 AND 60.");
+            return false;
+        }
 
         else {return true;}
       }
@@ -575,13 +639,21 @@
                     timeStarted1.getFullYear().toString().slice(-2);
                   // var time = ("0" + timeStarted1.getHours()).slice(-2)  + "." +  ("0" + timeStarted1.getMinutes()).slice(-2);
                   // var dateTime = date+ "_" + time;
-                  displayFileName1 = nameOfProject + "_";
+                  displayFileName1 = nameOfProject;
                   }
                 else {displayFileName1 = document.getElementById("filename").value;
                   }
+              let dispRT3 = "";
+              if (String(document.getElementById("RTMain").checked).trim() == "true"){
+                dispRT3 = "ON";
+              }
+              else{
+                dispRT3 = "OFF";
+              }
               let text = "Are you sure you want to start this PCR?\n\nAll previous data will be cleared and you will be starting this experiment with the following parameters:\n\n" +
                 "Save Data Filename: " + displayFileName1  + "\nOperator Name: " + document.getElementById("opName").value + "\nExperiment Name: " +
-                document.getElementById("expName").value + "\nConfiguration: " + dropdownID.options[dropdownID.selectedIndex].text + "\n\nPress 'OK' to confirm.";
+                document.getElementById("expName").value + "\nConfiguration: " + dropdownID.options[dropdownID.selectedIndex].text
+                + "\nTotal Cycles: " + document.getElementById("totCycles").value + "\nReverse Transcription: " + dispRT3 + "\n\nPress 'OK' to confirm.";
                 if (confirm(text) == true) {
                   //Changes Button and System Vars
                   document.getElementById('startStopPCR').innerHTML = "Stop PCR";
@@ -642,6 +714,8 @@
             document.getElementById("dropdown").style.pointerEvents = "none";
               document.getElementById("dropdown").style.opacity = "0.6";
             document.getElementById('filename').disabled = true;
+            document.getElementById('totCycles').disabled = true;
+            document.getElementById('RTMain').disabled = true;
           //Code to reset graph related things
           data = [];
           data2 = [];
@@ -660,10 +734,21 @@
           clientPressedStart = false;
 
           //updates the info on the second tab info
+          let dispRT4 = "";
+              if (String(document.getElementById("RTMain").checked).trim() == "true"){
+                dispRT4 = "ON";
+              }
+              else{
+                dispRT4 = "OFF";
+              }
+
           document.getElementById("esConfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration:</span>" + " "  + dropdownID.options[dropdownID.selectedIndex].text;
           document.getElementById("esProj").innerHTML = "<span style = 'text-decoration: underline;'> Project Name:</span>" + " "  + document.getElementById("projName").value;
           document.getElementById("esExp").innerHTML = "<span style = 'text-decoration: underline;'> Experiment Name:</span>" + " "  + document.getElementById('expName').value;
           document.getElementById("esOpName").innerHTML = "<span style = 'text-decoration: underline;'> Operator Name:</span>" + " "  + document.getElementById("opName").value;
+          document.getElementById("esFin").innerHTML = "<span style = 'text-decoration: underline;'> Finish Time:</span>" + " -";
+          document.getElementById("esTotalCycles").innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " "  + document.getElementById("totCycles").value;
+          document.getElementById("esRT").innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" + " "  + dispRT4;
 
           //Sends important data to server for storage (for safety reasons incase client leaves)
           let msg = {
@@ -678,10 +763,13 @@
             defproj: senddefproj,
             defop: senddefop,
             defem: senddefem,
+            deftotcycles: sendtotcycles,
+            defrt: sendrt,
             fam: sendfam,
             cy5: sendcy5,
             hex: sendhex,
-            rt: sendrt
+            rt: String(document.getElementById("RTMain").checked),
+            totcycles: document.getElementById("totCycles").value
           };
           ws.send(JSON.stringify(msg)); //sends message
       }
@@ -693,6 +781,8 @@
         document.getElementById("dropdown").style.pointerEvents = "auto";
           document.getElementById("dropdown").style.opacity = "1";
         document.getElementById('filename').disabled = false;
+        document.getElementById('totCycles').disabled = false;
+        document.getElementById('RTMain').disabled = false;
         oldFileName = newFileName; //for storing purposes
         clientPressedStart = true;
         finishRun();
@@ -715,6 +805,8 @@
       document.getElementById("dropdown").style.pointerEvents = "auto";
       document.getElementById("dropdown").style.opacity = "1";
       document.getElementById('filename').disabled = false;
+      document.getElementById('totCycles').disabled = false;
+      document.getElementById('RTMain').disabled = false;
       //Displays Finish Time
       var timeFinished = new Date(); //initialize Start Time
       timeFinishDisplay = timeFinished.toLocaleTimeString();
@@ -772,17 +864,25 @@
       // Will add more here
       function configSafety(){
         if ((String(document.getElementById("configName").value).trim().length == 0)){
-            alert("\nPlease fill out the Configuration Name");
+            alert("\nPlease fill out the Configuration Name.");
             return false;}
         else if ((String(document.getElementById("defProjName").value).trim().length == 0) && (String(document.getElementById("defEmail").value).trim().length == 0) && (String(document.getElementById("defOpName").value).trim().length == 0)){
-            alert("\nPlease fill out atleast one other input");
+            alert("\nPlease fill out atleast one of 'Default Operator Name', 'Default Email', or 'Default Project Name'.");
             return false;}
         else if (namearray.includes(String(document.getElementById("configName").value.trim()))) {
-            alert("\nThis configuration name already exists");
+            alert("\nThis configuration name already exists.");
             return false;}
         else if (namesJustGiven.includes(String(document.getElementById("configName").value.trim()))){
             alert("\nThis configuration name has already been created.");
             return false;}
+        else if (!(/^\d+$/.test((String(document.getElementById("totalCycles").value).trim())))){
+            alert("\nPlease enter Total Cycles AS AN INTEGER.");
+            return false;
+        }
+        else if ((parseInt(String(document.getElementById("totalCycles").value).trim()) < 30 || parseInt(String(document.getElementById("totalCycles").value).trim()) > 60)){
+            alert("\nPlease enter Total Cycles as an integer BETWEEN 30 AND 60.");
+            return false;
+        }
           else {return true;}
       }
 
@@ -790,13 +890,14 @@
       function saveConfig()
       {
         if(configSafety()){
-          namesJustGiven.push(String(document.getElementById("configName").value)); //pushes the accepted name into the array that was declared above
+          namesJustGiven.push(String(document.getElementById("configName").value.trim())); //pushes the accepted name into the array that was declared above
           var msg = {
             id: "saveconfiguration",
             name: String(document.getElementById("configName").value),
             defaultoperator: String(document.getElementById("defOpName").value),
             defaultemail: String(document.getElementById("defEmail").value),
             defaultproject: String(document.getElementById("defProjName").value),
+            totalcycles: String(document.getElementById("totalCycles").value),
             fam: String(document.getElementById("FAM").value),
             cy5: String(document.getElementById("CY5").value),
             hex: String(document.getElementById("HEX").value),
