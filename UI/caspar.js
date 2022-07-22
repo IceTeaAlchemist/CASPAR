@@ -1,10 +1,10 @@
 // Import the C++ addon as well as websocket and mail handler libraries.
-console.log('HI');
-const engine = require('./build/Release/obj.target/casparengine.node');
-console.log('HI');
+const engine = require('./build/Release/casparengine');
 const WebSocket = require('ws');
 const { clearInterval } = require('timers');
 var nodemailer = require('nodemailer');
+const fs = require('fs');
+const httpserver = require('http');
 
 // Initialize the PCR engine and print some brief informational messages to the console. 
 engine.initializePCR();
@@ -12,8 +12,17 @@ console.log("Welcome to CASPAR--C-based Analysis of Samples by PCR with Adaptive
 console.log("----------Runtime Status----------");
 console.log("Server running.");
 
+const hostname = '192.168.0.10';
+var serverforip = httpserver.createServer();
+
+
 // Initialize the websocket server. Port doesn't matter as long as it matches on the website, 7071 is usually unoccupied.
-const wss = new WebSocket.Server({ port: 7071});
+serverforip.listen(7071,hostname, () => {
+    console.log(`Server running at http://${hostname}:7071`)
+});
+const wss = new WebSocket.Server({ server: serverforip });
+
+
 
 // These are for handling the SetInterval functions.
 let DataIntervId;
@@ -22,17 +31,106 @@ let PCRIntervId;
 // Tracks whether or not the PCR is currently running a sample and should be updated accordingly.
 var isRunning = false;
 
+//Kunal: New variables to store data from client
+var savedStartTime = "";
+var savedProjName = "";
+var savedOperator = "";
+var savedExperimentName = "";
+var savedConfig = "";
+var savedComments = "";
+var savedFileName = "";
+var savedFinishTime = "";
+var savedDefProj = "";
+var savedDefOp = "";
+var savedDefEm = "";
+var savedFAM = "";
+var savedCY5 = "";
+var savedHEX = "";
+var savedRT = "";
+var savedTotCycles = "";
+var saveddeftotcycles = "";
+var saveddefrt = "";
+
+// Vectors for storing PCR data server side. 
+var timestamprecord = [];
+var FAMrecord = [];
+var HEXrecord = [];
+var cy5record = [];
+
+//Every Time the server is launched. A new configuration "none" is made that takes up the first X lines
+let alldata = fs.readFileSync('./configurations/configs.txt', 'utf8');
+let allarray = alldata.toString().split("\n");
+var newarray;
+var add = true;
+for (var j = 0; j<allarray.length; j++) {
+    if (allarray[j].includes("cname: None")){
+        add = false;
+    }
+}
+let noneConfig = "cname: None" + "\n" + "oname: " + "\n" + "ename: " + "\n" + "pname: " + "\n" + "fam: " + "\n" + "cy5: " + "\n" + "hex: " + "\n" + "rtval:" + "\n" + "totcycles:" + "\n \n";
+if(add)
+{
+    var fd = fs.openSync('./configurations/configs.txt', 'w+');
+    var buffer = Buffer.from(noneConfig);
+
+    fs.writeSync(fd, buffer, 0, buffer.length, 0); //write new data
+    fs.appendFile('./configurations/configs.txt', alldata, (err) => { //adds to the file
+        if (err) {
+            console.error(err);
+            return;
+        }
+    });
+    fs.close(fd);
+}
+
+
 
 // WebSocket initialization upon client connection and declaration of events for handling WS messages from the client.
 wss.on('connection', function connection(ws) {
+
+    //Kunal (10): Reading configuration file and then sending that data to the client
+    var configstrings = [];
+
+    let currentdata = fs.readFileSync('./configurations/configs.txt', 'utf8');
+    let array = currentdata.toString().split("\n");
+
+    for (var i = 0; i<array.length; i++) {
+        if (array[i].includes("cname: ")){
+            configstrings.push((array[i].substring(array[i].lastIndexOf("cname: ") + 7)).trim()); //sends all names in one string with a seperator
+        }
+    }
+
     // Send a message to the client to confirm connection.
     var connect = {
         id: "connect",
         status: "Server connected.",
-        //K:adding the is Running Variable 
-        running: "true"
+        //Kunal (12): information to send to client
+        running: isRunning,
+        starttime: savedStartTime,
+        projectname: savedProjName,
+        operatorname: savedOperator,
+        experimentname: savedExperimentName,
+        configname: savedConfig,
+        configs: configstrings,
+        comments: savedComments,
+        filename: savedFileName,
+        defproj: savedDefProj,
+        defop: savedDefOp,
+        defem: savedDefEm,
+        deftotcycles: saveddeftotcycles,
+        defrt: saveddefrt,
+        totcycles: savedTotCycles,
+        fam: savedFAM,
+        cy5: savedCY5,
+        hex: savedHEX,
+        rt: savedRT,
+        FAMdata: FAMrecord,
+        HEXdata: HEXrecord,
+        cy5data: cy5record,       
     };
     ws.send(JSON.stringify(connect));
+
+    console.log(connect);
     
     // Log that a client connected to the console.
     console.log("Connected to client.");
@@ -42,7 +140,53 @@ wss.on('connection', function connection(ws) {
         var msg = JSON.parse(data);
         // Switch off the ID blank of the message.
         switch(msg.id){
+            //Kunal (20): new case "config request" that gets a request to load a configuration and then reads the file to load it
+            case "configrequest":
+                console.log(msg);
+                    var requestdata = [];
+                    let alldata = fs.readFileSync('./configurations/configs.txt', 'utf8'); //read file
+                    var dataarray = alldata.toString().split("\n");
+                    for (i = 0; i<dataarray.length; i++) {
+                        console.log(dataarray[i]);
+                        if (dataarray[i].includes("cname: " + msg.config)){
+                            let j = i+1;
+                            while(j < dataarray.length)
+                            {
+                                if(dataarray[j].includes("cname: ") == false)
+                                {
+                                    console.log(dataarray[j]);
+                                    requestdata.push(dataarray[j].substring(dataarray[j].indexOf(":")+1).trim());
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                                j++;
+                            }
+ //                           requestdata = dataarray[i+1] + ":;:;:" + dataarray[i+2] + ":;:;:" + dataarray[i+3]; //sends all necessary data in one string with a separator
+                        }
+                    }
+
+                    console.log(requestdata);
+
+                    var configloader = {
+                        id: "loadconfig",
+                        data: requestdata,
+                    };
+                    console.log(configloader);
+                    ws.send(JSON.stringify(configloader)); // data sent back to client
+               // else{}
+                lastRequest = msg.config;
+                break;
             case "start/stop":
+                if(savedRT === "true")
+                {
+                    engine.RTon();
+                }
+                else
+                {
+                    engine.RToff();
+                }
                 if(isRunning === false)
                 {
                     // Start the PCR cycling if it's not.
@@ -53,6 +197,7 @@ wss.on('connection', function connection(ws) {
                         sendPCR();
                         engine.stop();
                         isRunning = false;
+                        ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
                         console.log('Cycling shutdown.');
                         if(errorvalue[0] > 0)
                         {
@@ -62,6 +207,7 @@ wss.on('connection', function connection(ws) {
                             }
                             ws.send(JSON.stringify(errorreport));
                         }
+                        ws.send(JSON.stringify({id: "runcomplete"}));
                         var mailOptions = {
                             from: 'caspar@casparvu.com',
                             to: 'kick767@gmail.com',
@@ -69,15 +215,16 @@ wss.on('connection', function connection(ws) {
                             text: 'Sample finished.',
                         };
                         // Send the email and log info.
-                        transporter.sendMail(mailOptions, function(error, info){
+                        /*transporter.sendMail(mailOptions, function(error, info){
                             if (error) {
                                 console.log(error);
                             } else {
                                 console.log('Email sent: ' + info.response);
                             }
-                        });
+                        }); */
                     });
                     isRunning = true;
+                    ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
                     console.log('Ignition started.');
                     // Start the periodic cycling data send and PCR data check.
                     DataIntervId = setInterval(sendit, 300);
@@ -91,9 +238,40 @@ wss.on('connection', function connection(ws) {
                     clearInterval(PCRIntervId);
                     // Tell the engine to turn off.
                     engine.stop();
+                    FAMrecord = [];
+                    HEXrecord = [];
+                    timestamprecord = [];
+                    cy5record = [];
                     isRunning = false;
+                    ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
                     console.log('Cycling shutdown.');
                 }
+                break;
+            case "ping":
+                var pongmsg = {
+                    id:"pong",
+                };
+                ws.send(JSON.stringify(pongmsg));
+                break;
+            case "startSave":
+                savedStartTime = msg.startTime;
+                savedProjName = msg.projectName;
+                savedOperator = msg.operator;
+                savedExperimentName = msg.experimentName;
+                savedConfig = msg.config;
+                savedComments = msg.comments;
+                savedFileName = msg.filename;
+                savedFinishTime = "";
+                savedDefProj = msg.defproj;
+                savedDefOp = msg.defop;
+                savedDefEm = msg.defem;
+                savedFAM = msg.fam;
+                savedCY5 = msg.cy5;
+                savedHEX = msg.hex;
+                savedRT = msg.rt;
+                savedTotCycles = msg.totcycles;
+                saveddeftotcycles = msg.deftotcycles;
+                saveddefrt = msg.defrt;
                 break;
             case "filename":
                 // Change the filename.
@@ -109,12 +287,27 @@ wss.on('connection', function connection(ws) {
                     ws.send(JSON.stringify({id: "filestatus", status: "Currently running PCR. Filename rejected."}));
                 }
                 break;
+                //Kunal (4): new case "save finish" that saves comments and finish time when the run ends
+            case "savefinish":
+                savedComments = msg.comments;
+                savedFinishTime = msg.finishtime;
+                break;
+                //Kunal (9): new case "saveconfiguration" saves the new configuration the client wants in the configs document
+            case "saveconfiguration":
+                let newConfig = "cname: " + msg.name.trim() + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "rtval:" + msg.rt + "\n" + "totcycles:" + msg.totalcycles + "\n \n";
+                fs.appendFile('./configurations/configs.txt', newConfig, (err) => { //adds to the file
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                });
+                break;
             case "sendemail":
                 // Retrieve filenames from engine, and send them to an email address.
                 var filenames = engine.getfiles();
                 var mailOptions = {
                     from: 'caspar@casparvu.com',
-                    to: 'kunalchugh555@gmail.com',
+                    to: 'kick767@gmail.com',
                     subject: 'CASPAR files',
                     text: 'See attached for requested data.',
                     attachments: [
@@ -147,22 +340,30 @@ wss.on('connection', function connection(ws) {
                 break;
             case "shutdown": 
                 // Turn off the engine if it's running.
-                if(isRunning === true)
-                {
-                    engine.stop();
-                }
+                clearInterval(DataIntervId);
+                clearInterval(PCRIntervId);
                 isRunning = false;
+                ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
+                wss.close();
+                wss.clients.forEach(function closeconnection(servclient) {servclient.close();});
+                serverforip.close();
+                engine.stop();
                 // Log that the server is turning off and tell the client as much.
                 console.log("Server disconnected.");
-                ws.send(JSON.stringify({id: "connect", status: "Server disconnected."}));
                 engine.boxfanoff();
+                console.log("Delaying to allow threads to wrap up. Closing in ten seconds.");
                 // Hard shutdown. There should be a better way.
-                process.exit();
+                setTimeout(killserver,10000);
         }
         // Log request received.
         console.log('received: %s', data);
     });
 })
+
+function killserver()
+{
+    process.exit();
+}
 
 function sendit()
 {
@@ -185,14 +386,26 @@ function sendPCR()
     if(PCRinfo[0] > 0)
     {
         // If there are, we log we're sending PCR values to the client, and do so.
+        var cycletime = 60;
+        if(timestamprecord.length > 0)
+        {
+            cycletime = (PCRinfo[1] - timestamprecord[timestamprecord.length-1])/1000.0;
+        }
         console.log("Sending PCR.");
         var datastruct = {
             id: "PCRdata",
-            fam: PCRinfo[0],
-            hex: PCRinfo[1],
-            cy5: PCRinfo[2]
+            cycle: PCRinfo[0],
+            timestamp: PCRinfo[1],
+            fam: PCRinfo[2],
+            hex: PCRinfo[3],
+            cy5: PCRinfo[4],
+            secs: cycletime
         };
         console.log(datastruct);
+        timestamprecord.push(PCRinfo[1]);
+        FAMrecord.push(PCRinfo[2]);
+        HEXrecord.push(PCRinfo[3]);
+        cy5record.push(PCRinfo[4]);
         wss.clients.forEach(function pcrupdate(ws) {ws.send(JSON.stringify(datastruct));});
     }
     else
