@@ -63,7 +63,7 @@ let allarray = alldata.toString().split("\n");
 var newarray;
 var add = true;
 for (var j = 0; j<allarray.length; j++) {
-    if (allarray[j].includes("cname: None")){
+    if (allarray[j].trim() == "cname: None"){
         add = false;
     }
 }
@@ -82,8 +82,6 @@ if(add)
     });
     fs.close(fd);
 }
-
-
 
 // WebSocket initialization upon client connection and declaration of events for handling WS messages from the client.
 wss.on('connection', function connection(ws) {
@@ -148,7 +146,7 @@ wss.on('connection', function connection(ws) {
                     var dataarray = alldata.toString().split("\n");
                     for (i = 0; i<dataarray.length; i++) {
                         console.log(dataarray[i]);
-                        if (dataarray[i].includes("cname: " + msg.config)){
+                        if (dataarray[i].trim() == ("cname: " + msg.config.trim())){
                             let j = i+1;
                             while(j < dataarray.length)
                             {
@@ -182,6 +180,7 @@ wss.on('connection', function connection(ws) {
                 if(savedRT === "true")
                 {
                     engine.RTon();
+                    ws.send(JSON.stringify({id: "RTStatus", bool: "true"}));
                 }
                 else
                 {
@@ -208,20 +207,23 @@ wss.on('connection', function connection(ws) {
                             ws.send(JSON.stringify(errorreport));
                         }
                         ws.send(JSON.stringify({id: "runcomplete"}));
-                        var mailOptions = {
-                            from: 'caspar@casparvu.com',
-                            to: 'kick767@gmail.com',
-                            subject: 'CASPAR run finished.',
-                            text: 'Sample finished.',
-                        };
-                        // Send the email and log info.
-                        /*transporter.sendMail(mailOptions, function(error, info){
-                            if (error) {
-                                console.log(error);
-                            } else {
-                                console.log('Email sent: ' + info.response);
-                            }
-                        }); */
+                        if(msg.email != "false"){
+                            var mailOptions = {
+                                from: 'caspar@casparvu.com',
+                                to: msg.email,
+                                subject: 'CASPAR run finished.',
+                                text: 'Sample finished.',
+                            };
+                            // Send the email and log info.
+                            transporter.sendMail(mailOptions, function(error, info){
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    console.log('Email sent: ' + info.response);
+                                }
+                            
+                            });
+                        }
                     });
                     isRunning = true;
                     ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
@@ -302,12 +304,44 @@ wss.on('connection', function connection(ws) {
                     }
                 });
                 break;
+            case "deleteConfig":
+                var allthedata = fs.readFileSync('./configurations/configs.txt', 'utf8');
+                var allarray = allthedata.toString().split("\n");
+                var newarray = [];
+                var add = true;
+                for (var j = 0; j<allarray.length; j++) {
+                    if(add == false && allarray[j].includes("cname:")){
+                        add = true;
+                        console.log(allarray[j]);
+                    }
+
+                    if (allarray[j].trim() == ("cname: " + msg.name.trim())){
+                        add = false;
+                    }
+
+                    if(add){
+                        newarray.push(allarray[j]);
+                    }
+                }
+                var newdata = newarray.join('\n') + "\n"
+                
+                var fd = fs.openSync('./configurations/configs.txt', 'w+');
+  
+                fs.writeFileSync('./configurations/configs.txt', newdata, (err) => { //adds to the file
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                });
+        
+                fs.close(fd);
+                break;
             case "sendemail":
                 // Retrieve filenames from engine, and send them to an email address.
                 var filenames = engine.getfiles();
                 var mailOptions = {
                     from: 'caspar@casparvu.com',
-                    to: 'kick767@gmail.com',
+                    to: msg.address,
                     subject: 'CASPAR files',
                     text: 'See attached for requested data.',
                     attachments: [
