@@ -177,7 +177,7 @@
 
       <div class="div1-3">
         <h2 style = "text-align: center;"> Configuration Information </h2>
-          <p class = 'inrtxt7' id="ciconfig"> <span style = "text-decoration: underline;"> Configuration Name:</span> Default <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="ciconfig"> <span style = "text-decoration: underline;"> Configuration Name:</span> None <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciopName"> <span style = "text-decoration: underline;"> Default Operator Name:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciemail"> <span style = "text-decoration: underline;"> Default Email:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciprojName"> <span style = "text-decoration: underline;"> Default Project Name:</span> <br> </p> <!--Changes-->
@@ -186,6 +186,10 @@
           <p class = 'inrtxt7' id="ciCY5"> <span style = "text-decoration: underline;"> CY5:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciHEX"> <span style = "text-decoration: underline;"> HEX:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciRT"> <span style = "text-decoration: underline;"> Reverse Transcription On?:</span> <br> </p> <!--Changes-->
+
+        <button class="inrbtn2" id="123" onclick="deleteConfigSafety()" style= "display: inline; float: right; margin-right: 70px; margin-top: -50px;
+          margin-bottom: 20px;"> Delete This <br> Configuration </button>
+
         <p class="inrtxt4" style="font-weight:bold; text-align: left; margin-left: 10px;">Device Info:</p>
           <p class="inrtxt5" id="deviceInfo">&emsp;Model 1.0</p> <!--Hardcoded-->
         <p class="inrtxt4" style="font-weight:bold; text-align: left; margin-left: 10px;">Version Info:</p>
@@ -447,6 +451,11 @@
             hex = msg.hex; //Retrieve HEX fluoresence.
             data2.push([cycleNo, fam, hex, cy5]); //Push the new data onto the graph source.
             pcr.updateOptions( {'file': data2 } ); //Update it.
+            estFinishTime(msg.secs, msg.cycle);
+
+            document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:LimeGreen;font-weight:bold;> &ensp;"
+                + "PCR In Progress" + "</span>";
+            document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> PCR In Progress";
           break;
 
           case "cycledata":
@@ -457,7 +466,8 @@
             if (x.getTime() >= dateWinMax) {
               dateWinMin += taxisIncrement;
               dateWinMax += taxisIncrement;
-              cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );}
+              cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );
+            }
           //Update the data, then graph it.
             if(y > -100)
               {data.push([x,y,temp]);
@@ -466,6 +476,12 @@
 
           case "runcomplete":
             finishRun();
+            break;
+          
+          case "RTStatus":
+            document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:LimeGreen;font-weight:bold;> &ensp;"
+                + "RT In Progress" + "</span>";
+            document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> RT In Progress";
             break;
 
           default:
@@ -483,8 +499,11 @@
 
       //Sends the Ping
       function sendThePing(){
+        var timeStamp = new Date(); //initialize Start Time
+        var timeStampClean = timeStamp.toLocaleTimeString();
         var msg = {
           id: "ping",
+          timeStamp: timeStampClean
         };
         try{ //try it first
           ws.send(JSON.stringify(msg));
@@ -639,7 +658,7 @@
                     timeStarted1.getFullYear().toString().slice(-2);
                   // var time = ("0" + timeStarted1.getHours()).slice(-2)  + "." +  ("0" + timeStarted1.getMinutes()).slice(-2);
                   // var dateTime = date+ "_" + time;
-                  displayFileName1 = nameOfProject;
+                  displayFileName1 = nameOfProject + "_";
                   }
                 else {displayFileName1 = document.getElementById("filename").value;
                   }
@@ -787,8 +806,14 @@
         clientPressedStart = true;
         finishRun();
         }
+      var emailvaluetosend = "false";
+      if(document.getElementById('email').value.trim().includes("@"))
+      {
+        emailvaluetosend = document.getElementById('email').value.trim();
+      }
       var msg = {
         id: "start/stop",
+        email: emailvaluetosend
       };
       ws.send(JSON.stringify(msg)); //sends message
     }
@@ -866,20 +891,17 @@
         if ((String(document.getElementById("configName").value).trim().length == 0)){
             alert("\nPlease fill out the Configuration Name.");
             return false;}
-        else if ((String(document.getElementById("defProjName").value).trim().length == 0) && (String(document.getElementById("defEmail").value).trim().length == 0) && (String(document.getElementById("defOpName").value).trim().length == 0)){
-            alert("\nPlease fill out atleast one of 'Default Operator Name', 'Default Email', or 'Default Project Name'.");
-            return false;}
         else if (namearray.includes(String(document.getElementById("configName").value.trim()))) {
             alert("\nThis configuration name already exists.");
             return false;}
         else if (namesJustGiven.includes(String(document.getElementById("configName").value.trim()))){
             alert("\nThis configuration name has already been created.");
             return false;}
-        else if (!(/^\d+$/.test((String(document.getElementById("totalCycles").value).trim())))){
+        else if (!(/^\d+$/.test((String(document.getElementById("totalCycles").value).trim()))) && (String(document.getElementById("totalCycles").value).trim().length != 0)){
             alert("\nPlease enter Total Cycles AS AN INTEGER.");
             return false;
         }
-        else if ((parseInt(String(document.getElementById("totalCycles").value).trim()) < 30 || parseInt(String(document.getElementById("totalCycles").value).trim()) > 60)){
+        else if (((parseInt(String(document.getElementById("totalCycles").value).trim()) < 30 || parseInt(String(document.getElementById("totalCycles").value).trim()) > 60)) && ((String(document.getElementById("totalCycles").value).trim().length != 0))){
             alert("\nPlease enter Total Cycles as an integer BETWEEN 30 AND 60.");
             return false;
         }
@@ -938,8 +960,27 @@
       }
 
       //Need to implement a function that calculates the Estimated Finish Time
-      function estFinishTime(data)
-      {return "Calculating...";}
+      function estFinishTime(seconds, cycleno)
+      {
+        if(String(cycleno).trim() == "0" || String(cycleno).trim() == "1" || String(cycleno).trim() == "2" ){
+          var calculate = "Calculating...";
+          document.getElementById("estFinTime").innerHTML =  "<br> Est. Finish Time: <br> <br> <span style=font-size:110%> &ensp;" +
+            calculate.bold() + "</span>";
+          document.getElementById("esEstFin").innerHTML = "<span style = 'text-decoration: underline;'> Est. Finish Time:</span>" + " " + calculate.bold();
+        }
+        else {
+          var totalsecondsLeft = ((parseInt(String(document.getElementById("totCycles").value).trim()) - parseInt(String(cycleno).trim()))+1) * parseInt(String(seconds).trim());
+
+          var currentTime = new Date(); //initialize Start Time
+          var futureTime = new Date(currentTime.getTime() + totalsecondsLeft * 1000);
+          var futureTimeClean = futureTime.toLocaleTimeString();
+
+          document.getElementById("estFinTime").innerHTML =  "<br> Est. Finish Time: <br> <br> <span style=font-size:110%> &ensp;" +
+            futureTimeClean.bold() + "</span>";
+          document.getElementById("esEstFin").innerHTML = "<span style = 'text-decoration: underline;'> Est. Finish Time:</span>" + " " + futureTimeClean;
+        }
+      
+      }
 
       //Need to implement a feature that downloads data --> Should be error prone.
       //This function should only be called when Download Data is pressed.
@@ -952,6 +993,29 @@
         else{
           alert("\nPlease wait for the run to be finished.");
         }
+      }
+
+      function deleteConfigSafety(){
+        let text = "\nAre you sure you want to delete the configuration named '" + dropdownID.options[dropdownID.selectedIndex].text + "'";
+        if (confirm(text) == true) {
+          if ((!isRunning)){
+            if (String(dropdownID.options[dropdownID.selectedIndex].text).trim() != "None"){
+              var msg = {
+                id: "deleteConfig",
+                name: dropdownID.options[dropdownID.selectedIndex].text.trim()
+              };
+                ws.send(JSON.stringify(msg));
+              alert("\nConfiguration Deleted! \n\nPlease reload the page to update the system.");
+            }
+            else{
+              alert("You can't delete the default 'None' Configuration.")
+            }
+          }
+          else{
+            alert("You can't delete the configuration while the PCR is running.")
+          }
+        } 
+        else {}
       }
 
 // Code for the tabs starts
