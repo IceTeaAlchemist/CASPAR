@@ -32,7 +32,7 @@
     .inrtxt3{font-size: 110%; margin:15px}
     .inrtxt4{font-size: 115%; margin-top:40px; margin-bottom: 20px;}
     .inrtxt5{font-size: 105%; margin-top:40px; margin-bottom: 20px;}
-    .inrtxt6{font-size: 110%; margin-top:10px; margin-left: 20px; display: inline;}
+    .inrtxt6{font-size: 110%; margin-top:5px; margin-left: 20px; display: inline;}
     .inrtxt7{font-size: 110%; margin:15px; margin-bottom: 25px;}
   .inrinp{width: 85%; height:25px; font-size:12pt; border-width: 1px; padding:3px 8px;}
     .inrinp1{width: 17%; height:25px; font-size:12pt; border-width: 1px; padding:3px 8px;}
@@ -80,6 +80,7 @@
     <button class="tablinks" id = "tab1" onclick="show(event, 'tab1c')">Main</button>
     <button class="tablinks" id = "tab2" onclick="show(event, 'tab2c')">Run Summary</button>
     <button class="tablinks" id = "tab3" onclick="show(event, 'tab3c')">Configuration</button>
+    <button class="tablinks" id = "tab4" style = "visibility: hidden">Developer Mode</button>
     <button id="help" style="float:right" onclick="help()"> Help </button>
     <button id="close" style = "float:right;" onclick = "closeConfirmation()"> Close Website </button>
     <button id="closeServer" style="float:right" onclick = "shutdownConfirmation()"> Shutdown Server (DO NOT PRESS) </button>
@@ -129,6 +130,8 @@
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; &ensp; - </span></p> <!--Changing will be implemented-->
         <p class="inrtxt3" id="finTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Finish Time:
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; - </span></p> <!--Changes-->
+        <button class="inrbtn2" id="RTSettings" onclick = "devModeShow()" style = "display:inline; display:inline; float:left; margin-left:55px;"> 
+          RT Settings </button>
       </div>
 
     </div>
@@ -186,7 +189,6 @@
           <p class = 'inrtxt7' id="ciCY5"> <span style = "text-decoration: underline;"> CY5:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciHEX"> <span style = "text-decoration: underline;"> HEX:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciRT"> <span style = "text-decoration: underline;"> Reverse Transcription On?:</span> <br> </p> <!--Changes-->
-
         <button class="inrbtn2" id="123" onclick="deleteConfigSafety()" style= "display: inline; float: right; margin-right: 70px; margin-top: -50px;
           margin-bottom: 20px;"> Delete This <br> Configuration </button>
 
@@ -229,9 +231,13 @@
 
         <button class="inrbtn3" id="saveConfig" onclick="saveConfig()" style= "display: inline; float:left; margin-left: 70px;
           margin-bottom: 20px;"> Save <br> This <br> Configuration </button>
-        <button class="inrbtn3" id="devMode" style= "display: inline; float:right;
+        <button class="inrbtn3" id="devMode" onclick="devModeShow()" style= "display: inline; float:right;
           margin-right: 70px; margin-bottom: 20px;"> Launch <br> Developer <br> Mode </button>
       </div>
+
+      <div id="tab4c" class="tabcontent">
+
+          </div>
 
     </div>
   </div>
@@ -393,8 +399,11 @@
             document.getElementById("opName").value = dataarray[0];
             document.getElementById('email').value = dataarray[1];
             document.getElementById('totCycles').value = (dataarray[7]).trim();
-            if(dataarray[6].trim() == "true"){
+            if(dataarray[6].trim() == "true" || dataarray[6].trim() == "ON"){
               document.getElementById("RTMain").checked = true;
+            }
+            else{
+              document.getElementById("RTMain").checked = false;
             }
             //Updates info on third tab
             let dispRT = "";
@@ -422,7 +431,7 @@
             sendtotcycles = dataarray[7];
             document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
           break;
-
+            
           case "isRunning":
             isRunning = msg.value;
             //Changes the System Status based on the isRunning variable
@@ -432,7 +441,7 @@
                 + "In Progress" + "</span>";
               document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> In Progress";
             }
-            else if(isRunning == false)
+            if(isRunning == false)
             {
               document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;font-weight:bold;> &ensp;"
                 + "Not Running" + "</span>";
@@ -479,9 +488,10 @@
             break;
           
           case "RTStatus":
-            document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:LimeGreen;font-weight:bold;> &ensp;"
+            document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:tomato;font-weight:bold;> &ensp;"
                 + "RT In Progress" + "</span>";
             document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> RT In Progress";
+            estFinishTime("0", "0");
             break;
 
           default:
@@ -714,7 +724,7 @@
         document.getElementById("startTime").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
         timeStartDisplay.bold() + "</span>";
         document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + " " + timeStartDisplay;
-        document.getElementById("finTime").innerHTML =  "<br> Finish Time: <br> <br> <span style=font-size:110%> &emsp;  &emsp; &emsp; -" + "</span>";
+        document.getElementById("finTime").innerHTML =  "<br> Finish Time: <br> <br> <span style=font-size:110%> &emsp; &emsp; -" + "</span>";
         //This code alters the default file name.
           if (String(document.getElementById("filename").value).trim().length == 0){
             var nameOfProject = document.getElementById("projName").value;
@@ -810,7 +820,7 @@
       if(document.getElementById('email').value.trim().includes("@"))
       {
         emailvaluetosend = document.getElementById('email').value.trim();
-      }
+      }""
       var msg = {
         id: "start/stop",
         email: emailvaluetosend
@@ -829,6 +839,7 @@
       document.getElementById('expName').disabled = false;
       document.getElementById("dropdown").style.pointerEvents = "auto";
       document.getElementById("dropdown").style.opacity = "1";
+      
       document.getElementById('filename').disabled = false;
       document.getElementById('totCycles').disabled = false;
       document.getElementById('RTMain').disabled = false;
@@ -966,7 +977,7 @@
           var calculate = "Calculating...";
           document.getElementById("estFinTime").innerHTML =  "<br> Est. Finish Time: <br> <br> <span style=font-size:110%> &ensp;" +
             calculate.bold() + "</span>";
-          document.getElementById("esEstFin").innerHTML = "<span style = 'text-decoration: underline;'> Est. Finish Time:</span>" + " " + calculate.bold();
+          document.getElementById("esEstFin").innerHTML = "<span style = 'text-decoration: underline;'> Est. Finish Time:</span>" + " " + calculate;
         }
         else {
           var totalsecondsLeft = ((parseInt(String(document.getElementById("totCycles").value).trim()) - parseInt(String(cycleno).trim()))+1) * parseInt(String(seconds).trim());
@@ -1018,6 +1029,12 @@
         else {}
       }
 
+      function devModeShow(){
+        show(event, 'tab4c');
+        document.getElementById("tab4").style.visibility = "visible";
+        document.getElementById("tab4").className += " active"; 
+      }
+
 // Code for the tabs starts
       function show(evt, contentid) { //Shows content tabs when tabs are clicked
         var i, tabcontent, tablinks;
@@ -1032,7 +1049,9 @@
         document.getElementById(contentid).style.display = "block";
         evt.currentTarget.className += " active"; 
         pcr.resize();
-        cyc.resize();}
+        cyc.resize();
+        document.getElementById("tab4").style.visibility = "hidden";
+      }
 
         document.getElementById("tab1").click(); //By Default, the first tab is shown.
 // Code for the tabs ends
