@@ -67,7 +67,7 @@ for (var j = 0; j<allarray.length; j++) {
         add = false;
     }
 }
-let noneConfig = "cname: None" + "\n" + "oname: " + "\n" + "ename: " + "\n" + "pname: " + "\n" + "fam: " + "\n" + "cy5: " + "\n" + "hex: " + "\n" + "rtval:" + "\n" + "totcycles:" + "\n \n";
+let noneConfig = "cname: None" + "\n" + "oname: " + "\n" + "ename: " + "\n" + "pname: " + "\n" + "fam: " + "\n" + "cy5: " + "\n" + "hex: " + "\n" + "rtval: OFF" + "\n" + "totcycles:" + "\n \n";
 if(add)
 {
     var fd = fs.openSync('./configurations/configs.txt', 'w+');
@@ -177,10 +177,12 @@ wss.on('connection', function connection(ws) {
                 lastRequest = msg.config;
                 break;
             case "start/stop":
-                if(savedRT === "true")
+                var send = false;
+                //engine.changeCycle(savedTotCycles.trim());    
+                 if(savedRT === "true")
                 {
                     engine.RTon();
-                    ws.send(JSON.stringify({id: "RTStatus", bool: "true"}));
+                    send = true;
                 }
                 else
                 {
@@ -227,6 +229,10 @@ wss.on('connection', function connection(ws) {
                     });
                     isRunning = true;
                     ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
+                    if(send){
+                        ws.send(JSON.stringify({id: "RTStatus", bool: "true"}));
+                        send = false;
+                    }
                     console.log('Ignition started.');
                     // Start the periodic cycling data send and PCR data check.
                     DataIntervId = setInterval(sendit, 300);
