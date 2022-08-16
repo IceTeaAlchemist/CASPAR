@@ -4,15 +4,16 @@
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1"> <!--scales to client device size-->
-  <title> CASPAR </title>
+  <title> CASPAR </title> <!--Title of the webpage -->
 
+  <!-- Style Sheets and imported scripts -->
   <script src="http://192.168.0.10/src/jquery-1.9.1.min.js"></script>
   <script src="http://192.168.0.10/src/jquery-3.5.1.min.js"></script>
   <script src="http://192.168.0.10/src/dygraph.js"></script>
   <link rel="stylesheet" href="http://192.168.0.10/src/dygraph.css" />
 
 <style>
-  /* Purely stylistic so it looks pretty */
+  /* Purely stylistic so it looks pretty. This formats text, spacing, font, etc. */
   body{font-family: verdana, Arial;}
   .tab button {font-size:120%; background-color:#f0f0f0; margin-top:8px; margin-right:8px; padding:5px; cursor:pointer;
    border-width:2px; border-radius: 3px}
@@ -40,6 +41,7 @@
     .btminp{width: 30%; height:50%; font-size:12pt; border-width: 1px; padding:3px 8px; resize: none; display:inline;}
 
   /* grids/layouts for each tab (1,2,3) */
+  /* grids/layouts needed to be added to Dev Mode (Tab 4) */
   .container1 {display: grid;
   grid-template-columns: 0.75fr 0.75fr 1fr 1fr 1fr 1fr 1fr 1fr 0.75fr 0.75fr;
   grid-template-rows: 1.1fr 1.1fr 1.1fr 1.1fr 1.1fr 1.1fr 0.4fr;
@@ -75,7 +77,7 @@
 </head>
 
 <body>
-
+  <!-- Code for the tab menu-->
   <div class="tab">
     <button class="tablinks" id = "tab1" onclick="show(event, 'tab1c')">Main</button>
     <button class="tablinks" id = "tab2" onclick="show(event, 'tab2c')">Run Summary</button>
@@ -90,17 +92,17 @@
 
   <div id="divider" style="width:100%; height:8px; margin: auto;"></div>
 
-  <div id="tab1c" class="tabcontent">
+  <div id="tab1c" class="tabcontent"> <!--First tab content-->
     <div class="container1">
       <div class="div1-1"  style = "text-align:center;">
         <p class="inrtxt2">Project Name:</p>
-          <input class = "inrinp" type="text" id="projName"> <!--Value Can Change-->
+          <input class = "inrinp" type="text" id="projName"> <!--Changes-->
         <p class="inrtxt2">Operator:</p>
-          <input class = "inrinp" type="text" id="opName"> <!--Value Can Change-->
+          <input class = "inrinp" type="text" id="opName"> <!--Changes-->
         <p class="inrtxt2">Experiment Name:</p>
-          <input class = "inrinp" type="text" id="expName"> <!--Value Can Change-->
+          <input class = "inrinp" type="text" id="expName"> <!--Changes-->
         <p class="inrtxt2">Configuration:</p>
-          <div id = "dropdown" style="width:93%; margin:0 auto; margin-bottom: 30px;"> <!--Value Can Change-->
+          <div id = "dropdown" style="width:93%; margin:0 auto; margin-bottom: 30px;"> <!--Value Changes-->
             <select id = "configDropdown" class="custom-select" style="text-align:left;" onclick = "loadDataRequest()"> <!--Options Change-->
             </select>
           </div>
@@ -114,30 +116,30 @@
         <p class="inrtxt">Current Cycle:</p>
           <p class="inrtxt" id="currentCycle" style="font-weight:bold; font-size:120%; margin-bottom:40px;"> 0 </p> <!--Changes-->
         <p class="inrtxt">Total Cycles:</p>
-          <input class = "inrinp" style = "width: 15%; text-align: center; font-size:120%; font-weight:bold;" type="text" id="totCycles"> <!--Value Can Change-->
+          <input class = "inrinp" style = "width: 15%; text-align: center; font-size:120%; font-weight:bold;" type="text" id="totCycles"> <!--Changes-->
         <p class="inrtxt">Reverse Transcription:</p>
-          <input type="checkbox" id="RTMain" style="display: inline; width: 23px; height:23px; border-width: 1px; margin-right: 4px; margin-bottom: 30px;">
+          <input type="checkbox" id="RTMain" style="display: inline; width: 23px; height:23px; border-width: 1px; margin-right: 4px; margin-bottom: 30px;"> <!--Check Mark Changes-->
       </div>
 
       <div class="div4-1">
         <p class="inrtxt3" style="margin-top: 42px; display:inline; float:left; font-size:110%; margin-left:20px;"> <br> Comments:</p>
-          <textarea class = "btminp" id="comments" style="display:inline-flex; margin-top: 40px; float:left;"></textarea> <!--Value Can Change-->
+          <textarea class = "btminp" id="comments" style="display:inline-flex; margin-top: 40px; float:left;"></textarea> <!--Changes-->
         <p class="inrtxt3" id="systemStatus" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> System Status:
           <br> <br> <span style= "font-weight: bold; font-size:110%;"> &ensp;Not Running </span></p> <!--Changes-->
         <p class="inrtxt3" id="startTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Start Time:
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &ensp; Not Started </span></p> <!--Changes-->
         <p class="inrtxt3" id="estFinTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Est. Finish Time:
-          <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; &ensp; - </span></p> <!--Changing will be implemented-->
+          <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; &ensp; - </span></p> <!--Changes-->
         <p class="inrtxt3" id="finTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Finish Time:
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; - </span></p> <!--Changes-->
-        <button class="inrbtn2" id="RTSettings" onclick = "devModeShow()" style = "display:inline; display:inline; float:left; margin-left:55px;"> 
-          RT Settings </button>
+        <button class="inrbtn2" id="RTSettings" onclick = "devModeShow()" style = "display:inline; display:inline; float:left; margin-left:55px;">
+          RT Settings </button> <!--Goes to Dev Mode-->
       </div>
 
     </div>
   </div>
 
-  <div id="tab2c" class="tabcontent">
+  <div id="tab2c" class="tabcontent"> <!--Second tab content-->
     <div class="container2">
 
       <div class="div1-2">
@@ -151,7 +153,7 @@
           <p class="inrtxt7" id="esTotalCycles" style="font-size:105%;"> <span style = "text-decoration: underline;"> Total Cycles:</span> - <br> </p>  <!--Changes-->
           <p class="inrtxt7" id="esRT" style="font-size:105%;"> <span style = "text-decoration: underline;"> Reverse Transcription:</span> - <br> </p>  <!--Changes-->
           <p class="inrtxt7" id="esStart" style="font-size:105%;"> <span style = "text-decoration: underline;"> Start Time:</span> - <br>  </p>  <!--Changes-->
-          <p class="inrtxt7" id="esEstFin" style="font-size:105%;"> <span style = "text-decoration: underline;"> Est. Finish Time:</span> - <br> </p>  <!--Changing will be implemented-->
+          <p class="inrtxt7" id="esEstFin" style="font-size:105%;"> <span style = "text-decoration: underline;"> Est. Finish Time:</span> - <br> </p>  <!--Changes-->
           <p class="inrtxt7" id="esFin" style="font-size:105%;"> <span style = "text-decoration: underline;"> Finish Time:</span> - <br> </p>  <!--Changes-->
       </div>
 
@@ -164,18 +166,18 @@
 
       <div class="div4-2">
         <p class="inrtxt3" style="margin-top: 42px; display:inline; float:left; font-size:110%; margin-left:20px;"> Save Data Filename:</p>
-          <input class = "inrinp1" type="text" id="filename" style="display:inline-flex; margin-top: 40px; float:left;" value=""> <!--Value Can Change-->
+          <input class = "inrinp1" type="text" id="filename" style="display:inline-flex; margin-top: 40px; float:left;" value=""> <!--Changes-->
         <button class="inrbtn2" id="downloadData" onclick = "downloadData()" style = "display:inline; margin-top: 28px; margin-left:55px;
-          float:left; margin-bottom: 10px;"> Download Data </button>
+          float:left; margin-bottom: 10px;"> Download Data </button>  <!--Need function to work. Doesnt work currently-->
         <p class="inrtxt3" style="margin-top: 42px; display:inline; float:left; font-size:110%; margin-left:45px;"> Enter Email:</p>
-          <input class = "inrinp1" type="text" id="email" style="display:inline-flex; margin-top: 40px; float:left;" value=""> <!--Value Can Change-->
+          <input class = "inrinp1" type="text" id="email" style="display:inline-flex; margin-top: 40px; float:left;" value=""> <!--Changes-->
           <button class="inrbtn2" id="emailData" onclick = "sendFiles()" style = "display:inline; margin-top: 28px; margin-left:55px; float:left;
           margin-bottom: 10px;"> Email Data </button>
       </div>
     </div>
   </div>
 
-  <div id="tab3c" class="tabcontent">
+  <div id="tab3c" class="tabcontent">  <!--Third tab content-->
     <div class="container3">
 
       <div class="div1-3">
@@ -201,41 +203,40 @@
       <div class="div2-3">
         <h2 style = "text-align: center;"> Create Configuration </h2>
           <p class = 'inrtxt6'> Configuration Name: </p>
-            <input class = "inrinp2" type="text" id="configName" value = " " style = ""> <!--Value Can Change-->
+            <input class = "inrinp2" type="text" id="configName" value = " " style = "">
               <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div> <!-- Divs are necessary to ensure we have a linebreak-->
           <p class = 'inrtxt6' style= "display: inline-block;">  <br> Default Operator Name: </p>
-            <input class = "inrinp2" type="text" id="defOpName" value = " "> <!--Value Can Change-->
+            <input class = "inrinp2" type="text" id="defOpName" value = " "> <!--Changes-->
               <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
           <p class = 'inrtxt6' style= "display: inline-block;"> <br> Default Email: </p>
-            <input class = "inrinp2" type="text" id="defEmail" value = " "> <!--Value Can Change-->
+            <input class = "inrinp2" type="text" id="defEmail" value = " "> <!--Changes-->
               <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
           <p class = 'inrtxt6' style= "display: inline-block;"> <br> Default Project Name: </p>
-            <input class = "inrinp2" type="text" id="defProjName" value = " "> <!--Value Can Change-->
+            <input class = "inrinp2" type="text" id="defProjName" value = " "> <!--Changes-->
               <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
-              <!--NEW Code-->
-        <p class = 'inrtxt6' style= "display: inline-block;"> <br> Total Cycles: </p>
-          <input class = "inrinp2" type="text" id="totalCycles" value = " "> <!--Value Can Change-->
-            <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
-        <p class = 'inrtxt6' style= "display: inline-block;"> <br> FAM: </p>
-          <input class = "inrinp2" type="text" id="FAM" value = " "> <!--Value Can Change-->
-            <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
-        <p class = 'inrtxt6' style= "display: inline-block;"> <br> CY5: </p>
-          <input class = "inrinp2" type="text" id="CY5" value = " "> <!--Value Can Change-->
-            <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
-        <p class = 'inrtxt6' style= "display: inline-block;"> <br> HEX: </p>
-          <input class = "inrinp2" type="text" id="HEX" value = " "> <!--Value Can Change-->
-            <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
-        <p class = 'inrtxt6' style= "display: inline-block;"> <br> Reverse Transcription On?: </p>
-          <input type="checkbox" id="RT" style="display: inline; width: 23px; height:23px; border-width: 1px; margin-right: 4px; margin-top: 5px;"> <!--Value Can Change-->
-            <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> Total Cycles: </p>
+            <input class = "inrinp2" type="text" id="totalCycles" value = " "> <!--Changes-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> FAM: </p>
+            <input class = "inrinp2" type="text" id="FAM" value = " "> <!--Changes-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> CY5: </p>
+            <input class = "inrinp2" type="text" id="CY5" value = " "> <!--Changes-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> HEX: </p>
+            <input class = "inrinp2" type="text" id="HEX" value = " "> <!--Changes-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> Reverse Transcription On?: </p>
+            <input type="checkbox" id="RT" style="display: inline; width: 23px; height:23px; border-width: 1px; margin-right: 4px; margin-top: 5px;"> <!--Changes-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
 
-        <button class="inrbtn3" id="saveConfig" onclick="saveConfig()" style= "display: inline; float:left; margin-left: 70px;
-          margin-bottom: 20px;"> Save <br> This <br> Configuration </button>
-        <button class="inrbtn3" id="devMode" onclick="devModeShow()" style= "display: inline; float:right;
-          margin-right: 70px; margin-bottom: 20px;"> Launch <br> Developer <br> Mode </button>
+          <button class="inrbtn3" id="saveConfig" onclick="saveConfig()" style= "display: inline; float:left; margin-left: 70px;
+            margin-bottom: 20px;"> Save <br> This <br> Configuration </button>
+          <button class="inrbtn3" id="devMode" onclick="devModeShow()" style= "display: inline; float:right;
+            margin-right: 70px; margin-bottom: 20px;"> Launch <br> Developer <br> Mode </button>
       </div>
 
-      <div id="tab4c" class="tabcontent">
+      <div id="tab4c" class="tabcontent">  <!--Fourth tab content, Needs to be added based on how Nick and Bill desire-->
 
           </div>
 
@@ -314,19 +315,19 @@
           axisLabelFontSize: 12,
     });
 
-    var isRunning = false; //Keeps track of whether the system is actually running. NOT the same as clientStarted, which is when the client presses start
-    var runFinished = false; //Keeps track if the run is currently finished. Important for __ insert reason.
+    var isRunning = false; //Keeps track of whether the system is actually running. NOT the same as clientPressedStart, which is when the client presses start
+    var runFinished = false; //Keeps track if the run is currently finished. Important for ensuring you can only email/download data when the run is finished.
     var dropdownID = document.getElementById("configDropdown"); //important because we reference the inner text in the dropdown very often
     var namearray; //will be used for save configuration safety
     var clientPressedStart = false; // Keeps Track of if the client pressed start. NOT the same as isRunning, which tracks whether or not the sysem is on.
     var senddefproj; //to send
     var senddefop; //to send
     var senddefem; //to send
-    var sendfam;
-    var sendcy5;
-    var sendhex;
-    var sendrt;
-    var sendtotcycles;
+    var sendfam; //to send
+    var sendcy5; //to send
+    var sendhex; //to send
+    var sendrt; //to send
+    var sendtotcycles; //to send
 
     //Heartbeat variables
     var sendPing; //the constant ping interval
@@ -337,11 +338,11 @@
       var msg = JSON.parse(event.data);
         switch(msg.id){
 
-          case "pong":
+          case "pong": // If a pong is recieved, set it as true.
             pongRecieved = true;
           break;
 
-          case "connect":
+          case "connect": //when connected to server
             console.log(msg);
             sendPing = setInterval(sendThePing, 10000); //Every 10 seconds, a ping is sent
 
@@ -365,13 +366,10 @@
             }
 
             //This code extracts all the configuration names and puts it in the dropdown on the first page -- Replaced with JSON, NAS 7/07
-            /*var allnames = (msg.configs).substring(5);
-            var count = (((allnames.match(/:;:;:/g) || []).length)+1);
-            namearray = allnames.split(":;:;:");*/ 
             var count = msg.configs.length;
             namearray = msg.configs;
             let select = document.getElementById('configDropdown');
-              for (var i=0; i<count; i++){
+              for (var i=0; i<count; i++){ //this adds all options into the dropdown. Each option is titles as the configuration name
                 var option = document.createElement("option");
                 option.text = namearray[i].trim();
                 option.value = String(namearray[i].trim());
@@ -392,13 +390,14 @@
 
           case "loadconfig": //loads the config that is selected on the dropdown on the first page
             console.log(msg);
-            //var dataarray = msg.data.split(":;:;:"); //graps all data and puts it in an array
-            var dataarray = msg.data;
+            var dataarray = msg.data; //graps all data and puts it in an array
             //Updates info on first and second tabs
             document.getElementById("projName").value = dataarray[2];
             document.getElementById("opName").value = dataarray[0];
             document.getElementById('email').value = dataarray[1];
             document.getElementById('totCycles').value = (dataarray[7]).trim();
+
+            //Updates the checkbox on the first tab
             if(dataarray[6].trim() == "true" || dataarray[6].trim() == "ON"){
               document.getElementById("RTMain").checked = true;
             }
@@ -406,7 +405,7 @@
               document.getElementById("RTMain").checked = false;
             }
             //Updates info on third tab
-            let dispRT = "";
+            let dispRT = ""; // sets what to display for RT
               if (dataarray[6].trim() == "true"){
                 dispRT = "ON";
               }
@@ -421,6 +420,7 @@
             document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + " " + dataarray[5];
             document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" + " " + dispRT;
             document.getElementById('citotalCycles').innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " " + dataarray[7];
+            // variables to send to save on the server
             senddefproj = dataarray[2];
             senddefop = dataarray[0];
             senddefem = dataarray[1];
@@ -431,7 +431,7 @@
             sendtotcycles = dataarray[7];
             document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
           break;
-            
+
           case "isRunning":
             isRunning = msg.value;
             //Changes the System Status based on the isRunning variable
@@ -460,8 +460,9 @@
             hex = msg.hex; //Retrieve HEX fluoresence.
             data2.push([cycleNo, fam, hex, cy5]); //Push the new data onto the graph source.
             pcr.updateOptions( {'file': data2 } ); //Update it.
-            estFinishTime(msg.secs, msg.cycle);
+            estFinishTime(msg.secs, msg.cycle); //Calculate the Estimated Finish Time using the data
 
+            //PCR is now in progress. Show this.
             document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:LimeGreen;font-weight:bold;> &ensp;"
                 + "PCR In Progress" + "</span>";
             document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> PCR In Progress";
@@ -484,14 +485,14 @@
           break;
 
           case "runcomplete":
-            finishRun();
+            finishRun(); //function to run when run is complete.
             break;
-          
-          case "RTStatus":
+
+          case "RTStatus": //update status to show RT is on
             document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:tomato;font-weight:bold;> &ensp;"
                 + "RT In Progress" + "</span>";
             document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> RT In Progress";
-            estFinishTime("0", "0");
+            estFinishTime("0", "0"); // Start Calculating Estimated Finish Time
             break;
 
           default:
@@ -515,17 +516,17 @@
           id: "ping",
           timeStamp: timeStampClean
         };
-        try{ //try it first
+        try{ //try sending it first
           ws.send(JSON.stringify(msg));
           verifyPong = setTimeout(verifyThePong, 15000);
         }
-       catch (error){ //if it doesn't work, the client prolly doesnt have internet. Throw an error.
-          document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold; color: tomato;'> Not Connected </span>";
+       catch (error){ //if it doesn't work, the client prolly doesnt have internet. Catch the error.
+          document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold; color: tomato;'> Not Connected </span>"; // updates server status
           clearInterval(sendPing);
         }
       }
 
-      //Verifies if a pong was recieved
+      //Verifies if a pong was recieved, changes status
       function verifyThePong(){
         if (pongRecieved){
           document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
@@ -569,7 +570,7 @@
           document.getElementById("esTotalCycles").innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " "  + msg.totcycles;
           document.getElementById("esRT").innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" + " "  + dispRT1;
           document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + " "  + msg.starttime;
-          
+
           let dispRT2 = "";
               if (msg.defrt.trim() == "true"){
                 dispRT2 = "ON";
@@ -605,10 +606,11 @@
           }
        }
 
-       var lastRequest = " ";
+       var lastRequest = " "; // Ensures that a request isnt sent multiple times of the same thing
        //This function sends the server a request to view and eventually display the information for a certain configuration thats clicked
        function loadDataRequest(){
         if (lastRequest != dropdownID.options[dropdownID.selectedIndex].text)
+                //update names and send the request
         {
          document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" + " " + dropdownID.options[dropdownID.selectedIndex].text;
          var msg = {
@@ -620,19 +622,22 @@
         lastRequest = dropdownID.options[dropdownID.selectedIndex].text;
        }
 
-      //Checks if project name, operator name, and configuration are filled out before run can begin
+      //Checks if project name, operator name, and configuration are filled out before run can begin. Also other safety checks for total cycles
       function conditionsForStart()
       { if (String(document.getElementById("projName").value).trim().length == 0){
           alert("\nPlease fill out the Project Name.");
-          return false;}
+          return false;
+        }
 
         else if ((String(document.getElementById("opName").value).trim().length == 0)) {
           alert("\nPlease fill out the Operator Name.");
-          return false;}
+          return false;
+        }
 
         else if ((String(dropdownID.options[dropdownID.selectedIndex].text).trim().length == 0)) {
           alert("\nPlease select/create a Configuration.");
-          return false;}
+          return false;
+        }
 
         else if ((String(document.getElementById("totCycles").value).trim()).length == 0){
             alert("\nPlease fill out Total Cycles");
@@ -708,8 +713,8 @@
           }
         }
 
-    var timeStartDisplay; //Important if we ever want to send it
-    var defaultFileName; //Important if we ever want to send it
+    var timeStartDisplay; //Important to send
+    var defaultFileName; //Important to send
 
     // Start or stop the PCR depending on its current state.
     function startStopPCR() {
@@ -762,7 +767,7 @@
           changeFile();
           clientPressedStart = false;
 
-          //updates the info on the second tab info
+          //updates the info on the second tab
           let dispRT4 = "";
               if (String(document.getElementById("RTMain").checked).trim() == "true"){
                 dispRT4 = "ON";
@@ -820,7 +825,7 @@
       if(document.getElementById('email').value.trim().includes("@"))
       {
         emailvaluetosend = document.getElementById('email').value.trim();
-      }""
+      }
       var msg = {
         id: "start/stop",
         email: emailvaluetosend
@@ -828,22 +833,22 @@
       ws.send(JSON.stringify(msg)); //sends message
     }
 
-    var timeFinishDisplay; //Important if we ever want to send it
+    var timeFinishDisplay; //Important to send
 
     //This function is called if the client manually presses stop or if the experiment ends
-    // Needs to be implemented in the future with the run finish signal
     function finishRun() {
+      //enables all major entry fields
       runFinished = true;
       document.getElementById('projName').disabled = false;
       document.getElementById('opName').disabled = false;
       document.getElementById('expName').disabled = false;
       document.getElementById("dropdown").style.pointerEvents = "auto";
       document.getElementById("dropdown").style.opacity = "1";
-      
+
       document.getElementById('filename').disabled = false;
       document.getElementById('totCycles').disabled = false;
       document.getElementById('RTMain').disabled = false;
-      //Displays Finish Time
+      //Displays Finish Time, updates buttons
       var timeFinished = new Date(); //initialize Start Time
       timeFinishDisplay = timeFinished.toLocaleTimeString();
       document.getElementById("finTime").innerHTML =  "<br> Finish Time: <br> <br> <span style=font-size:110%> &emsp;" +
@@ -855,7 +860,7 @@
       clientPressedStart = true;
       runFinished = true;
 
-      var msg = {
+      var msg = { // sends data to store in server when run finishes
         id: "savefinish",
         comments: document.getElementById('comments').value,
         finishtime: timeFinishDisplay,
@@ -872,11 +877,9 @@
             newname: nameforchange};
           ws.send(JSON.stringify(msg));}
 
-      //Need to implement this feature that will send the files to the chosen address --> Should be error prone.
-      //Currently Emails the files to Nick
       //This function should only be called when Email Data is pressed.
       function sendFiles() {
-        if(runFinished){
+        if(runFinished){ // saftey to ensure data is only sent when the run is finished.
           if((String(document.getElementById("email").value).trim().length == 0) || ((!String(document.getElementById("email").value).trim().includes("@")))){
             alert("Please enter a valid email address");
           }
@@ -897,7 +900,6 @@
       //or if the user makes two of the same configuration names in the same session
 
       //Safety feature to ensure the person saves the configuration correctly
-      // Will add more here
       function configSafety(){
         if ((String(document.getElementById("configName").value).trim().length == 0)){
             alert("\nPlease fill out the Configuration Name.");
@@ -942,7 +944,7 @@
       }
 
       //opens a window prompt to confirm whether the user meant to close the website
-      function closeConfirmation() 
+      function closeConfirmation()
       {
         let text = "\nAre you sure you want to close this website?\n\n If currently running, the machine will continue to run.\n\nPress 'OK' to confirm.";
         if (confirm(text) == true) {
@@ -970,7 +972,7 @@
         window.open("https://my.vanderbilt.edu/haseltonlab/");
       }
 
-      //Need to implement a function that calculates the Estimated Finish Time
+      //Calculates the Estimated Finish Time
       function estFinishTime(seconds, cycleno)
       {
         if(String(cycleno).trim() == "0" || String(cycleno).trim() == "1" || String(cycleno).trim() == "2" ){
@@ -980,6 +982,7 @@
           document.getElementById("esEstFin").innerHTML = "<span style = 'text-decoration: underline;'> Est. Finish Time:</span>" + " " + calculate;
         }
         else {
+          //If its been atleast the third PCR cycle, Estimated FInish Time is displayeds. Not otherwise
           var totalsecondsLeft = ((parseInt(String(document.getElementById("totCycles").value).trim()) - parseInt(String(cycleno).trim()))+1) * parseInt(String(seconds).trim());
 
           var currentTime = new Date(); //initialize Start Time
@@ -990,7 +993,7 @@
             futureTimeClean.bold() + "</span>";
           document.getElementById("esEstFin").innerHTML = "<span style = 'text-decoration: underline;'> Est. Finish Time:</span>" + " " + futureTimeClean;
         }
-      
+
       }
 
       //Need to implement a feature that downloads data --> Should be error prone.
@@ -1006,6 +1009,7 @@
         }
       }
 
+      //Feature to ensure the user really wanted to delete the configuration
       function deleteConfigSafety(){
         let text = "\nAre you sure you want to delete the configuration named '" + dropdownID.options[dropdownID.selectedIndex].text + "'";
         if (confirm(text) == true) {
@@ -1025,14 +1029,15 @@
           else{
             alert("You can't delete the configuration while the PCR is running.")
           }
-        } 
+        }
         else {}
       }
 
+      //Shows the hidden dev mode tab.
       function devModeShow(){
         show(event, 'tab4c');
         document.getElementById("tab4").style.visibility = "visible";
-        document.getElementById("tab4").className += " active"; 
+        document.getElementById("tab4").className += " active";
       }
 
 // Code for the tabs starts
@@ -1046,10 +1051,12 @@
         for (i = 0; i < tablinks.length; i++) {
               tablinks[i].className = tablinks[i].className.replace(" active", "");
             }
-        document.getElementById(contentid).style.display = "block";
-        evt.currentTarget.className += " active"; 
+        document.getElementById(contentid).style.display = "block"; // all tab content is displayed in block
+        evt.currentTarget.className += " active";
+        //Graphs are resized to ensure there isnt the graph bug
         pcr.resize();
         cyc.resize();
+        //tab 4 is hidden
         document.getElementById("tab4").style.visibility = "hidden";
       }
 
