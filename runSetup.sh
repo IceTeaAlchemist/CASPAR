@@ -9,6 +9,16 @@ domod () {
         $@
 }
 
+# Check if node (with npm) were installed.  Is in the systemSetup.sh also.
+which node
+if [ $? != 0 ]; then
+    # These "sudo"s below did not quit do it once.  Added -E, stop if any command fails.
+    domod sudo curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+    domod sudo apt-get install -y nodejs
+    echo
+    echo "node version `node -v`"
+    echo
+fi
 
 domod npm init
 domod npm install ws

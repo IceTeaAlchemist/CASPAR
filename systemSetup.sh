@@ -102,6 +102,58 @@ After=network-online.target
 Wants=network-online.target
 EOF
 
+# Check if node (with npm) were installed.
+# Check node is installed, "node -v" and use version 16.
+# https://github.com/nodesource/distributions
+which node
+if [ $? != 0 ]; then
+    # These "sudo"s below did not quit do it once.  Added -E, stop if any command fails.
+    domod sudo curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+    domod sudo apt-get install -y nodejs
+    #node -v , is now v16.15.1 and we are FIXED on that for now.
+
+    #else
+    #nodeVers=`node -v`
+    #if nodeVers is not v16.14.0 with the v16 install v16??
+
+    echo
+    echo "node version `node -v`"
+    echo
+fi
+
+# Once created version v12.22.12 for whatever reason so check that and try
+# again(?).  weg 20220818
+domod hash -r
+myversion=`node -v`
+
+# Test that node-gyp is installed.  Which returns 0 if it finds it, 1 if not.
+which node-gyp
+if [ $? != 0 ]; then
+    domod sudo npm install -g node-gyp
+fi
+
+# WiringPi install.
+# From github https://github.com/IceTeaAlchemist/WiringPi .
+
+WPiGithub="https://github.com/IceTeaAlchemist/WiringPi"
+WPiDir="${HOME}/Documents/githubs/WiringPi/"
+
+cat > /tmp/testWPi.cpp<<EOF
+#include <wiringPi.h>
+int main(void){
+  int idum=321;
+  return 0;
+}// end main
+EOF
+g++ -c /tmp/testWPi.cpp
+if [ $? != 0 ]; then
+    mkdir -p ${HOME}/Documents/githubs
+    cd ${HOME}/Documents/githubs
+    git clone $WPiGithub
+    cd ${HOME}/Documents/githubs/WiringPi
+    sudo ./build
+fi
+
 echo
 echo "Reboot the system."
 echo "Hope you have ethernet or other wlan for connection."
