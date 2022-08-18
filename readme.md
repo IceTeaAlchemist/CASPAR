@@ -17,7 +17,7 @@ cd CASPAR
 sudo bash ./runSetup.sh
 node-gyp rebuild    ( or for partial rebuild node-gyp build )
 ```
-
+<br>
 ==================================<br>
 This is some direction for setup.<br>
 
