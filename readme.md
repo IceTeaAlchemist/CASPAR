@@ -3,15 +3,18 @@
 Have tried to make the setup work from scripts:<br>
 <br>
 <b>systemSetup.sh</b> should be run on a new SD Drive Raspberry Pi drive.  Should install nodejs, node-gyp, and WiringPi from Nick's github, https://github.com/IceTeaAlchemist/WiringPi .  Likely run once for a new SD Drive / Raspberry Pi configuration.<br>
+
 ```bash
 cd ${HOME}/Documents/githubs
 git clone https://github.com/IceTeaAlchemist/CASPAR
 cd CASPAR
 sudo bash ./systemSetup.sh
 ```
+
 <br>
 <br>
 <b>runSetup.sh</b> should be run after the cloning of CASPAR<br>
+
 ```bash
 cd ${HOME}/Documents/githubs
 git clone https://github.com/IceTeaAlchemist/CASPAR
@@ -19,6 +22,7 @@ cd CASPAR
 sudo bash ./runSetup.sh
 node-gyp rebuild    ( or for partial rebuild node-gyp build )
 ```
+
 <br>
 ==================================<br>
 This is some direction for setup.<br>
