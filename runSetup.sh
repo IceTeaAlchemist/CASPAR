@@ -20,7 +20,15 @@ if [ $? != 0 ]; then
     echo
 fi
 
-domod npm init
+echo "npm init"
+npm init<<EOF
+caspar
+0.0.1
+
+
+ISC
+yes
+EOF
 domod npm install ws
 domod npm install nodemailer
 domod npm install fs
@@ -42,4 +50,5 @@ domod touch ./configurations/configs.txt
 
 domod sudo cp -i ./UI/CASPAR-UI.html /var/www/html/
 
-domod sudo cp -fpr ./"JS Libraries/src" /var/www/html/
+echo "sudo cp -fpr ./\"JS Libraries/src\" /var/www/html/"
+sudo cp -fpr ./"JS Libraries/src" /var/www/html/
