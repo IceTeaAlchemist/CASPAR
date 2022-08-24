@@ -1,0 +1,209 @@
+PCR Session initialized at 2022728_12739
+Calibrating gain.
+PCR Session initialized at 2022728_15943
+Calibrating gain.
+Heated for too long.
+Calibrating gain.
+Heated for too long.
+Calibrating gain.
+Heated for too long.
+Calibrating gain.
+PCR Session initialized at 2022728_152448
+Calibrating gain.
+Heated for too long.
+PCR Session initialized at 2022728_161659
+Calibrating gain.
+PCR Session initialized at 2022728_162016
+Calibrating gain.
+Heated for too long.
+Calibrating gain.
+PCR Session initialized at 2022728_162641
+Calibrating gain.
+PCR Session initialized at 2022728_162851
+Calibrating gain.
+PCR Session initialized at 202281_155732
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+PCR Session initialized at 202281_161715
+PCR Session initialized at 202281_161920
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+PCR Session initialized at 202281_162638
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+Heated for too long.
+Calibrating gain.
+Heated for too long.
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+PCR Session initialized at 202282_164446
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+Heated for too long.
+Cooled for too long.
+PCR Session initialized at 202283_154331
+Calibrating gain.
+Heated for too long.
+Calibrating gain.
+Heated for too long.
+Calibrating gain.
+Heated for too long.
+Cooled for too long.
+Calibrating gain.
+Heated for too long.
+Cooled for too long.
+PCR Session initialized at 202284_161221
+Calibrating gain.
+PCR Session initialized at 202284_16198
+Calibrating gain.
+PCR Session initialized at 202284_162835
+Calibrating gain.
+Heated for too long.
+PCR Session initialized at 202284_163133
+PCR Session initialized at 202284_163430
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+Calibrating gain.
+Calibrating gain.
+PCR Session initialized at 202285_142732
+Calibrating gain.
+PCR Session initialized at 202285_143222
+Calibrating gain.
+PCR Session initialized at 202285_162218
+Calibrating gain.
+PCR Session initialized at 202289_15759
+Calibrating gain.
+Heated for too long.
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+Heated for too long.
+PCR Session initialized at 202289_17412
+Calibrating gain.
+Heated for too long.
+Cooled for too long.
+Heated for too long.
+Cooled for too long.
+Algorithm failed too many times. Cycling ended.
+Calibrating gain.
+PCR Session initialized at 202289_17121
+Calibrating gain.
+PCR Session initialized at 202289_171355
+Calibrating gain.
+PCR Session initialized at 202289_171546
+Calibrating gain.
+PCR Session initialized at 202289_171856
+PCR Session initialized at 2022812_131732
+Calibrating gain.
+Heated for too long.
+Calibrating gain.
+PCR Session initialized at 2022812_132732
+Calibrating gain.
+Calibrating gain.
+PCR Session initialized at 2022812_13315
+Calibrating gain.
+PCR Session initialized at 2022812_133433
+Calibrating gain.
+PCR Session initialized at 2022812_133738
+PCR Session initialized at 2022812_133919
+Calibrating gain.
+Calibrating gain.
+PCR Session initialized at 2022812_14935
+PCR Session initialized at 2022812_141139
+Calibrating gain.
+Heated for too long.
+PCR Session initialized at 2022812_141522
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+PCR Session initialized at 2022812_144616
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+Heated for too long.
+Calibrating gain.
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+PCR Session initialized at 2022812_151354
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+PCR Session initialized at 2022812_151914
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+Heated for too long.
+PCR Session initialized at 2022812_152720
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+Heated for too long.
+PCR Session initialized at 2022812_15309
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+PCR Session initialized at 2022818_151344
+PCR Session initialized at 2022818_16227
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+Calibrating gain.
+Calibrating gain.
+PCR Session initialized at 2022819_115050
+Calibrating gain.
+PCR Session initialized at 2022822_11813
+Calibrating gain.
+PCR Session initialized at 2022822_142735
+Calibrating gain.
+PCR Session initialized at 2022822_17333
+Calibrating gain.
+PCR Session initialized at 2022822_174139
+Calibrating gain.
+PCR Session initialized at 2022822_174854
+Calibrating gain.
+PCR Session initialized at 2022823_105538
+Calibrating gain.
+PCR Session initialized at 2022823_111215
+Calibrating gain.
+Calibrating gain.
+PCR Session initialized at 2022823_111443
+Calibrating gain.
+PCR Session initialized at 2022823_111651
+Calibrating gain.
+PCR Session initialized at 2022823_112230
+Calibrating gain.
+PCR Session initialized at 2022823_132417
+PCR Session initialized at 2022823_13255
+Calibrating gain.
+PCR Session initialized at 2022823_13566
+Calibrating gain.
+PCR Session initialized at 2022823_135855
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+Calibrating gain.
+PCR Session initialized at 2022823_163525
+Calibrating gain.
+PCR Session initialized at 2022823_17167
+Calibrating gain.
+PCR Session initialized at 2022824_102549
+Calibrating gain.
+Cooled for too long.
+PCR Session initialized at 2022824_10437
+PCR Session initialized at 2022824_104343
+Calibrating gain.

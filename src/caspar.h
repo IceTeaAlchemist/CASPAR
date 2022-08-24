@@ -11,6 +11,7 @@
 #define HEATER_PIN 7
 #define FAN_PIN 4
 #define BOX_FAN 5
+#define PWM_PIN 23
 #define SMOOTHING 25
 #define CONVERGENCE_THRESHOLD 1
 #define RT_LENGTH 600
@@ -24,8 +25,8 @@ const int allowed_temp_errors = 3;
 //Declare reading struct.
 struct reading
 {
-    int timestamp;
-    int voltage;
+    long timestamp;
+    double voltage;
 };
 
 
@@ -62,6 +63,10 @@ extern string runlog;
 extern int runerror;
 extern int temperrors;
 extern bool RTflag;
+extern const double pwm_high_ratio;
+extern const int pwm_high;
+extern const double pwm_low_ratio;
+extern const int pwm_low;
 
 //setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
 
@@ -85,7 +90,7 @@ void holdtemp(double temp, double time);
 void premelt(void);
 void runRT(void);
 int cycle(void);
-int delaytocycleend(const double coeff[3], double thresh);
+long delaytocycleend(const double coeff[3], double thresh);
 bool modeshift(bool state);
 
 

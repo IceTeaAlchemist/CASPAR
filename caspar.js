@@ -148,6 +148,7 @@ wss.on('connection', function connection(ws) {
                 lastRequest = msg.config;
                 break;
             case "start/stop":
+		        savedDefEm = msg.email;
                 if(savedRT === "true")
                 {
                     engine.RTon();
@@ -179,7 +180,7 @@ wss.on('connection', function connection(ws) {
                         ws.send(JSON.stringify({id: "runcomplete"}));
                         var mailOptions = {
                             from: 'caspar@casparvu.com',
-                            to: 'kick767@gmail.com',
+                            to: savedDefEm,
                             subject: 'CASPAR run finished.',
                             text: 'Sample finished.',
                         };

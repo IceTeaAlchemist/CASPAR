@@ -19,6 +19,11 @@ qiagen sens2("/dev/ttyUSB1");
 adc D2(DEVICE_ID, 0x8000, 0x7FFF);
 adc TEMP(TEMP_ID, 0x8000, 0x7FFF);
 
+const double pwm_high_ratio = 0.90;
+const int pwm_high = 1024.0*pwm_high_ratio;
+const double pwm_low_ratio = 0.001;
+const int pwm_low = 1024.0*pwm_low_ratio;
+
 // Declare vectors for tracking the thermal/fluor correspondence.
 vector<double> tempkey;
 vector<double> fluorkey;
@@ -73,10 +78,16 @@ void setupPi(void)
     pinMode(HEATER_PIN, OUTPUT);
     pinMode(FAN_PIN, OUTPUT);
     pinMode(BOX_FAN, OUTPUT);
+    pinMode(PWM_PIN, PWM_OUTPUT);
+    pwmSetMode(PWM_MODE_MS);
+    pwmSetClock(19.53);    // Clock should be 19.2e6 divided by Range (1024) and Actual Hz (1000), usually like 19.2 Mhz / 1024 / 1000 = 19 (an int).
+    pwmSetRange(1024);
     // Set up the interrupt for sample reading. Note that these CANNOT be turned off once started, so wrapping them in a boolean with a flag is a good idea.
     // wiringPiISR(3,INT_EDGE_RISING,sampletriggered);
     // Open the runtime log file for appending and print the initialization time to it. 
     digitalWrite(BOX_FAN, HIGH);
+    pwmWrite(PWM_PIN, pwm_low);
+    digitalWrite(HEATER_PIN, LOW);
     runtime_out.open(runlog, std::ios_base::app | std::ios_base::in);
     runtime_out << "PCR Session initialized at " << timestamp() << endl;
 }

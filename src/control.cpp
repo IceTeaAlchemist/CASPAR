@@ -97,15 +97,17 @@ void runRT()
     waittotemp(55);
 }
 
-// Delays to a point based on the fitted coefficients and the value of the derivative, depending on a fraction of peak threshold. Returns the time in milliseconds after program start.
-int delaytocycleend(const double coeff[3], double thresh)
+// Delays to a point based on the fitted coefficients and the value of the derivative, depending on a fraction 
+// of peak threshold. Returns the time from epoch when control triggered.
+// changed to long from int, weg 20220822
+long delaytocycleend(const double coeff[3], double thresh)
 {
     while(abs(derivs[derivs.size()-1]) > abs(coeff[0] * thresh))
     {
         delay(10);
     }
     cout << "Absolute value of " << derivs[derivs.size()-1] << " is less than " << thresh*coeff[0] << endl;
-    return data[data.size()-1].timestamp - data[0].timestamp;
+    return data[data.size()-1].timestamp;
 }
 
 // Shifts the shift between heating and cooling. Takes the current mode as an argument, returns the new one.
@@ -116,6 +118,7 @@ bool modeshift(bool state)
         digitalWrite(HEATER_PIN, LOW);
         // digitalWrite(BOX_FAN, LOW),
         digitalWrite(FAN_PIN, HIGH);
+        pwmWrite(PWM_PIN, pwm_low);
         return false;
     }
     else
@@ -124,6 +127,7 @@ bool modeshift(bool state)
         readPCR();
         // digitalWrite(BOX_FAN,HIGH);
         digitalWrite(HEATER_PIN, HIGH);
+        pwmWrite(PWM_PIN, pwm_high);
         return true;
     }
 }
@@ -158,16 +162,18 @@ int cycle()
     coeffprev[1] = 0;
     coeffprev[2] = 0;
     int cutoff = 50;
-    int triggertime;
+    long triggertime; // 20220822 weg, from int to long
     bool past_the_hump;
     temperrors = 0;
     delay(100);
     digitalWrite(HEATER_PIN,LOW);
+    pwmWrite(PWM_PIN, pwm_low);
     clearactivedata();
     delay(3000);
 
     // Begin heating.
     digitalWrite(HEATER_PIN, HIGH);
+    pwmWrite(PWM_PIN, pwm_high);
     digitalWrite(FAN_PIN,LOW);   
     bool state = true;
     delay(100);
@@ -195,7 +201,7 @@ int cycle()
         {
             past_the_hump = false;
         }
-        if(x[x.size()-1] > 75)
+        if(x[x.size()-1] > 75)// WEG was 75, playing with laser.
         {   
             if(state == true)
             {
@@ -203,6 +209,7 @@ int cycle()
                 cout << "Heated for too long, error thrown." << endl;
                 runtime_out << "Heated for too long." << endl;
                 digitalWrite(HEATER_PIN,LOW);
+                pwmWrite(PWM_PIN, pwm_low);
                 digitalWrite(FAN_PIN, HIGH);
                 state = false;
                 dtrigger = false;
@@ -215,6 +222,7 @@ int cycle()
                 runtime_out << "Cooled for too long." << endl;
                 digitalWrite(FAN_PIN,LOW);
                 digitalWrite(HEATER_PIN, HIGH);
+                pwmWrite(PWM_PIN, pwm_high);
                 dtrigger = false;
                 state = true;
                 clearactivedata();
@@ -250,7 +258,7 @@ int cycle()
                         triggertime = delaytocycleend(coeff,threshcool);
                     }
                     cout << "Control triggered at " << triggertime << " milliseconds after run initiation." << endl;
-                    coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - run_start << endl; 
+                    coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - (long)run_start << endl; 
                     if(state == false)
                     {
                         pcr_out << triggertime << ",";
@@ -305,7 +313,7 @@ int cycle()
                         dtrigger = false;
                     }
                     cout << "Control triggered at " << triggertime << " milliseconds after run initiation." << endl;
-                    coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - run_start << endl; 
+                    coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - (long)run_start << endl; 
                     clearactivedata();
                 }
             }
@@ -321,6 +329,7 @@ int cycle()
     // fclose(output);
     runflag = false;
     digitalWrite(HEATER_PIN, LOW);
+    pwmWrite(PWM_PIN, pwm_low);
     digitalWrite(FAN_PIN, LOW);
     sens1.LED_off(2);
     return 0;
