@@ -1,4 +1,4 @@
-// Import the C++ addon as well as websocket and mail handler libraries.
+// Import the C++ addon, file reading, as well as websocket and mail handler libraries.
 const engine = require('./build/Release/casparengine');
 const WebSocket = require('ws');
 const { clearInterval } = require('timers');
@@ -6,7 +6,7 @@ var nodemailer = require('nodemailer');
 const fs = require('fs');
 const httpserver = require('http');
 
-// Initialize the PCR engine and print some brief informational messages to the console. 
+// Initialize the PCR engine and print some brief informational messages to the console.
 engine.initializePCR();
 console.log("Welcome to CASPAR--C-based Analysis of Samples by PCR with Adaptive Routine.");
 console.log("----------Runtime Status----------");
@@ -22,8 +22,6 @@ serverforip.listen(7071,hostname, () => {
 });
 const wss = new WebSocket.Server({ server: serverforip });
 
-
-
 // These are for handling the SetInterval functions.
 let DataIntervId;
 let PCRIntervId;
@@ -31,7 +29,7 @@ let PCRIntervId;
 // Tracks whether or not the PCR is currently running a sample and should be updated accordingly.
 var isRunning = false;
 
-//Kunal: New variables to store data from client
+//New variables to store data from client
 var savedStartTime = "";
 var savedProjName = "";
 var savedOperator = "";
@@ -51,13 +49,13 @@ var savedTotCycles = "";
 var saveddeftotcycles = "";
 var saveddefrt = "";
 
-// Vectors for storing PCR data server side. 
+// Vectors for storing PCR data server side.
 var timestamprecord = [];
 var FAMrecord = [];
 var HEXrecord = [];
 var cy5record = [];
 
-//Every Time the server is launched. A new configuration "none" is made that takes up the first X lines
+//Every Time the server is launched. A new configuration "none" is made that takes up the first X lines. It isnt added if it already exists
 let alldata = fs.readFileSync('./configurations/configs.txt', 'utf8');
 let allarray = alldata.toString().split("\n");
 var newarray;
@@ -67,7 +65,7 @@ for (var j = 0; j<allarray.length; j++) {
         add = false;
     }
 }
-let noneConfig = "cname: None" + "\n" + "oname: " + "\n" + "ename: " + "\n" + "pname: " + "\n" + "fam: " + "\n" + "cy5: " + "\n" + "hex: " + "\n" + "rtval:" + "\n" + "totcycles:" + "\n \n";
+let noneConfig = "cname: None" + "\n" + "oname: " + "\n" + "ename: " + "\n" + "pname: " + "\n" + "fam: " + "\n" + "cy5: " + "\n" + "hex: " + "\n" + "rtval: OFF" + "\n" + "totcycles:" + "\n \n";
 if(add)
 {
     var fd = fs.openSync('./configurations/configs.txt', 'w+');
@@ -86,7 +84,7 @@ if(add)
 // WebSocket initialization upon client connection and declaration of events for handling WS messages from the client.
 wss.on('connection', function connection(ws) {
 
-    //Kunal (10): Reading configuration file and then sending that data to the client
+    //Reading configuration file and then sending that data to the client
     var configstrings = [];
 
     let currentdata = fs.readFileSync('./configurations/configs.txt', 'utf8');
@@ -102,7 +100,7 @@ wss.on('connection', function connection(ws) {
     var connect = {
         id: "connect",
         status: "Server connected.",
-        //Kunal (12): information to send to client
+        //information to send to client
         running: isRunning,
         starttime: savedStartTime,
         projectname: savedProjName,
@@ -124,12 +122,12 @@ wss.on('connection', function connection(ws) {
         rt: savedRT,
         FAMdata: FAMrecord,
         HEXdata: HEXrecord,
-        cy5data: cy5record,       
+        cy5data: cy5record,
     };
     ws.send(JSON.stringify(connect));
 
     console.log(connect);
-    
+
     // Log that a client connected to the console.
     console.log("Connected to client.");
 
@@ -138,7 +136,7 @@ wss.on('connection', function connection(ws) {
         var msg = JSON.parse(data);
         // Switch off the ID blank of the message.
         switch(msg.id){
-            //Kunal (20): new case "config request" that gets a request to load a configuration and then reads the file to load it
+            //new case "config request" that gets a request to load a configuration and then reads the file to load it
             case "configrequest":
                 console.log(msg);
                     var requestdata = [];
@@ -146,14 +144,14 @@ wss.on('connection', function connection(ws) {
                     var dataarray = alldata.toString().split("\n");
                     for (i = 0; i<dataarray.length; i++) {
                         console.log(dataarray[i]);
-                        if (dataarray[i].trim() == ("cname: " + msg.config.trim())){
+                        if (dataarray[i].trim() == ("cname: " + msg.config.trim())){ // if a match is found
                             let j = i+1;
                             while(j < dataarray.length)
                             {
-                                if(dataarray[j].includes("cname: ") == false)
+                                if(dataarray[j].includes("cname: ") == false) // keep reading until another configuration starts
                                 {
                                     console.log(dataarray[j]);
-                                    requestdata.push(dataarray[j].substring(dataarray[j].indexOf(":")+1).trim());
+                                    requestdata.push(dataarray[j].substring(dataarray[j].indexOf(":")+1).trim()); // push all data into array
                                 }
                                 else
                                 {
@@ -161,26 +159,24 @@ wss.on('connection', function connection(ws) {
                                 }
                                 j++;
                             }
- //                           requestdata = dataarray[i+1] + ":;:;:" + dataarray[i+2] + ":;:;:" + dataarray[i+3]; //sends all necessary data in one string with a separator
                         }
                     }
-
-                    console.log(requestdata);
-
+                    //send the data
                     var configloader = {
                         id: "loadconfig",
                         data: requestdata,
                     };
                     console.log(configloader);
                     ws.send(JSON.stringify(configloader)); // data sent back to client
-               // else{}
                 lastRequest = msg.config;
                 break;
             case "start/stop":
-                if(savedRT === "true")
+                var send = false; //Controls if an RT On message is sent
+                //engine.changeCycle(savedTotCycles.trim());
+                 if(savedRT === "true")
                 {
                     engine.RTon();
-                    ws.send(JSON.stringify({id: "RTStatus", bool: "true"}));
+                    send = true;
                 }
                 else
                 {
@@ -198,7 +194,7 @@ wss.on('connection', function connection(ws) {
                         isRunning = false;
                         ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
                         console.log('Cycling shutdown.');
-                        if(errorvalue[0] > 0)
+                        if(errorvalue[0] > 0) // error valyes reported to UI if errors exist
                         {
                             var errorreport = {
                                 id: "errorreport",
@@ -207,7 +203,7 @@ wss.on('connection', function connection(ws) {
                             ws.send(JSON.stringify(errorreport));
                         }
                         ws.send(JSON.stringify({id: "runcomplete"}));
-                        if(msg.email != "false"){
+                        if(msg.email != "false"){ // If an email exists in the UI when start stop is pressed. Have a sample finished message be sent to the persons email
                             var mailOptions = {
                                 from: 'caspar@casparvu.com',
                                 to: msg.email,
@@ -221,12 +217,16 @@ wss.on('connection', function connection(ws) {
                                 } else {
                                     console.log('Email sent: ' + info.response);
                                 }
-                            
+
                             });
                         }
                     });
                     isRunning = true;
-                    ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
+                    ws.send(JSON.stringify({id: "isRunning", value: isRunning})); // send if its running
+                    if(send){
+                        ws.send(JSON.stringify({id: "RTStatus", bool: "true"})); // if RT is running, send it
+                        send = false;
+                    }
                     console.log('Ignition started.');
                     // Start the periodic cycling data send and PCR data check.
                     DataIntervId = setInterval(sendit, 300);
@@ -255,7 +255,7 @@ wss.on('connection', function connection(ws) {
                 };
                 ws.send(JSON.stringify(pongmsg));
                 break;
-            case "startSave":
+            case "startSave": // all the vars to save on the server in case the client disconnects.
                 savedStartTime = msg.startTime;
                 savedProjName = msg.projectName;
                 savedOperator = msg.operator;
@@ -275,7 +275,7 @@ wss.on('connection', function connection(ws) {
                 saveddeftotcycles = msg.deftotcycles;
                 saveddefrt = msg.defrt;
                 break;
-            case "filename":
+            case "filename": //change filebane!
                 // Change the filename.
                 if(isRunning === false)
                 {
@@ -289,12 +289,12 @@ wss.on('connection', function connection(ws) {
                     ws.send(JSON.stringify({id: "filestatus", status: "Currently running PCR. Filename rejected."}));
                 }
                 break;
-                //Kunal (4): new case "save finish" that saves comments and finish time when the run ends
+                //new case "save finish" that saves comments and finish time when the run ends
             case "savefinish":
                 savedComments = msg.comments;
                 savedFinishTime = msg.finishtime;
                 break;
-                //Kunal (9): new case "saveconfiguration" saves the new configuration the client wants in the configs document
+                //new case "saveconfiguration" saves the new configuration the client wants in the configs document
             case "saveconfiguration":
                 let newConfig = "cname: " + msg.name.trim() + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "rtval:" + msg.rt + "\n" + "totcycles:" + msg.totalcycles + "\n \n";
                 fs.appendFile('./configurations/configs.txt', newConfig, (err) => { //adds to the file
@@ -304,7 +304,7 @@ wss.on('connection', function connection(ws) {
                     }
                 });
                 break;
-            case "deleteConfig":
+            case "deleteConfig": //deletes the requested configuration
                 var allthedata = fs.readFileSync('./configurations/configs.txt', 'utf8');
                 var allarray = allthedata.toString().split("\n");
                 var newarray = [];
@@ -315,7 +315,7 @@ wss.on('connection', function connection(ws) {
                         console.log(allarray[j]);
                     }
 
-                    if (allarray[j].trim() == ("cname: " + msg.name.trim())){
+                    if (allarray[j].trim() == ("cname: " + msg.name.trim())){ // once a match is found, stop adding until next 'cname:'
                         add = false;
                     }
 
@@ -324,16 +324,16 @@ wss.on('connection', function connection(ws) {
                     }
                 }
                 var newdata = newarray.join('\n') + "\n"
-                
+
                 var fd = fs.openSync('./configurations/configs.txt', 'w+');
-  
-                fs.writeFileSync('./configurations/configs.txt', newdata, (err) => { //adds to the file
+
+                fs.writeFileSync('./configurations/configs.txt', newdata, (err) => { //adds to the new file
                     if (err) {
                         console.error(err);
                         return;
                     }
                 });
-        
+
                 fs.close(fd);
                 break;
             case "sendemail":
@@ -372,7 +372,7 @@ wss.on('connection', function connection(ws) {
                     }
                 });
                 break;
-            case "shutdown": 
+            case "shutdown":
                 // Turn off the engine if it's running.
                 clearInterval(DataIntervId);
                 clearInterval(PCRIntervId);
@@ -409,14 +409,14 @@ function sendit()
         temp: cyclingdata[1]
     };
     wss.clients.forEach(function dataupdate(ws) {ws.send(JSON.stringify(datastruct));});
-    
+
 }
 
 function sendPCR()
 {
     // Check if PCR values are available.
     var PCRinfo = engine.readPCR();
-    // If there aren't any, readPCR() returns negative 1, thus: 
+    // If there aren't any, readPCR() returns negative 1, thus:
     if(PCRinfo[0] > 0)
     {
         // If there are, we log we're sending PCR values to the client, and do so.
@@ -448,7 +448,7 @@ function sendPCR()
     }
 }
 
-// Initialize the transporter for email use. 
+// Initialize the transporter for email use.
 var transporter = nodemailer.createTransport({
   service: 'Outlook365',
   auth: {

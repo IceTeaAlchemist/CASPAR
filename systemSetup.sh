@@ -48,7 +48,11 @@ sudo systemctl unmask hostapd
 sudo systemctl enable hostapd
 
 # Networking
+<<<<<<< HEAD
 sudo cat >> /etc/dhcpcd.conf<<EOF
+=======
+sudo cat >> /etc/dhcpd.conf<<EOF
+>>>>>>> 94d3f6a204fe98eb6671d0efed4f3d55cf062400
 interface wlan0
 nohook wpa_supplicant
 static ip_address=192.168.0.10/24
@@ -67,7 +71,11 @@ PASSWORD=thefriendlyghostinthemachine
 # After install of hostapd.
 sudo cat >> /etc/hostapd/hostapd.conf <<EOF
 interface=wlan0
+<<<<<<< HEAD
 #bridge=br0
+=======
+bridge=br0
+>>>>>>> 94d3f6a204fe98eb6671d0efed4f3d55cf062400
 hw_mode=g
 channel=7
 wmm_enabled=0
@@ -154,15 +162,21 @@ if [ $? != 0 ]; then
     sudo ./build
 fi
 
+<<<<<<< HEAD
 # Install the apache2 httpd server.  Should turn on and enabel by default.
 domod sudo apt-get install -y apache2
 
+=======
+>>>>>>> 94d3f6a204fe98eb6671d0efed4f3d55cf062400
 echo
 echo "Reboot the system."
 echo "Hope you have ethernet or other wlan for connection."
 
 
+<<<<<<< HEAD
 # Optional, Install VS Code,
 # sudo apt install code
 # and should install.
 #
+=======
+>>>>>>> 94d3f6a204fe98eb6671d0efed4f3d55cf062400
