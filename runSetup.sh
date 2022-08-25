@@ -43,7 +43,7 @@ fi
 # node-gyp rebuild includes clean, configure, then build.
 # node-gyp configure
 domod node-gyp rebuild
-<<<<<<< HEAD
+
 # Fix that the script is being run as sudo for the build dir.
 domod sudo chown -R pi.pi build
 
