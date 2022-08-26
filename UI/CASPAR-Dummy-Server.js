@@ -45,7 +45,7 @@ wss.on('connection', function connection(ws) {
     //Kunal (10): Reading configuration file and then sending that data to the client
     var configstrings = "";
 
-    let currentdata = fs.readFileSync('./configurations/configs.txt', 'utf8');
+    let currentdata = fs.readFileSync('./configs/configs.txt', 'utf8');
     var array = currentdata.toString().split("\n");
 
     for (var i = 0; i<array.length; i++) {
@@ -94,7 +94,7 @@ wss.on('connection', function connection(ws) {
             case "configrequest":
                 if(lastRequest != msg.config){ //ensures we dont load it if we just loaded it
                     var requestdata = "";
-                    let alldata = fs.readFileSync('./configurations/configs.txt', 'utf8'); //read file
+                    let alldata = fs.readFileSync('./configs/configs.txt', 'utf8'); //read file
                     var dataarray = alldata.toString().split("\n");
                     for (i = 0; i<dataarray.length; i++) {
                         if (dataarray[i].includes("cname: ") && (dataarray[i].includes(msg.config)))
@@ -172,7 +172,7 @@ wss.on('connection', function connection(ws) {
             case "saveconfiguration":
                 let newConfig = "cname: " + msg.name + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" +
                     "fam:::" + msg.fam + "\n" + "cy5:::" + msg.cy5 + "\n" + "rtval:" + msg.rt + "\n \n";
-                fs.appendFile('./configurations/configs.txt', newConfig, (err) => { //adds to the file
+                fs.appendFile('./configs/configs.txt', newConfig, (err) => { //adds to the file
                     if (err) {
                         console.error(err);
                         return;

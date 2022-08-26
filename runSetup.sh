@@ -48,8 +48,8 @@ domod node-gyp rebuild
 domod sudo chown -R pi.pi build
 
 domod mkdir data
-domod mkdir configurations
-domod touch ./configurations/configs.txt
+domod mkdir configs
+domod touch ./configs/configs.txt
 
 domod sudo cp -i ./UI/CASPAR-UI.html /var/www/html/
 

@@ -56,7 +56,7 @@ var HEXrecord = [];
 var cy5record = [];
 
 //Every Time the server is launched. A new configuration "none" is made that takes up the first X lines. It isnt added if it already exists
-let alldata = fs.readFileSync('./configurations/configs.txt', 'utf8');
+let alldata = fs.readFileSync('./configs/configs.txt', 'utf8');
 let allarray = alldata.toString().split("\n");
 var newarray;
 var add = true;
@@ -68,11 +68,11 @@ for (var j = 0; j<allarray.length; j++) {
 let noneConfig = "cname: None" + "\n" + "oname: " + "\n" + "ename: " + "\n" + "pname: " + "\n" + "fam: " + "\n" + "cy5: " + "\n" + "hex: " + "\n" + "rtval: OFF" + "\n" + "totcycles:" + "\n \n";
 if(add)
 {
-    var fd = fs.openSync('./configurations/configs.txt', 'w+');
+    var fd = fs.openSync('./configs/configs.txt', 'w+');
     var buffer = Buffer.from(noneConfig);
 
     fs.writeSync(fd, buffer, 0, buffer.length, 0); //write new data
-    fs.appendFile('./configurations/configs.txt', alldata, (err) => { //adds to the file
+    fs.appendFile('./configs/configs.txt', alldata, (err) => { //adds to the file
         if (err) {
             console.error(err);
             return;
@@ -87,7 +87,7 @@ wss.on('connection', function connection(ws) {
     //Reading configuration file and then sending that data to the client
     var configstrings = [];
 
-    let currentdata = fs.readFileSync('./configurations/configs.txt', 'utf8');
+    let currentdata = fs.readFileSync('./configs/configs.txt', 'utf8');
     let array = currentdata.toString().split("\n");
 
     for (var i = 0; i<array.length; i++) {
@@ -140,7 +140,7 @@ wss.on('connection', function connection(ws) {
             case "configrequest":
                 console.log(msg);
                     var requestdata = [];
-                    let alldata = fs.readFileSync('./configurations/configs.txt', 'utf8'); //read file
+                    let alldata = fs.readFileSync('./configs/configs.txt', 'utf8'); //read file
                     var dataarray = alldata.toString().split("\n");
                     for (i = 0; i<dataarray.length; i++) {
                         console.log(dataarray[i]);
@@ -297,7 +297,7 @@ wss.on('connection', function connection(ws) {
                 //new case "saveconfiguration" saves the new configuration the client wants in the configs document
             case "saveconfiguration":
                 let newConfig = "cname: " + msg.name.trim() + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "rtval:" + msg.rt + "\n" + "totcycles:" + msg.totalcycles + "\n \n";
-                fs.appendFile('./configurations/configs.txt', newConfig, (err) => { //adds to the file
+                fs.appendFile('./configs/configs.txt', newConfig, (err) => { //adds to the file
                     if (err) {
                         console.error(err);
                         return;
@@ -305,7 +305,7 @@ wss.on('connection', function connection(ws) {
                 });
                 break;
             case "deleteConfig": //deletes the requested configuration
-                var allthedata = fs.readFileSync('./configurations/configs.txt', 'utf8');
+                var allthedata = fs.readFileSync('./configs/configs.txt', 'utf8');
                 var allarray = allthedata.toString().split("\n");
                 var newarray = [];
                 var add = true;
@@ -325,9 +325,9 @@ wss.on('connection', function connection(ws) {
                 }
                 var newdata = newarray.join('\n') + "\n"
 
-                var fd = fs.openSync('./configurations/configs.txt', 'w+');
+                var fd = fs.openSync('./configs/configs.txt', 'w+');
 
-                fs.writeFileSync('./configurations/configs.txt', newdata, (err) => { //adds to the new file
+                fs.writeFileSync('./configs/configs.txt', newdata, (err) => { //adds to the new file
                     if (err) {
                         console.error(err);
                         return;

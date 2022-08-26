@@ -160,7 +160,8 @@ void calibrategain()
     runtime_out << "Calibrating gain." << endl;
     do
     {
-        if(basegain > 224) // If our gain outstrips the limits of the qiagen, exit the loop and log that we're pushing the limits of our optics.
+        if(basegain > 224) // If our gain outstrips the limits of the qiagen, exit the loop 
+        // and log that we're pushing the limits of our optics.
         {
             cout << "Couldn't find a suitable gain. Sample not present or illprepared." << endl;
             runtime_out << "Couldn't find a suitable gain. Sample not present or illprepared." << endl;
@@ -181,7 +182,8 @@ void calibrategain()
         // Increase the gain.
         basegain += 10;
         sens1.stopMethod();
-    } while (readinval < CALIBRATION_MIN && runflag == true); // Continue while we haven't reached our requested minimum calibration fluoresence. This is defined in the header.
+    } while (readinval < CALIBRATION_MIN && runflag == true); // Continue while we haven't reached our 
+    // requested minimum calibration fluoresence. This is defined in the header.
 }
 
 

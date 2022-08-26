@@ -207,3 +207,20 @@ Cooled for too long.
 PCR Session initialized at 2022824_10437
 PCR Session initialized at 2022824_104343
 Calibrating gain.
+PCR Session initialized at 2022824_141121
+Failed to open ./data/coeff2022824_141121.txt
+Failed to open ./data/coeff2022824_141121.txt
+Failed to open ./data/coeff2022824_141121.txt
+PCR Session initialized at 2022824_14142
+Failed to open ./data/coeff2022824_14142.txt
+Failed to open ./data/coeff2022824_14142.txt
+Failed to open ./data/coeff2022824_14142.txt
+PCR Session initialized at 2022824_141457
+Calibrating gain.
+PCR Session initialized at 2022825_101840
+Calibrating gain.
+Couldn't find a suitable gain. Sample not present or illprepared.
+PCR Session initialized at 2022825_15453
+Calibrating gain.
+PCR Session initialized at 2022826_16713
+Calibrating gain.
