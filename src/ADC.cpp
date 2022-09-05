@@ -405,7 +405,7 @@ int adc::getconfig()
 
 adc::~adc()
 {
-	int resetd = wiringPiI2CSetup(0x00);
+	int resetd = wiringPiI2CSetup(0x00); // Writes to the default "bus" to ALL ADS-ADC's all listen on 0x00.
 	wiringPiI2CWrite(resetd, 0b00000110);
 	cout << "ADC reset and turned off." << endl;
 }

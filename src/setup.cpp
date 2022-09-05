@@ -1,6 +1,7 @@
 #include "ADC.h"
 #include "caspar.h"
 #include "qiagen.h"
+#include "configINI.h"
 #include <wiringPiI2C.h>
 #include <wiringPi.h>
 #include <iostream>
@@ -8,20 +9,25 @@
 #include <vector>
 
 /*
- * These declarations are all for the externally linked variables found in caspar.h and used throughout the code. Please try to keep those declarations IN setup.cpp for consistency.
+ * These declarations are all for the externally linked variables found in caspar.h 
+ * and used throughout the code. Please try to keep those declarations IN setup.cpp 
+ * for consistency.
  */
 
+// Read the config file with sections [Qiagen] and [ADC], etc.
+config hardCfg("configs/devices.ini");
+
 // Set up the qiagens on relevant USB ports.
-qiagen sens1("/dev/ttyUSB0");
-qiagen sens2("/dev/ttyUSB1");
+qiagen sens1( hardCfg.get_value("Qiagen", "Qiagen0SerialPort") );  // "/dev/ttyUSB0"
+qiagen sens2( hardCfg.get_value("Qiagen", "Qiagen1SerialPort") ); // "/dev/ttyUSB1"
 
 // Set up the ADCs to use interrupts as well as declare them.
 adc D2(DEVICE_ID, 0x8000, 0x7FFF);
 adc TEMP(TEMP_ID, 0x8000, 0x7FFF);
 
-const double pwm_high_ratio = 0.90;
+const double pwm_high_ratio = stof( hardCfg.get_value("PWM", "HighRatio") ); //0.90;
 const int pwm_high = 1024.0*pwm_high_ratio;
-const double pwm_low_ratio = 0.001;
+const double pwm_low_ratio = stof( hardCfg.get_value("PWM", "HighRatio") );  //0.001;
 const int pwm_low = 1024.0*pwm_low_ratio;
 
 // Declare vectors for tracking the thermal/fluor correspondence.
@@ -72,6 +78,8 @@ string runlog = "runtimelog.txt";
  */
 void setupPi(void)
 {
+    // Print out the hardware config/ini file.
+    cout << hardCfg.print_file() << endl;
     wiringPiSetup();
     // Set pins for Alert, heating and cooling.
 	pinMode(3,INPUT);
@@ -80,9 +88,12 @@ void setupPi(void)
     pinMode(BOX_FAN, OUTPUT);
     pinMode(PWM_PIN, PWM_OUTPUT);
     pwmSetMode(PWM_MODE_MS);
-    pwmSetClock(19.53);    // Clock should be 19.2e6 divided by Range (1024) and Actual Hz (1000), usually like 19.2 Mhz / 1024 / 1000 = 19 (an int).
+    pwmSetClock(19.53); // See wiringPi.h, takes an int.   
+    // Clock should be 19.2e6 divided by the desired Hz (1000) and then the Range (1024), 
+    // usually like 19.2 Mhz / 1024 / 1000 = 19 (an int).
     pwmSetRange(1024);
-    // Set up the interrupt for sample reading. Note that these CANNOT be turned off once started, so wrapping them in a boolean with a flag is a good idea.
+    // Set up the interrupt for sample reading. Note that these CANNOT be turned off once started,
+    // so wrapping them in a boolean with a flag is a good idea.
     // wiringPiISR(3,INT_EDGE_RISING,sampletriggered);
     // Open the runtime log file for appending and print the initialization time to it. 
     digitalWrite(BOX_FAN, HIGH);
