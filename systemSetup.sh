@@ -48,9 +48,8 @@ sudo systemctl stop dnsmasq
 sudo systemctl unmask hostapd
 sudo systemctl enable hostapd
 
+# Check this.  Sometimes the below works and other times throws a permissions error.
 # Networking
-sudo cat >> /etc/dhcpcd.conf<<EOF
-=======
 sudo cat >> /etc/dhcpd.conf<<EOF
 interface wlan0
 nohook wpa_supplicant
