@@ -1,4 +1,5 @@
 #include <iostream>
+//#include <sstream> // For ostringstream? But maybe not, maybe from iostream in my test code.
 #include <string>
 #include <cstring>
 #include <iomanip>
@@ -14,22 +15,39 @@
 using namespace std;
 
 /*
- * Default (and for now ONLY) constructor. Takes the filename linux is using to handle the com-port and creates a serial interface. 
+ * Default (and for now ONLY) constructor. Takes the filename linux is using to handle the com-port 
+*  and creates a serial interface. 
  */
 qiagen::qiagen(string serial)
 {
+	string progName = "qiagen::qiagen";
+	string astring;
+	ostringstream bstream;
+
 	serial_port = open(serial.c_str(), O_RDWR);
 	if(serial_port < 0)
 	{
-		cout << "Error " << errno << " from open: " << strerror(errno) << endl;
+		bstream << progName << ":**Error:" << errno << " from open: \n\t" << strerror(errno) << '\n';
+		cout << bstream.str();
+		//astring = progName + ":**Error:" + stoi(int(errno)) + " from open: " + strerror(errno) + '\n';
+		//cout << astring;
+		// cout << "Error " << errno << " from open: " << strerror(errno) << endl;
 	}
 	else
 	{
-		cout << "Communicating with " << serial << " on serial port " << serial_port << endl;
+		bstream << progName << ": Info: Communicating with " << serial << " on serial port "; 
+		bstream << 	serial_port << '\n';
+		cout << bstream.str();
+		// astring = progName +": Info: Communicating with " + serial + " on serial port " + 
+		// 	serial_port + '\n';
+		// cout << astring;
+		// cout << "Communicating with " << serial << " on serial port " << serial_port << endl;
 		struct termios tty;
 		if(tcgetattr(serial_port,&tty) != 0)
 		{
-			cout << "Error reading attributes: " << strerror(errno) << endl;
+			astring = progName + ":**Error: reading attributes " + strerror(errno) + '\n';
+			cout << astring;
+			// cout << "Error reading attributes: " << strerror(errno) << endl;
 		}
 		tty.c_cflag &= ~PARENB;
 		tty.c_cflag &= ~CSTOPB;
@@ -51,15 +69,32 @@ qiagen::qiagen(string serial)
 		cfsetispeed(&tty, B57600);
 		cfsetospeed(&tty, B57600);
 		if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
-			cout << "Error setting attributes: " << strerror(errno) << endl;
+			astring = progName + ":**Error: setting attributes " + strerror(errno) + '\n';
+			cout << astring;
+			// cout << "Error setting attributes: " << strerror(errno) << endl;
 		}
 		address = 0;
 		active_method = 1;
+
+		// Fill some default vectors of information for the Qiagen.
+		fill_LED_Currents();  // Fills the vector<unsigned int> LED_currents;
+		cout << "LED_Currents, actual, default, max, min" << endl;
+		if (true){
+			for (int ii=0; ii < LED_Currents.size()/2; ii += 1){
+				cout << LED_Currents[ii] << "\t" << LED_Currents[ii+4] << endl;
+			}
+		}
+		fill_BoardName();    // Fills the string BoardName;
+		cout << "BoardName is: \n" << BoardName << endl;
+		fill_BoardSerialNumber();  // Fills the string BoardSerialNumber;
+		cout << "BoardSerialNumber is: " << BoardSerialNumber << endl;
+		fill_HardwareVersion(); // Fills the string HardwareVersion;
 	}
 }
 
 /*
- * lrc: Calculates the longitudinal redundancy check for the command stored bytewise in arr. Called in both generic read and write.
+ * lrc: Calculates the longitudinal redundancy check for the command stored bytewise in arr. 
+ * Called in both generic read and write.
  */
 int qiagen::lrc(vector<unsigned int> arr)
 {
@@ -72,11 +107,15 @@ int qiagen::lrc(vector<unsigned int> arr)
 }
 
 /*
- * Arguably the most important function short of the constructor. Assembles the command into a string for sending to the serial bus. 
- * Reg is the starting register, rw reflects the read/write status. Command changes based on context, either # of registers or data. 
+ * Arguably the most important function short of the constructor. Assembles the command into a 
+ * string for sending to the serial bus. 
+ * Reg is the starting register, rw reflects the read/write status. Command changes based on 
+ * context, either # of registers or data. 
  */
 string qiagen::assemble(unsigned int reg, char rw, vector<unsigned int> command)
 {
+	string progName = "qiagen::assemble";
+	string astring;
 	string result = ":";
 	stringstream ss;
 	command.insert(command.begin(),reg % 256);
@@ -91,7 +130,9 @@ string qiagen::assemble(unsigned int reg, char rw, vector<unsigned int> command)
 	}
 	else
 	{
-		cout << "The qiagen only accepts read and write. Please check your usage." << endl;
+		astring = progName + ": **Error: The qiagen only accepts read and write. Please check your usage." + '\n';
+		cout << astring;
+		// cout << "The qiagen only accepts read and write. Please check your usage." << endl;
 	}
 	command.insert(command.begin(),address);
 	int checksum = lrc(command);
@@ -107,7 +148,8 @@ string qiagen::assemble(unsigned int reg, char rw, vector<unsigned int> command)
 }
 
 /*
- * Listens for a response. This reads from the serial port one character at a time until a stop character is received and returns the input.
+ * Listens for a response. This reads from the serial port one character at a time until 
+ * a stop character is received and returns the input.
  */
 string qiagen::listen()
 {
@@ -128,14 +170,15 @@ string qiagen::listen()
 }
 
 /*
- * Generic read function. Takes the starting register and how many registers are intended to be read, returns the result.
+ * Generic read function. Takes the starting register and how many registers are intended 
+ * to be read, returns the result.
  */
 string qiagen::readqiagen(unsigned int reg, unsigned int regs_to_read)
 {
 	vector<unsigned int> rtr = {regs_to_read/256,regs_to_read%256};
 	string command = assemble(reg, 'r', rtr);
 	write(serial_port,command.c_str(),command.size());
-	string readout = listen();
+	string readout = listen();  // listen() does NOT read out the : or /r or /n chars!!
 	return readout;
 }
 
@@ -165,7 +208,7 @@ void qiagen::LED_on(int LED)
 	
 }
 
-//Turns the requested LED off.
+// Turns the requested LED off.
 void qiagen::LED_off(int LED)
 {
 	writeqiagen(6,{01,00});
@@ -180,30 +223,97 @@ void qiagen::LED_off(int LED)
 	
 }
 
-//Sets the power for the requested LED.
-void qiagen::LED_power(int LED, unsigned int power)
+// Sets the current for the requested LED.
+// Check against max and min current allowed.
+void qiagen::LED_current(int LED, unsigned int current)
 {
-	if(LED == 1)
-	{
-		writeqiagen(24, {power,00});
+	int reg;
+	unsigned int max, min;
+	vector<unsigned int> LEDstuff = get_LED_Currents(); // Reads the data structure.
+	if (LED == 1) {
+		reg = 24;
+		max = LEDstuff[LED1max];
+		min = LEDstuff[LED1min];
 	}
-	if(LED == 2)
-	{
-		writeqiagen(25, {power,00});
+	else if (LED == 2) {
+		reg = 25;
+		max = LEDstuff[LED2max];
+		min = LEDstuff[LED2min];
+	} else {
+		string astring = "qiagen::LED_current: ***Error: requested incorrect LED " + LED;
+		astring += " (1 or 2 allowed), doing nothing." + '\n';
+		cout << astring;
+		return;
 	}
+	// Check limits on current.
+	if ( current <= max && current >= min ){
+		writeqiagen(reg, {current, 00});
+	} else {
+		ostringstream astring;
+		astring << "qiagen::LED_current: ***Error: requested invalid current " << current;
+		astring << " min, max are " << min << ", " << max << " ." << '\n';
+		cout << endl << astring.str() << endl; 
+		return;
+
+	}
+	
+
+	
+}
+// Get the minimum power for the requested LED.
+unsigned int qiagen::getLED_min(int LED)
+{
+	int reg;
+	string astring;
+	if (LED == 1) reg = 30;
+	else if (LED == 2) reg = 31;
+	else {
+		astring = "qiagen::getLED_min: ***Error: requested incorrect LED " + LED;
+		astring += " (1 or 2 allowed)." + '\n';
+		cout << astring;
+		return -999;
+	}
+	// String return like: :'00'03'02'HH'LL'RC'\r\n'  (my ticks and frame start is :)
+	//                            2 bytes, HH high byte, LL low byte (not used), RC is LRC code.
+	string val = readqiagen(reg, 1);
+	unsigned int store = stoul(val.substr(6,2),nullptr,16);
+	return store;	
+}
+
+// Get the maximum power for the requested LED.
+unsigned int qiagen::getLED_max(int LED)
+{
+	int reg;
+	string astring;
+	if (LED == 1) reg = 28;
+	else if (LED == 2) reg = 29;
+	else {
+		astring = "qiagen::getLED_max: ***Error: requested incorrect LED " + LED;
+		astring += " (1 or 2 allowed)." + '\n';
+		cout << astring;
+		return -999;
+	}
+	// String return like: :'00'03'02'HH'LL'RC'\r\n'  (my ticks and frame start is :)
+	//                            2 bytes, HH high byte, LL low byte (not used), RC is LRC code.
+	string val = readqiagen(reg, 1);
+	unsigned int store = stoul(val.substr(6,2),nullptr,16);
+	return store;
 	
 }
 
+
 // Sets the minimum power for the requested LED.
+// Should not be allowed, set a the factory for their reasons 
+// (linearity? feedback control?).
 void qiagen::LED_min(int LED, unsigned int min)
 {
 	if(LED == 1)
 	{
-		writeqiagen(30, {min,00});
+		//writeqiagen(30, {min,00});
 	}
 	if(LED == 2)
 	{
-		writeqiagen(31, {min,00});
+		//writeqiagen(31, {min,00});
 	}
 	
 }
@@ -213,19 +323,20 @@ void qiagen::LED_max(int LED, unsigned int max)
 {
 	if(LED == 1)
 	{
-		writeqiagen(28, {max,00});
+		//writeqiagen(28, {max,00});
 	}
 	if(LED == 2)
 	{
-		writeqiagen(29, {max,00});
+		//writeqiagen(29, {max,00});
 	}
 	
 }
 
 /*Sets the LED and detector used. Check the manual for a key, but for practical usage:
- * 1 - E1D1
- * 2 - E1D2
- * 3 - E2D2 */
+ * 1 - E1D1   4 - E1D1+E1D2   7 - E1D1+E1D2+E2D2   10 - S_E2D2 (scope mode)
+ * 2 - E1D2   5 - E1D1+E2D2   8 - S_E1D1 (scope mode)
+ * 3 - E2D2   6 - E1D2+E2D2   9 - S_E1D2 (scope mode)
+ */
 void qiagen::setMethod(unsigned int method)
 {
 	active_method = method;
@@ -250,12 +361,67 @@ void qiagen::stopMethod()
 double qiagen::measure()
 {
 	string val = readqiagen(260+(active_method-1)*2,2);
-	int store = stoul(val.substr(6,8),nullptr,16);
-	double fluor = store*2500.0/8388607.0;
+	int store = stoul(val.substr(6,8),nullptr,16);  //substr, position 6 and 8 chars long
+	double fluor = store*2500.0/8388607.0;  // in mV
 //	cout << "Val: " << fluor << endl;
 	return fluor;
 } 
-	
+
+// Loads data into the private vector<unsigned int> LED_Currents, with the
+// ordering given below by the order of the registers, 
+//  LED1 current, current default, current max, current min,
+//	LED2 (ditto).
+// The max and minima should not change, the other two could.
+void qiagen::fill_LED_Currents(){
+	vector<int> regs = {24, 26, 28, 30, 25, 27, 29, 31};
+	string val;
+	unsigned int store;
+	for ( auto& areg: regs) {
+		val = readqiagen(areg, 1);
+		store = stoul(val.substr(6,2),nullptr,16);
+		LED_Currents.push_back(store);
+	}
+}
+// Loads the BoardName from the Qiagen into the data structure to hold it,
+// string BoardName;
+void qiagen::fill_BoardName(){
+	string val = readqiagen(128, 16);
+	cout << "qiagen::fill_BoardName(): XX" << val << "XX";
+	int numBytes = stoul( val.substr(4,2), nullptr, 16);
+	string ascii = "";
+	for ( int ii=0; ii<numBytes; ii+=2 ){
+		ascii += char( stoul( val.substr(6+ii,2), nullptr, 16) );
+	}	
+	BoardName = ascii;
+}
+
+// Loads the Board Serial Number from the Qiagen into the data structure
+// string BoardSerialNumber;
+void qiagen::fill_BoardSerialNumber(){
+	string val = readqiagen(144, 4);
+	cout << "qiagen::fill_BoardSerialNumber(): XX" << val << "XX";
+	int numBytes = stoul( val.substr(4,2), nullptr, 16);
+	string ascii = "";
+	for ( int ii=0; ii<numBytes; ii+=2 ){
+		ascii += char( stoul( val.substr(6+ii,2), nullptr, 16) );
+	}	
+	BoardSerialNumber = ascii;
+
+}
+
+// Loads the Hardware Version Number from the Qiagen into the data structure
+// string HardwareVersion;
+void qiagen::fill_HardwareVersion(){
+	string val = readqiagen(156, 4);
+	cout << "qiagen::fill_HardwareVersion(): XX" << val << "XX";
+	int numBytes = stoul( val.substr(4,2), nullptr, 16);
+	string ascii = "";
+	for ( int ii=0; ii<numBytes; ii+=2 ){
+		ascii += char( stoul( val.substr(6+ii,2), nullptr, 16) );
+	}	
+	HardwareVersion = ascii;
+
+}
 		
 
 //Closes the serial port. In the future it might be a good idea to have it also return the qiagen to default settings (i.e turning the LEDs off).

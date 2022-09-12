@@ -79,7 +79,7 @@ string runlog = "runtimelog.txt";
 void setupPi(void)
 {
     // Print out the hardware config/ini file.
-    cout << hardCfg.print_file() << endl;
+    // cout << hardCfg.print_file() << endl;
     wiringPiSetup();
     // Set pins for Alert, heating and cooling.
 	pinMode(3,INPUT);
@@ -118,9 +118,9 @@ void setupQiagen(void)
     // Note: The number of samples is basically irrelevant, just make sure it's more than 3 (Hz of sample rate) * delay after the LED turns on in readPCR().
 
     // Set the LED power for the PCR wavelengths. Cycling sensing (sens1 LED 2) is set by the calibrator.
-    sens1.LED_power(1,50);
-    sens2.LED_power(2,120);
-    sens2.LED_power(1,40);
+    sens1.LED_current(1,50);
+    sens2.LED_current(2,120);
+    sens2.LED_current(1,40);
 
     // Make sure all the LEDs besides the cycling one are off.
     sens2.LED_off(2);
@@ -182,7 +182,7 @@ void calibrategain()
         cout << "Testing at gain of: " << basegain << "." << endl;
         // Turn the LED, adjust the current, and turn it back on.
         sens1.LED_off(2);
-        sens1.LED_power(2,basegain);
+        sens1.LED_current(2,basegain);
         sens1.LED_on(2);
         sens1.startMethod();
         delay(400);

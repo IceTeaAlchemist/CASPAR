@@ -18,6 +18,10 @@ class qiagen
 		struct termios tty;
 		int serial_port;
 		unsigned int active_method;
+		vector<unsigned int> LED_Currents; // {LED1_Current, Curr Def, Curr Max,  Curr Min, LED2_Current...} 
+		string BoardName;
+		string BoardSerialNumber;
+		string HardwareVersion;
 		int lrc(vector<unsigned int> arr);
 		string assemble(unsigned int reg, char rw, vector<unsigned int> command);
 	public:
@@ -25,7 +29,9 @@ class qiagen
 		string listen();
 		void LED_on(int LED);
 		void LED_off(int LED);
-		void LED_power(int LED, unsigned int power);
+		void LED_current(int LED, unsigned int current);
+		unsigned int getLED_max(int LED);
+		unsigned int getLED_min(int LED);
 		void LED_max(int LED, unsigned int max);
 		void LED_min(int LED, unsigned int min);
 		void setMethod(unsigned int method);
@@ -35,6 +41,16 @@ class qiagen
 		double measure();
 		string readqiagen(unsigned int reg, unsigned int regs_to_read);
 		string writeqiagen(unsigned int reg, vector<unsigned int> data);
+		void fill_LED_Currents();
+		inline vector<unsigned int> get_LED_Currents(){return LED_Currents;}
+		enum {LED1act, LED1def, LED1max, LED1min, LED2act, LED2def, LED2max, LED2min };
+		void fill_BoardName();
+		inline string getBoardName(){return BoardName;}
+		void fill_BoardSerialNumber();
+		inline string getBoardSerialNumber(){return BoardSerialNumber;}
+		void fill_HardwareVersion();
+		inline string getHardwareVersion(){return HardwareVersion;}
+
 		~qiagen();
 };
 
