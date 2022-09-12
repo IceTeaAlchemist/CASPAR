@@ -99,9 +99,9 @@ EOF
 
 sudo mkdir /etc/systemd/system/dnsmasq.service.d 
 sudo cat >> /etc/systemd/system/dnsmasq.service.d/override.conf <<EOF
-[Unit]
-After=network-online.target
-Wants=network-online.target
+#[Unit]
+#After=network-online.target
+#Wants=network-online.target
 EOF
 
 # Check if node (with npm) were installed.
