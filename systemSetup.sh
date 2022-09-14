@@ -3,9 +3,13 @@
 # Run as sudo
 # sudo systemSetup.sh
 #
-# Setup for new SD Drive for the Raspberry Pi 4 used in the
+# This sets up a new SD Drive.  Use runSetup.sh for a new CASPAR folder/build.
+#
+#
+# Setup for a new SD Drive for the Raspberry Pi 4 used in the
 # CASPAR adaptive PCR machine.
 # 20220817 weg, started with Nick.
+# 20220914 weg, many edits.  Keeping runSetup and systemSetup different.
 
 # Function that echoes the command to the terminal.
 domod () {
@@ -19,9 +23,12 @@ domod sudo systemctl enable ssh
 domod sudo systemctl start ssh
 domod sudo raspi-config nonint do_i2c 0
 
-myhostname=rpi4
+MYHOSTNAME=rpi3
+CURHOSTNAME=`hostname`
 echo "***Using hostname ${myhostname}"
 domod sudo hostnamectl set-hostname ${myhostname}
+# Above fixes /etc/hostname but not /etc/hosts
+domod sudo sed -i "s/127.0.1.1.*$CURHOSTNAME/127.0.1.1\t$MYHOSTNAME/g" /etc/hosts
 
 cat >> ${HOME}/.bash_aliases <<EOF
 alias rm='rm -i'
@@ -30,7 +37,7 @@ alias cp='cp -i'
 EOF
 
 mkdir ${HOME}/bin
-mkdir ${HOME}/Documents/github
+mkdir ${HOME}/Documents/githubs
 
 cat >> ${HOME}/.Profile <<EOF
 PATH="$PATH:/."
@@ -50,7 +57,9 @@ sudo systemctl enable hostapd
 
 # Check this.  Sometimes the below works and other times throws a permissions error.
 # Networking
-sudo cat >> /etc/dhcpd.conf<<EOF
+# sudo cat >> /etc/dhcpd.conf<<EOF
+# Below is a trick to get sudo to write to these protected files with re-direction.
+sudo tee -a /etc/dhcpd.conf > /dev/null <<EOF
 interface wlan0
 nohook wpa_supplicant
 static ip_address=192.168.0.10/24
@@ -58,17 +67,19 @@ denyinterfaces wlan0
 EOF
 
 sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
-sudo cat >> /etc/dnsmasq.conf <<EOF
+#sudo cat >> /etc/dnsmasq.conf <<EOF
+sudo tee -a /etc/dnsmasq.conf > /dev/null <<EOF
 interface=wlan0
   dhcp-range=192.168.0.11,192.168.0.30,255.255.255.0,24h
 EOF
 
-NETWORK=PRODUCTION2
+NETWORK=CASPAR01
 PASSWORD=thefriendlyghostinthemachine
 echo "***Using NETWORK ${NETWORK}."
 
 # After install of hostapd.
-sudo cat >> /etc/hostapd/hostapd.conf <<EOF
+#sudo cat >> /etc/hostapd/hostapd.conf <<EOF
+sudo tee -a /etc/hostapd/hostapd.conf > /dev/null<<EOF
 interface=wlan0
 hw_mode=g
 channel=7
@@ -84,21 +95,25 @@ ssid=${NETWORK}
 wpa_passphrase=${PASSWORD}
 EOF
 
-sudo cat >> /etc/default/hostapd <<EOF
+#sudo cat >> /etc/default/hostapd <<EOF
+sudo tee -a /etc/default/hostapd >/dev/null <<EOF
 DAEMON_CONF="/etc/hostapd/hostapd.conf"
 EOF
 # End Tutorial at the Step 6, do not do it.
 
 # Not in the tutorial, think it fixes the race condition with network start.
 sudo mkdir /etc/systemd/system/hostapd.service.d 
-sudo cat >> /etc/systemd/system/hostapd.service.d/override.conf <<EOF
+#sudo cat >> /etc/systemd/system/hostapd.service.d/override.conf <<EOF
+
+sudo tee -a /etc/systemd/system/hostapd.service.d/override.conf > /dev/null <<EOF
 [Unit]
 After=network-online.target
 Wants=network-online.target
 EOF
 
 sudo mkdir /etc/systemd/system/dnsmasq.service.d 
-sudo cat >> /etc/systemd/system/dnsmasq.service.d/override.conf <<EOF
+#sudo cat >> /etc/systemd/system/dnsmasq.service.d/override.conf <<EOF
+sudo tee -a /etc/systemd/system/dnsmasq.service.d/override.conf > /dev/null <<EOF
 #[Unit]
 #After=network-online.target
 #Wants=network-online.target
@@ -128,12 +143,6 @@ fi
 domod hash -r
 myversion=`node -v`
 
-# Test that node-gyp is installed.  Which returns 0 if it finds it, 1 if not.
-which node-gyp
-if [ $? != 0 ]; then
-    domod sudo npm install -g node-gyp
-fi
-
 # WiringPi install.
 # From github https://github.com/IceTeaAlchemist/WiringPi .
 
@@ -148,6 +157,7 @@ int main(void){
 }// end main
 EOF
 g++ -c /tmp/testWPi.cpp
+
 if [ $? != 0 ]; then
     mkdir -p ${HOME}/Documents/githubs
     cd ${HOME}/Documents/githubs
@@ -160,11 +170,12 @@ fi
 domod sudo apt-get install -y apache2
 
 echo
+echo "===You should run the runSetup.sh script after reboot.==="
+echo "    bash ./runSetup.sh"
+echo
 echo "Reboot the system."
-echo "Hope you have ethernet or other wlan for connection."
-
-#
-# Optional, Install VS Code,
-# sudo apt install code
-# and should install.
-#
+echo
+echo "You will want a working network connection for debugging.n."
+echo "Optional: install VS Code with"
+echo "          sudo apt install code"
+echo
