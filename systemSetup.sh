@@ -57,9 +57,9 @@ sudo systemctl enable hostapd
 
 # Check this.  Sometimes the below works and other times throws a permissions error.
 # Networking
-# sudo cat >> /etc/dhcpd.conf<<EOF
+# sudo cat >> /etc/dhcpcd.conf<<EOF
 # Below is a trick to get sudo to write to these protected files with re-direction.
-sudo tee -a /etc/dhcpd.conf > /dev/null <<EOF
+sudo tee -a /etc/dhcpcd.conf > /dev/null <<EOF
 interface wlan0
 nohook wpa_supplicant
 static ip_address=192.168.0.10/24
