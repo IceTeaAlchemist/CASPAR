@@ -51,7 +51,8 @@ domod mkdir data
 domod mkdir configs
 domod touch ./configs/configs.txt
 
-domod sudo cp -i ./UI/CASPAR-UI.html /var/www/html/
+# domod sudo cp -i ./UI/CASPAR-UI.html /var/www/html/
+domod sudo ln -s ${PWD}/UI/CASPAR-UI.html /var/www/html/
 
 echo "sudo cp -fpr ./\"JS Libraries/src\" /var/www/html/"
 sudo cp -fpr ./"JS Libraries/src" /var/www/html/
