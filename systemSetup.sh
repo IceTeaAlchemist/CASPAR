@@ -17,14 +17,22 @@ domod () {
         $@
 }
 
+######################
+#  User defined names.
+######################
+MYHOSTNAME=rpi3
+CURHOSTNAME=`hostname`
+NETWORK=CASPAR01
+PASSWORD=thefriendlyghostinthemachine
+######################
+
 domod sudo apt install emacs -y
 
 domod sudo systemctl enable ssh
 domod sudo systemctl start ssh
 domod sudo raspi-config nonint do_i2c 0
 
-MYHOSTNAME=rpi3
-CURHOSTNAME=`hostname`
+
 echo "***Using hostname ${myhostname}"
 domod sudo hostnamectl set-hostname ${myhostname}
 # Above fixes /etc/hostname but not /etc/hosts
@@ -73,8 +81,7 @@ interface=wlan0
   dhcp-range=192.168.0.11,192.168.0.30,255.255.255.0,24h
 EOF
 
-NETWORK=CASPAR01
-PASSWORD=thefriendlyghostinthemachine
+
 echo "***Using NETWORK ${NETWORK}."
 
 # After install of hostapd.
