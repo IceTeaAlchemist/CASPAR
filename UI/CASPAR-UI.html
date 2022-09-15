@@ -828,7 +828,8 @@
       }
       var msg = {
         id: "start/stop",
-        email: emailvaluetosend
+        email: emailvaluetosend,
+        cutoffcycles: document.getElementById("totCycles").value
       };
       ws.send(JSON.stringify(msg)); //sends message
     }
@@ -879,7 +880,7 @@
 
       //This function should only be called when Email Data is pressed.
       function sendFiles() {
-        if(runFinished){ // saftey to ensure data is only sent when the run is finished.
+        if(runFinished){ // safety to ensure data is only sent when the run is finished.
           if((String(document.getElementById("email").value).trim().length == 0) || ((!String(document.getElementById("email").value).trim().includes("@")))){
             alert("Please enter a valid email address");
           }

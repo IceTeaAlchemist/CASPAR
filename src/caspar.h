@@ -67,6 +67,7 @@ extern const double pwm_high_ratio;
 extern const int pwm_high;
 extern const double pwm_low_ratio;
 extern const int pwm_low;
+extern int cyclecutoff;
 
 //setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
 

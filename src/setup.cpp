@@ -52,6 +52,7 @@ fstream runtime_out;
 
 // Declare cycle number variable.
 int cycles = 0;
+int cyclecutoff = 40;
 
 // Declare the file operator and a few check variables for the thread.
 FILE *output;

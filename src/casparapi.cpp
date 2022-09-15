@@ -222,6 +222,14 @@ namespace caspar
         openFiles();
     }
 
+    void setCutoff(const FunctionCallbackInfo<Value>& args)
+    {
+        Isolate* isolate = args.GetIsolate();
+        int cyclefromserver = args[0].As<Number>()->Value();
+        cyclecutoff = cyclefromserver;
+        cout << "Cycles set: " << cyclecutoff << endl;
+    }
+
     void checkInit(const FunctionCallbackInfo<Value> &args)
     {
         // This function is a placeholder for later.
@@ -244,6 +252,7 @@ namespace caspar
         NODE_SET_METHOD(exports, "changefiles", reopenFiles);
         NODE_SET_METHOD(exports, "getfiles", readoutFilenames);
         NODE_SET_METHOD(exports, "boxfanoff", turnOffBoxFan);
+        NODE_SET_METHOD(exports, "setCutoff", setCutoff);
         NODE_SET_METHOD(exports, "RToff", RToff);
         NODE_SET_METHOD(exports, "RTon", RTon);
     }

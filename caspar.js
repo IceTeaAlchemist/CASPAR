@@ -159,7 +159,9 @@ wss.on('connection', function connection(ws) {
                 }
                 if(isRunning === false)
                 {
+                    console.log(msg);
                     // Start the PCR cycling if it's not.
+                    engine.setCutoff(parseInt(msg.cutoffcycles));
                     engine.start(function (err, errorvalue){
                         console.log(errorvalue);
                         clearInterval(DataIntervId);
@@ -261,7 +263,7 @@ wss.on('connection', function connection(ws) {
                 break;
                 //Kunal (9): new case "saveconfiguration" saves the new configuration the client wants in the configs document
             case "saveconfiguration":
-                let newConfig = "cname: " + msg.name.trim() + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "rtval:" + msg.rt + "\n \n";
+                let newConfig = "cname: " + msg.name.trim() + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "rtval:" + msg.rt + "\n" + "cycles:" + msg.totalcycles + "\n \n";
                 fs.appendFile('./configs/configs.txt', newConfig, (err) => { //adds to the file
                     if (err) {
                         console.error(err);
