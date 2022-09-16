@@ -386,7 +386,7 @@ void qiagen::fill_LED_Currents(){
 // string BoardName;
 void qiagen::fill_BoardName(){
 	string val = readqiagen(128, 16);
-	cout << "qiagen::fill_BoardName(): XX" << val << "XX";
+	// cout << "qiagen::fill_BoardName(): XX" << val << "XX";
 	int numBytes = stoul( val.substr(4,2), nullptr, 16);
 	string ascii = "";
 	for ( int ii=0; ii<numBytes; ii+=2 ){
@@ -399,7 +399,7 @@ void qiagen::fill_BoardName(){
 // string BoardSerialNumber;
 void qiagen::fill_BoardSerialNumber(){
 	string val = readqiagen(144, 4);
-	cout << "qiagen::fill_BoardSerialNumber(): XX" << val << "XX";
+	// cout << "qiagen::fill_BoardSerialNumber(): XX" << val << "XX";
 	int numBytes = stoul( val.substr(4,2), nullptr, 16);
 	string ascii = "";
 	for ( int ii=0; ii<numBytes; ii+=2 ){
@@ -413,7 +413,7 @@ void qiagen::fill_BoardSerialNumber(){
 // string HardwareVersion;
 void qiagen::fill_HardwareVersion(){
 	string val = readqiagen(156, 4);
-	cout << "qiagen::fill_HardwareVersion(): XX" << val << "XX";
+	// cout << "qiagen::fill_HardwareVersion(): XX" << val << "XX";
 	int numBytes = stoul( val.substr(4,2), nullptr, 16);
 	string ascii = "";
 	for ( int ii=0; ii<numBytes; ii+=2 ){
