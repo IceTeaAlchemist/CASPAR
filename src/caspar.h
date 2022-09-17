@@ -63,6 +63,7 @@ extern string runlog;
 extern int runerror;
 extern int temperrors;
 extern bool RTflag;
+extern bool pwm_enable;
 extern const double pwm_high_ratio;
 extern const int pwm_high;
 extern const double pwm_low_ratio;

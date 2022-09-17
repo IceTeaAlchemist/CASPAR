@@ -78,16 +78,16 @@ qiagen::qiagen(string serial)
 
 		// Fill some default vectors of information for the Qiagen.
 		fill_LED_Currents();  // Fills the vector<unsigned int> LED_currents;
-		cout << "LED_Currents, actual, default, max, min" << endl;
+		cout << progName << ": Info, LED_Currents, actual, default, max, min" << endl;
 		if (true){
 			for (int ii=0; ii < LED_Currents.size()/2; ii += 1){
 				cout << LED_Currents[ii] << "\t" << LED_Currents[ii+4] << endl;
 			}
 		}
 		fill_BoardName();    // Fills the string BoardName;
-		cout << "BoardName is: \n" << BoardName << endl;
+		cout << progName << ": Info, BoardName is: \n" << BoardName << endl;
 		fill_BoardSerialNumber();  // Fills the string BoardSerialNumber;
-		cout << "BoardSerialNumber is: " << BoardSerialNumber << endl;
+		cout << progName << ": Info, BoardSerialNumber is: " << BoardSerialNumber << endl;
 		fill_HardwareVersion(); // Fills the string HardwareVersion;
 	}
 }

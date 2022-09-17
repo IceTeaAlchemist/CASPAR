@@ -2,14 +2,39 @@ cname: laser heating
 oname: bill rosana franz nick
 ename: bill.gabella@gmail.com
 pname: laser_heating
+fam: one
+cy5: two
+hex: three
+rtval:false
+cycles: 40
 
 cname: zTestOne
 oname: zest
 ename: zest@stuff.com
 pname: zestProjectOne
+fam: one
+cy5: two
+hex: three
+rtval:false
+cycles: 45
 
 cname: zTestTwo
 oname: zestTwo
 ename: zestTwo@stuff.com
 pname: zestProjectTwo
+fam: one
+cy5: two
+hex: three
+rtval:false
+cycles: 50
+
+cname: New Nanorods
+oname: Nick
+ename: caspar@casparvu.com
+pname: New Nanorods
+fam: NA
+cy5: NA
+hex: S Midas
+rtval:false
+cycles:50
  

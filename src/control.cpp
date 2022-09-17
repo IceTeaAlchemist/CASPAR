@@ -118,7 +118,7 @@ bool modeshift(bool state)
         digitalWrite(HEATER_PIN, LOW);
         // digitalWrite(BOX_FAN, LOW),
         digitalWrite(FAN_PIN, HIGH);
-        pwmWrite(PWM_PIN, pwm_low);
+        if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
         return false;
     }
     else
@@ -127,7 +127,7 @@ bool modeshift(bool state)
         readPCR();
         // digitalWrite(BOX_FAN,HIGH);
         digitalWrite(HEATER_PIN, HIGH);
-        pwmWrite(PWM_PIN, pwm_high);
+        if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
         return true;
     }
 }
@@ -136,6 +136,7 @@ bool modeshift(bool state)
  */
 int cycle()
 {
+    string progName = "cycle()";
     int mode = 2;
     bool doublehump;
     if(mode == 2)
@@ -156,7 +157,7 @@ int cycle()
     double coeffdouble[3];
     double thresh = 0.005;
     double threshcool = 0.135;
-    double dthreshheat = 0.1; // Other version has 0.25, 20220915 weg.
+    double dthreshheat = 0.25; // Other version has 0.25, 20220915 weg.
     double dthreshcool = 0.7; // Other version has 0.8, ditto weg.
     coeffprev[0] = 0;
     coeffprev[1] = 0;
@@ -167,13 +168,13 @@ int cycle()
     temperrors = 0;
     delay(100);
     digitalWrite(HEATER_PIN,LOW);
-    pwmWrite(PWM_PIN, pwm_low);
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     clearactivedata();
     delay(3000);
 
     // Begin heating.
     digitalWrite(HEATER_PIN, HIGH);
-    pwmWrite(PWM_PIN, pwm_high);
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
     digitalWrite(FAN_PIN,LOW);   
     bool state = true;
     delay(100);
@@ -209,7 +210,7 @@ int cycle()
                 cout << "Heated for too long, error thrown." << endl;
                 runtime_out << "Heated for too long." << endl;
                 digitalWrite(HEATER_PIN,LOW);
-                pwmWrite(PWM_PIN, pwm_low);
+                if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
                 digitalWrite(FAN_PIN, HIGH);
                 state = false;
                 dtrigger = false;
@@ -222,7 +223,7 @@ int cycle()
                 runtime_out << "Cooled for too long." << endl;
                 digitalWrite(FAN_PIN,LOW);
                 digitalWrite(HEATER_PIN, HIGH);
-                pwmWrite(PWM_PIN, pwm_high);
+                if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
                 dtrigger = false;
                 state = true;
                 clearactivedata();
@@ -243,7 +244,7 @@ int cycle()
         }
         piUnlock(0);
 //        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1) // Other version, 20220915 weg.
-        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 2.5)  
+        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1)  
         {
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {
@@ -313,7 +314,7 @@ int cycle()
                         cout << "Cycle " << cycles << " complete." << endl;
                         dtrigger = false;
                     }
-                    cout << "Control triggered at " << triggertime << " milliseconds after run initiation." << endl;
+                    cout << "Control triggered at " << triggertime - (long)run_start<< " milliseconds after run initiation." << endl;
                     coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - (long)run_start << endl; 
                     clearactivedata();
                 }
@@ -330,9 +331,10 @@ int cycle()
     // fclose(output);
     runflag = false;
     digitalWrite(HEATER_PIN, LOW);
-    pwmWrite(PWM_PIN, pwm_low);
+    cout << progName << ": INFO: pwm_enabel is " << pwm_enable << endl;
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     digitalWrite(FAN_PIN, LOW);
     sens1.LED_off(2);
     return 0;
-}
+}// end cycle
 
