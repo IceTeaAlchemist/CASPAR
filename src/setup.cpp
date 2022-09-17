@@ -112,11 +112,13 @@ void setupPi(void)
     runtime_out << progName << ": Info: PCR Session initialized at " << timestamp() << endl;
 }
 
-/* Sets up the Qiagen using default settings. Note that the qiagen itself is initialized externally. In the future this function will factor UI/recipe details.
+/* Sets up the Qiagen using default settings. Note that the qiagen itself is initialized externally. In 
+   the future this function will factor UI/recipe details.
  */
 void setupQiagen(void)
 {
-    // Set Qiagen 1 sample protocol--Maximum samples with minimum delay between them. This is so we can use it for cycling.
+    // Set Qiagen 1 sample protocol--Maximum samples with minimum delay between them. This is so we can use 
+    // it for cycling.
     sens1.writeqiagen(0, {255,255});
     sens1.writeqiagen(1, {00,00});
     sens1.writeqiagen(32,{01,244});
@@ -124,7 +126,8 @@ void setupQiagen(void)
     // Set Qiagen 2 sample protocol-- 200 samples with minimum delay between them.
     sens2.writeqiagen(0, {00,200});
     sens2.writeqiagen(1, {00,00});   
-    // Note: The number of samples is basically irrelevant, just make sure it's more than 3 (Hz of sample rate) * delay after the LED turns on in readPCR().
+    // Note: The number of samples is basically irrelevant, just make sure it's more than 3 (Hz of 
+    // sample rate) * delay after the LED turns on in readPCR().
 
     // Set the LED power for the PCR wavelengths. Cycling sensing (sens1 LED 2) is set by the calibrator.
     sens1.LED_current(1,50);

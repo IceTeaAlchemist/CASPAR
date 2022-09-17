@@ -21,7 +21,10 @@ class qiagen
 		vector<unsigned int> LED_Currents; // {LED1_Current, Curr Def, Curr Max,  Curr Min, LED2_Current...} 
 		string BoardName;
 		string BoardSerialNumber;
-		string HardwareVersion;
+		string HardwareRevision;
+		string BoardID;
+		string OpticRevision;
+		string SoftwareVersion;
 		int lrc(vector<unsigned int> arr);
 		string assemble(unsigned int reg, char rw, vector<unsigned int> command);
 	public:
@@ -48,8 +51,14 @@ class qiagen
 		inline string getBoardName(){return BoardName;}
 		void fill_BoardSerialNumber();
 		inline string getBoardSerialNumber(){return BoardSerialNumber;}
-		void fill_HardwareVersion();
-		inline string getHardwareVersion(){return HardwareVersion;}
+		void fill_HardwareRevision();
+		inline string getHardwareRevision(){return HardwareRevision;}
+		void fill_BoardID();
+		inline string getBoardID(){return BoardID;}
+		void fill_OpticRevision();
+		inline string getOpticRevision(){return OpticRevision;}
+		void fill_SoftwareVersion();
+		inline string getSoftwareVersion(){return SoftwareVersion;}
 
 		~qiagen();
 };

@@ -16,7 +16,8 @@ const hostname = '192.168.0.10';
 var serverforip = httpserver.createServer();
 
 
-// Initialize the websocket server. Port doesn't matter as long as it matches on the website, 7071 is usually unoccupied.
+// Initialize the websocket server. Port doesn't matter as long as it matches on the website, 
+// 7071 is usually unoccupied.
 serverforip.listen(7071,hostname, () => {
     console.log(`Server running at http://${hostname}:7071`)
 });
@@ -320,9 +321,9 @@ wss.on('connection', function connection(ws) {
                 // Log that the server is turning off and tell the client as much.
                 console.log("Server disconnected.");
                 engine.boxfanoff();
-                console.log("Delaying to allow threads to wrap up. Closing in ten seconds.");
+                console.log("Delaying to allow threads to wrap up. Closing in five seconds.");
                 // Hard shutdown. There should be a better way.
-                setTimeout(killserver,10000);
+                setTimeout(killserver,5000);
         }
         // Log request received.
         console.log('received: %s', data);
@@ -346,7 +347,9 @@ function sendit()
     wss.clients.forEach(function dataupdate(ws) {ws.send(JSON.stringify(datastruct));});
     
 }
-
+//////////////////////
+//
+//////////////////////
 function sendPCR()
 {
     // Check if PCR values are available.

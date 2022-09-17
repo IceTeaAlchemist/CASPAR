@@ -38,3 +38,12 @@ hex: S Midas
 rtval:false
 cycles:50
  
+cname: evaporation
+oname: Nick
+ename: caspar@casparvu.com
+pname: Evaporation Testing
+fam: NA
+cy5: NA
+hex: S Midas
+rtval:false
+cycles:40

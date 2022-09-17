@@ -88,7 +88,15 @@ qiagen::qiagen(string serial)
 		cout << progName << ": Info, BoardName is: \n" << BoardName << endl;
 		fill_BoardSerialNumber();  // Fills the string BoardSerialNumber;
 		cout << progName << ": Info, BoardSerialNumber is: " << BoardSerialNumber << endl;
-		fill_HardwareVersion(); // Fills the string HardwareVersion;
+		fill_BoardID(); // Fills the string BoardID;
+		cout << progName << ": Info, BoardID is: " << BoardID << endl;
+		fill_HardwareRevision(); // Fills the string HardwareRevision;
+		cout << progName << ": Info, HardwareRevision is: " << HardwareRevision << endl;
+		fill_OpticRevision(); // Fills the string OpticRevision;
+		cout << progName << ": Info, OpticRevision is: " << OpticRevision << endl;
+		fill_SoftwareVersion(); // Fills the string OpticRevision;
+		cout << progName << ": Info, SoftwareVersion is: " << SoftwareVersion << endl;
+
 	}
 }
 
@@ -389,7 +397,7 @@ void qiagen::fill_BoardName(){
 	// cout << "qiagen::fill_BoardName(): XX" << val << "XX";
 	int numBytes = stoul( val.substr(4,2), nullptr, 16);
 	string ascii = "";
-	for ( int ii=0; ii<numBytes; ii+=2 ){
+	for ( int ii=0; ii<2*numBytes; ii+=2 ){  // This iterates over characters, takes two hex chars.
 		ascii += char( stoul( val.substr(6+ii,2), nullptr, 16) );
 	}	
 	BoardName = ascii;
@@ -399,30 +407,63 @@ void qiagen::fill_BoardName(){
 // string BoardSerialNumber;
 void qiagen::fill_BoardSerialNumber(){
 	string val = readqiagen(144, 4);
-	// cout << "qiagen::fill_BoardSerialNumber(): XX" << val << "XX";
+	//cout << "qiagen::fill_BoardSerialNumber: Info, full readback from Qiagen is \n" << val << endl;
 	int numBytes = stoul( val.substr(4,2), nullptr, 16);
 	string ascii = "";
-	for ( int ii=0; ii<numBytes; ii+=2 ){
+	for ( int ii=0; ii<2*numBytes; ii+=2 ){ // This iterates over characters, takes two hex chars.
 		ascii += char( stoul( val.substr(6+ii,2), nullptr, 16) );
 	}	
 	BoardSerialNumber = ascii;
 
 }
 
-// Loads the Hardware Version Number from the Qiagen into the data structure
-// string HardwareVersion;
-void qiagen::fill_HardwareVersion(){
+// Loads the Hardware Revision Number from the Qiagen into the data structure
+void qiagen::fill_HardwareRevision(){
 	string val = readqiagen(156, 4);
-	// cout << "qiagen::fill_HardwareVersion(): XX" << val << "XX";
+	//cout << "qiagen::fill_HardwareRevison: Info, full readback from Qiagen is \n" << val << endl;
 	int numBytes = stoul( val.substr(4,2), nullptr, 16);
 	string ascii = "";
-	for ( int ii=0; ii<numBytes; ii+=2 ){
+	for ( int ii=0; ii<2*numBytes; ii+=2 ){ // This iterates over characters, takes two hex chars.
 		ascii += char( stoul( val.substr(6+ii,2), nullptr, 16) );
 	}	
-	HardwareVersion = ascii;
+	HardwareRevision = ascii;
 
 }
-		
+
+// Loads the BoardID from the Qiagen into the data structure
+void qiagen::fill_BoardID(){
+	string val = readqiagen(148, 8);
+	//cout << "qiagen::fill_BoardID: Info, full readback from Qiagen is \n" << val << endl;
+	int numBytes = stoul( val.substr(4,2), nullptr, 16);
+	string ascii = "";
+	for ( int ii=0; ii<2*numBytes; ii+=2 ){ // This iterates over characters, takes two hex chars.
+		ascii += char( stoul( val.substr(6+ii,2), nullptr, 16) );
+	}	
+	BoardID = ascii;
+}
+
+// Loads the OpticRevision from the Qiagen into the data structure
+void qiagen::fill_OpticRevision(){
+	string val = readqiagen(160, 4);
+	int numBytes = stoul( val.substr(4,2), nullptr, 16);
+	string ascii = "";
+	for ( int ii=0; ii<2*numBytes; ii+=2 ){ // This iterates over characters, takes two hex chars.
+		ascii += char( stoul( val.substr(6+ii,2), nullptr, 16) );
+	}	
+	OpticRevision = ascii;
+}
+
+// Loads the SoftwareVersion from the Qiagen into the data structure
+void qiagen::fill_SoftwareVersion(){
+	string val = readqiagen(384, 16);
+	cout << "qiagen::fill_SoftwareVersion: Info, full readback from Qiagen is \n" << val << endl;
+	int numBytes = stoul( val.substr(4,2), nullptr, 16);
+	string ascii = "";
+	for ( int ii=0; ii<2*numBytes; ii+=2 ){ // This iterates over characters, takes two hex chars.
+		ascii += char( stoul( val.substr(6+ii,2), nullptr, 16) );
+	}	
+	SoftwareVersion = ascii;
+}
 
 //Closes the serial port. In the future it might be a good idea to have it also return the qiagen to default settings (i.e turning the LEDs off).
 qiagen::~qiagen()
