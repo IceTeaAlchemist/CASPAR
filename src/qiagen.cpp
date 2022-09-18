@@ -85,17 +85,17 @@ qiagen::qiagen(string serial)
 			}
 		}
 		fill_BoardName();    // Fills the string BoardName;
-		cout << progName << ": Info, BoardName is: \n" << BoardName << endl;
+		if (0) cout << progName << ": Info, BoardName is: \n" << BoardName << endl;
 		fill_BoardSerialNumber();  // Fills the string BoardSerialNumber;
-		cout << progName << ": Info, BoardSerialNumber is: " << BoardSerialNumber << endl;
+		if (0) cout << progName << ": Info, BoardSerialNumber is: " << BoardSerialNumber << endl;
 		fill_BoardID(); // Fills the string BoardID;
-		cout << progName << ": Info, BoardID is: " << BoardID << endl;
+		if (0) cout << progName << ": Info, BoardID is: " << BoardID << endl;
 		fill_HardwareRevision(); // Fills the string HardwareRevision;
-		cout << progName << ": Info, HardwareRevision is: " << HardwareRevision << endl;
+		if (0) cout << progName << ": Info, HardwareRevision is: " << HardwareRevision << endl;
 		fill_OpticRevision(); // Fills the string OpticRevision;
-		cout << progName << ": Info, OpticRevision is: " << OpticRevision << endl;
+		if (0) cout << progName << ": Info, OpticRevision is: " << OpticRevision << endl;
 		fill_SoftwareVersion(); // Fills the string OpticRevision;
-		cout << progName << ": Info, SoftwareVersion is: " << SoftwareVersion << endl;
+		if (0) cout << progName << ": Info, SoftwareVersion is: " << SoftwareVersion << endl;
 
 	}
 }
@@ -456,7 +456,7 @@ void qiagen::fill_OpticRevision(){
 // Loads the SoftwareVersion from the Qiagen into the data structure
 void qiagen::fill_SoftwareVersion(){
 	string val = readqiagen(384, 16);
-	cout << "qiagen::fill_SoftwareVersion: Info, full readback from Qiagen is \n" << val << endl;
+	//cout << "qiagen::fill_SoftwareVersion: Info, full readback from Qiagen is \n" << val << endl;
 	int numBytes = stoul( val.substr(4,2), nullptr, 16);
 	string ascii = "";
 	for ( int ii=0; ii<2*numBytes; ii+=2 ){ // This iterates over characters, takes two hex chars.
