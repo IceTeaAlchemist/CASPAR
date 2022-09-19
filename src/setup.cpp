@@ -16,10 +16,11 @@
 
 // Read the config file with sections [Qiagen] and [ADC], etc.
 config hardCfg("configs/devices.ini");
+config recipeDef("configs/recipes/default.ini");
 
 // Set up the qiagens on relevant USB ports.
-qiagen sens1( hardCfg.get_value("Qiagen", "Qiagen0SerialPort") );  // "/dev/ttyUSB0"
-qiagen sens2( hardCfg.get_value("Qiagen", "Qiagen1SerialPort") ); // "/dev/ttyUSB1"
+qiagen sens1( hardCfg.get_value("Qiagen", "Q0SerialPort") );  // "/dev/ttyUSB0"
+qiagen sens2( hardCfg.get_value("Qiagen", "Q1SerialPort") ); // "/dev/ttyUSB1"
 
 // Set up the ADCs to use interrupts as well as declare them.
 adc D2(DEVICE_ID, 0x8000, 0x7FFF);
@@ -119,13 +120,13 @@ void setupQiagen(void)
 {
     // Set Qiagen 1 sample protocol--Maximum samples with minimum delay between them. This is so we can use 
     // it for cycling.
-    sens1.writeqiagen(0, {255,255});
-    sens1.writeqiagen(1, {00,00});
-    sens1.writeqiagen(32,{01,244});
-    sens1.writeqiagen(5,{01,00});
+    sens1.writeqiagen(0, {255,255});  // Cycles to read, 65535.
+    sens1.writeqiagen(1, {00,00});   // Cycle time 0s.
+    sens1.writeqiagen(32,{01,244});   // ADC Sampling 500 Hz.
+    sens1.writeqiagen(5,{01,00});   // Average 1 sample, no average.
     // Set Qiagen 2 sample protocol-- 200 samples with minimum delay between them.
-    sens2.writeqiagen(0, {00,200});
-    sens2.writeqiagen(1, {00,00});   
+    sens2.writeqiagen(0, {00,200});  // Cycles to read, 200.
+    sens2.writeqiagen(1, {00,00});   // Cycle time 0s.
     // Note: The number of samples is basically irrelevant, just make sure it's more than 3 (Hz of 
     // sample rate) * delay after the LED turns on in readPCR().
 

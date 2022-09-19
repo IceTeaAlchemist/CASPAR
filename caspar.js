@@ -45,6 +45,7 @@ var savedDefProj = "";
 var savedDefOp = "";
 var savedDefEm = "";
 var lastRequest = "";
+var lastRecipeRequest = "";
 var savedFAM = "";
 var savedCY5 = "";
 var savedHEX = "";
@@ -62,6 +63,7 @@ wss.on('connection', function connection(ws) {
 
     //Kunal (10): Reading configuration file and then sending that data to the client
     var configstrings = [];
+    var recipefiles = [];
 
     let currentdata = fs.readFileSync('./configs/configs.txt', 'utf8');
     let array = currentdata.toString().split("\n");
@@ -71,6 +73,25 @@ wss.on('connection', function connection(ws) {
             configstrings.push((array[i].substring(array[i].lastIndexOf("cname: ") + 7)).trim()); //sends all names in one string with a seperator
         }
     }
+
+    fs.readdir('./configs/recipes/', 'utf8', function(err, files) {
+        if (err){ // Handle the error.  Still in CallBack function!!
+            return console.log("caspar.js: Unable to scan directory: " + err);
+        } else { 
+            console.log("Recipe files are:");
+            console.log(files);
+            // files.forEach(function(file){
+            //         console.log(file);
+            //         //recipefiles.push(file); // fs.readdir returns an array.
+            //     }//end callback function file
+            // );
+            recipefiles = files;
+        }// end else
+    }//end callback function err, files                      
+    );
+
+    console.log("recipes recipefiles:");
+    console.log(recipefiles);
 
     // Send a message to the client to confirm connection.
     var connect = {
@@ -84,6 +105,7 @@ wss.on('connection', function connection(ws) {
         experimentname: savedExperimentName,
         configname: savedConfig,
         configs: configstrings,
+        recipename: recipefiles,
         comments: savedComments,
         filename: savedFileName,
         defproj: savedDefProj,
@@ -148,6 +170,70 @@ wss.on('connection', function connection(ws) {
                // else{}
                 lastRequest = msg.config;
                 break;
+//////////////////////////////////////////////
+//  Below patterned on the above, fills the dropdown with the recipe file names.
+//
+                case "reciperequest":
+                    console.log(msg);
+                    if(lastRecipeRequest != msg.recipefiles){ // Ensures we dont load it if we just loaded it.
+                        var recipedata = [];
+                        let allfiles = [];
+                        fs.readdir('./configs/recipes/', 'utf8', function(err, files) {
+                            if (err){  // Handle the error.  Still in CallBack function!!
+                                return console.log("caspar.js: Unable to scan directory: " + err);
+                            } else { 
+                                console.log("Recipe files are:");
+                                console.log(files);
+                                files.forEach(function(file){
+                                        console.log(file);
+                                    }//end callback function file
+                                );
+                                allfiles = files;
+                            }// end else
+                        }//end callback function err, files                      
+                        );
+                    } else {
+                        break;
+                    } 
+                    console.log("recipes allfiles:");
+                    console.log(allfiles);
+                        // Read file listing in directory.  Following 2018 post
+                        //  https://medium.com/stackfame/get-list-of-all-files-in-a-directory-in-node-js-befd31677ec5
+    //                     var dataarray = alldata.toString().split("\n");
+    //                     for (i = 0; i<dataarray.length; i++) {
+    //                         console.log(dataarray[i]);
+    //                         if (dataarray[i].includes("cname: " + msg.config)){
+    //                             let j = i+1;
+    //                             while(j < dataarray.length)
+    //                             {
+    //                                 if(dataarray[j].includes("cname: ") == false)
+    //                                 {
+    //                                     console.log(dataarray[j]);
+    //                                     requestdata.push(dataarray[j].substring(dataarray[j].indexOf(":")+1).trim());
+    //                                 }
+    //                                 else
+    //                                 {
+    //                                     break;
+    //                                 }
+    //                                 j++;
+    //                             }
+    //  //                           requestdata = dataarray[i+1] + ":;:;:" + dataarray[i+2] + ":;:;:" + dataarray[i+3]; //sends all necessary data in one string with a separator
+    //                         }
+    //                     }
+    
+    //                     console.log(requestdata);
+    
+    //                     var configloader = {
+    //                         id: "loadconfig",
+    //                         data: requestdata,
+    //                     };
+    //                     console.log(configloader);
+    //                     ws.send(JSON.stringify(configloader)); // data sent back to client
+    //                 }
+    //                // else{}
+                    lastRecipeRequest = msg.recipefiles;
+                    break;
+/////////////////////////////////////////////////                    
             case "start/stop":
 		        savedDefEm = msg.email;
                 if(savedRT === "true")
@@ -232,6 +318,7 @@ wss.on('connection', function connection(ws) {
                 savedOperator = msg.operator;
                 savedExperimentName = msg.experimentName;
                 savedConfig = msg.config;
+                savedRecipe = msg.recipefiles;
                 savedComments = msg.comments;
                 savedFileName = msg.filename;
                 savedFinishTime = "";

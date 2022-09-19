@@ -106,6 +106,11 @@
             <select id = "configDropdown" class="custom-select" style="text-align:left;" onclick = "loadDataRequest()"> <!--Options Change-->
             </select>
           </div>
+        <p class="inrtxt2">Recipes:</p>
+          <div id = "dropdown2" style="width:93%; margin:0 auto; margin-bottom: 30px;"> <!--Value Changes-->
+            <select id = "recipeDropdown" class="custom-select" style="text-align:left;" onclick = "loadRecipeRequest()"> <!--Options Change-->
+            </select>            
+          </div>
       </div>
 
       <div class="div2-1" id="divPCR" style="width:100%; height:100%; display:block;"></div> <!--graph goes here-->
@@ -183,6 +188,7 @@
       <div class="div1-3">
         <h2 style = "text-align: center;"> Configuration Information </h2>
           <p class = 'inrtxt7' id="ciconfig"> <span style = "text-decoration: underline;"> Configuration Name:</span> None <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="cirecipe"> <span style = "text-decoration: underline;"> Recipe Name:</span> None <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciopName"> <span style = "text-decoration: underline;"> Default Operator Name:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciemail"> <span style = "text-decoration: underline;"> Default Email:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciprojName"> <span style = "text-decoration: underline;"> Default Project Name:</span> <br> </p> <!--Changes-->
@@ -315,10 +321,14 @@
           axisLabelFontSize: 12,
     });
 
-    var isRunning = false; //Keeps track of whether the system is actually running. NOT the same as clientPressedStart, which is when the client presses start
-    var runFinished = false; //Keeps track if the run is currently finished. Important for ensuring you can only email/download data when the run is finished.
-    var dropdownID = document.getElementById("configDropdown"); //important because we reference the inner text in the dropdown very often
-    var namearray; //will be used for save configuration safety
+    var isRunning = false; //Keeps track of whether the system is actually running. NOT the 
+    // same as clientPressedStart, which is when the client presses start
+    var runFinished = false; //Keeps track if the run is currently finished. Important for 
+    // ensuring you can only email/download data when the run is finished.
+    var dropdownID = document.getElementById("configDropdown"); 
+    // Important because we reference the inner text in the dropdown very often.
+    var dropdownIDRecipes = document.getElementById("recipeDropdown");  // Like above the recipe dropdown.
+    var namearray; // Will be used for save configuration safety.
     var clientPressedStart = false; // Keeps Track of if the client pressed start. NOT the same as isRunning, which tracks whether or not the sysem is on.
     var senddefproj; //to send
     var senddefop; //to send
@@ -333,7 +343,7 @@
     var sendPing; //the constant ping interval
     var verifyPong; //the interval to verify the pong was recieved
     var pongRecieved = false;
-    // Handles the events coming from the websocket. Format switches off the id blank on the json variable being sent.
+    // Handles the events coming FROM the websocket. Format switches off the id blank on the json variable being sent.
     ws.onmessage = function(event){
       var msg = JSON.parse(event.data);
         switch(msg.id){
@@ -365,7 +375,8 @@
               document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> Not Running";
             }
 
-            //This code extracts all the configuration names and puts it in the dropdown on the first page -- Replaced with JSON, NAS 7/07
+            // This code extracts all the configuration names and puts it in the dropdown on the first 
+            // page -- Replaced with JSON, NAS 7/07
             var count = msg.configs.length;
             namearray = msg.configs;
             let select = document.getElementById('configDropdown');
@@ -376,6 +387,20 @@
                 option.id = String(namearray[i].trim());
                 select.add(option);
               }
+
+            // This code extracts all the recipe names and puts it in the dropdown on the first page.
+            // Copying config dropdown, maybe, weg 20220918.
+            var count = msg.recipefiles.length;
+            namearray = msg.recipefiles;
+            select = document.getElementById('recipeDropdown');
+              for (var i=0; i<count; i++){ //this adds all options into the dropdown. Each option is titles as the configuration name
+                var option = document.createElement("option");
+                option.text = namearray[i].trim();
+                option.value = String(namearray[i].trim());
+                option.id = String(namearray[i].trim());
+                select.add(option);
+              }
+
 
             onConnect(msg); // Replaced with calls in the function itself--should make it easier to scale. NAS 7/8/22
             if(msg.FAMdata.length > 0)
@@ -580,6 +605,7 @@
               }
           //Updates values in tab 3
           document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" + " " + msg.configname;
+          document.getElementById("cirecipe").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" + " " + msg.recipename;          
           document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" + " " + msg.defproj;
           document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" + " " + msg.defop;
           document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" + " " + msg.defem;
@@ -607,12 +633,14 @@
        }
 
        var lastRequest = " "; // Ensures that a request isnt sent multiple times of the same thing
-       //This function sends the server a request to view and eventually display the information for a certain configuration thats clicked
+       // This function sends the server a request to view and eventually display the information 
+       // for a certain configuration thats clicked
        function loadDataRequest(){
         if (lastRequest != dropdownID.options[dropdownID.selectedIndex].text)
                 //update names and send the request
         {
-         document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" + " " + dropdownID.options[dropdownID.selectedIndex].text;
+         document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" 
+                  + " " + dropdownID.options[dropdownID.selectedIndex].text;
          var msg = {
            id: "configrequest",
            config: dropdownID.options[dropdownID.selectedIndex].text,
@@ -622,7 +650,27 @@
         lastRequest = dropdownID.options[dropdownID.selectedIndex].text;
        }
 
-      //Checks if project name, operator name, and configuration are filled out before run can begin. Also other safety checks for total cycles
+       // Patterned off loadDataRequiest above.
+       var lastRecipeRequest = " "; // Ensures that a request isnt sent multiple times of the same thing
+       // This function sends the server a request to view and eventually display the information 
+       // for a certain configuration thats clicked
+       function loadRecipeRequest(){
+        if (lastRecipeRequest != dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text)
+                //update names and send the request
+        {
+         document.getElementById("cirecipes").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" 
+                  + " " + dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text;
+         var msg = {
+           id: "reciperequest",
+           recipe: dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text,
+         };
+         ws.send(JSON.stringify(msg));
+        }
+        lastRecipeRequest = dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text;
+       }
+
+      // Checks if project name, operator name, and configuration are filled out before run can begin.
+      // Also other safety checks for total cycles
       function conditionsForStart()
       { if (String(document.getElementById("projName").value).trim().length == 0){
           alert("\nPlease fill out the Project Name.");
@@ -955,7 +1003,7 @@
 
       //opens a window prompt to confirm whether the user meant to shutdown the server.
       function shutdownConfirmation() {
-        let text = "\nAre you sure you want to shutdown this Server?\n\nIf you do Nick will be mad.\n\nPress 'OK' to confirm.";
+        let text = "\nAre you sure you want to shutdown this Server?\n\nPress 'OK' to confirm.";
         if (confirm(text) == true) {
           stopServer();
         } else {}
