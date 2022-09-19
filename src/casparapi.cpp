@@ -1,3 +1,9 @@
+/*
+casparapi - All the interaction between the Javascript and the node.  A method accessible
+to the Node needs to be in namespace caspar below.
+
+
+*/
 #include <node.h>  // /usr/include/node  Add to C/Cpp Edit Configurations for file c_cpp_properties.json.
 #include <unistd.h>
 #include "caspar.h"
@@ -260,4 +266,4 @@ namespace caspar
 
     NODE_MODULE(casparengine, Initialize)
 
-}
+}// end namespace caspar

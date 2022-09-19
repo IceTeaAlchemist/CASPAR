@@ -1,3 +1,9 @@
+/*
+caspar.js -
+
+*/
+
+
 // Import the C++ addon as well as websocket and mail handler libraries.
 const engine = require('./build/Release/casparengine');
 const WebSocket = require('ws');
@@ -171,13 +177,13 @@ wss.on('connection', function connection(ws) {
                 lastRequest = msg.config;
                 break;
 //////////////////////////////////////////////
-//  Below patterned on the above, fills the dropdown with the recipe file names.
+//  Below patterned on the above configrequest, fills the dropdown with the recipe file names.
 //
                 case "reciperequest":
                     console.log(msg);
                     if(lastRecipeRequest != msg.recipefiles){ // Ensures we dont load it if we just loaded it.
-                        var recipedata = [];
-                        let allfiles = [];
+                        var recipefiles = [];
+                        // Read the *.ini files that are the recipes.
                         fs.readdir('./configs/recipes/', 'utf8', function(err, files) {
                             if (err){  // Handle the error.  Still in CallBack function!!
                                 return console.log("caspar.js: Unable to scan directory: " + err);
@@ -188,15 +194,15 @@ wss.on('connection', function connection(ws) {
                                         console.log(file);
                                     }//end callback function file
                                 );
-                                allfiles = files;
+                                recipefiles = files;
                             }// end else
                         }//end callback function err, files                      
                         );
                     } else {
                         break;
                     } 
-                    console.log("recipes allfiles:");
-                    console.log(allfiles);
+                    console.log("recipes recipefiles:");
+                    console.log(recipefiles);
                         // Read file listing in directory.  Following 2018 post
                         //  https://medium.com/stackfame/get-list-of-all-files-in-a-directory-in-node-js-befd31677ec5
     //                     var dataarray = alldata.toString().split("\n");
@@ -223,12 +229,12 @@ wss.on('connection', function connection(ws) {
     
     //                     console.log(requestdata);
     
-    //                     var configloader = {
-    //                         id: "loadconfig",
-    //                         data: requestdata,
-    //                     };
-    //                     console.log(configloader);
-    //                     ws.send(JSON.stringify(configloader)); // data sent back to client
+                        var recipeloader = {
+                            id: "loadrecipes",
+                            data: recipefiles,
+                        };
+                        console.log(recipeloader);
+                        ws.send(JSON.stringify(recipeloader)); // data sent back to client
     //                 }
     //                // else{}
                     lastRecipeRequest = msg.recipefiles;

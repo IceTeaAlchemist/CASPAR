@@ -563,11 +563,12 @@
         pongRecieved = false;
       }
 
-      //Updates the UI when it connects, whether in the middle of an experiment or initially. Updated to use preexisting JSON--NAS 7/08/22
+      // Updates the UI when it connects, whether in the middle of an experiment or initially. Updated to use preexisting JSON--NAS 7/08/22
       function onConnect(msg){
         if(msg.running == true){
-          //Updates major values
+          //Updates major values.
           dropdownID.value = msg.configname;
+          dropdownIDRecipes.value = msg.recipename;
           document.getElementById("startTime").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
           msg.starttime.bold() + "</span>";
           document.getElementById("projName").value = msg.projectname;
@@ -614,13 +615,12 @@
           document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + " " + msg.hex;
           document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" + " " + dispRT2;
           document.getElementById('citotalCycles').innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " " + msg.deftotcycles;
-
           //Disables inputs
           document.getElementById('projName').disabled = true;
           document.getElementById('opName').disabled = true;
           document.getElementById('expName').disabled = true;
           document.getElementById("dropdown").style.pointerEvents = "none";
-           document.getElementById("dropdown").style.opacity = "0.6";
+          document.getElementById("dropdown").style.opacity = "0.6";
           document.getElementById('filename').disabled = true;
           document.getElementById('totCycles').disabled = true;
           document.getElementById('RTMain').disabled = true;
@@ -640,7 +640,7 @@
                 //update names and send the request
         {
          document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" 
-                  + " " + dropdownID.options[dropdownID.selectedIndex].text;
+                  + " " + dropdownID.options[dropdownID.selectedIndex].text;  // Handles field on Tab 3.
          var msg = {
            id: "configrequest",
            config: dropdownID.options[dropdownID.selectedIndex].text,
@@ -653,12 +653,12 @@
        // Patterned off loadDataRequiest above.
        var lastRecipeRequest = " "; // Ensures that a request isnt sent multiple times of the same thing
        // This function sends the server a request to view and eventually display the information 
-       // for a certain configuration thats clicked
+       // for a certain recipe that's clicked.
        function loadRecipeRequest(){
         if (lastRecipeRequest != dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text)
                 //update names and send the request
         {
-         document.getElementById("cirecipes").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" 
+         document.getElementById("cirecipes").innerHTML = "<span style = 'text-decoration: underline;'> Recipe Name:</span>" 
                   + " " + dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text;
          var msg = {
            id: "reciperequest",
