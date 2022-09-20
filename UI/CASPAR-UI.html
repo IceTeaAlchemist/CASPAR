@@ -327,7 +327,7 @@
     // ensuring you can only email/download data when the run is finished.
     var dropdownID = document.getElementById("configDropdown"); 
     // Important because we reference the inner text in the dropdown very often.
-    var dropdownIDRecipes = document.getElementById("recipeDropdown");  // Like above the recipe dropdown.
+    var dropdownIDRecipes = document.getElementById("recipeDropdown");  // Like above, the recipe dropdown.
     var namearray; // Will be used for save configuration safety.
     var clientPressedStart = false; // Keeps Track of if the client pressed start. NOT the same as isRunning, which tracks whether or not the sysem is on.
     var senddefproj; //to send
@@ -390,8 +390,9 @@
 
             // This code extracts all the recipe names and puts it in the dropdown on the first page.
             // Copying config dropdown, maybe, weg 20220918.
-            var count = msg.recipefiles.length;
-            namearray = msg.recipefiles;
+            console.log("UI: msg.recipefiles ", msg.recipenames);
+            var count = msg.recipenames.length;
+            namearray = msg.recipenames;
             select = document.getElementById('recipeDropdown');
               for (var i=0; i<count; i++){ //this adds all options into the dropdown. Each option is titles as the configuration name
                 var option = document.createElement("option");
@@ -621,6 +622,8 @@
           document.getElementById('expName').disabled = true;
           document.getElementById("dropdown").style.pointerEvents = "none";
           document.getElementById("dropdown").style.opacity = "0.6";
+          document.getElementById("dropdown2").style.pointerEvents = "none";
+          document.getElementById("dropdown2").style.opacity = "0.6";
           document.getElementById('filename').disabled = true;
           document.getElementById('totCycles').disabled = true;
           document.getElementById('RTMain').disabled = true;
