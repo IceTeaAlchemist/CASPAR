@@ -256,11 +256,18 @@
     //Declare data vectors for graphs and push initial values into them.
     var data = [];
     var data2 = [];
-    var cycleNo = 0;             // Cycle the next set of PCR data will be from.
+    var cycleNo = 0;            // Cycle the next set of PCR data will be from.
     var t = new Date();         // Current time.
     data.push([t, 0, 0]);
     data2.push([cycleNo, 0, 0, 0]);
     var taxisIncrement = 10 * 1000; // axis increment in milliseconds
+
+    // Setup some "enums" though JS does not actually have those, see
+    // https://stackoverflow.com/questions/287903/how-can-i-guarantee-that-my-enums-definition-doesnt-change-in-javascript
+    // Use the below in the dataarray[<num>] by dataarray[configEnum.opName] etc.
+    const configEnum = {"opName":0, "email":1, "projName":2, "FAM":3, "CY5":4, "HEX":5, "RTcheckbox":6, "totCycles":7}; 
+    Object.freeze(configEnum);
+
 
     // Initialize variables for data handling.
     var x = 0;
@@ -394,13 +401,13 @@
             var count = msg.recipenames.length;
             namearray = msg.recipenames;
             select = document.getElementById('recipeDropdown');
-              for (var i=0; i<count; i++){ //this adds all options into the dropdown. Each option is titles as the configuration name
-                var option = document.createElement("option");
-                option.text = namearray[i].trim();
-                option.value = String(namearray[i].trim());
-                option.id = String(namearray[i].trim());
-                select.add(option);
-              }
+            for (var i=0; i<count; i++){ //this adds all options into the dropdown. Each option is titles as the configuration name
+              var option = document.createElement("option");
+              option.text = namearray[i].trim();
+              option.value = String(namearray[i].trim());
+              option.id = String(namearray[i].trim());
+              select.add(option);
+            }
 
 
             onConnect(msg); // Replaced with calls in the function itself--should make it easier to scale. NAS 7/8/22
@@ -412,19 +419,19 @@
               }
               pcr.updateOptions( {'file': data2 } ); //Update it.
             }
-          break;
+          break;  // end case connect
 
           case "loadconfig": //loads the config that is selected on the dropdown on the first page
             console.log(msg);
             var dataarray = msg.data; //graps all data and puts it in an array
             //Updates info on first and second tabs
-            document.getElementById("projName").value = dataarray[2];
-            document.getElementById("opName").value = dataarray[0];
-            document.getElementById('email').value = dataarray[1];
-            document.getElementById('totCycles').value = (dataarray[7]).trim();
+            document.getElementById("projName").value = dataarray[configEnum.projName];  //dataarray[2];
+            document.getElementById("opName").value = dataarray[configEnum.opName];
+            document.getElementById('email').value = dataarray[configEnum.email];
+            document.getElementById('totCycles').value = (dataarray[configEnum.totCycles]).trim();
 
             //Updates the checkbox on the first tab
-            if(dataarray[6].trim() == "true" || dataarray[6].trim() == "ON"){
+            if(dataarray[configEnum.RTcheckbox].trim() == "true" || dataarray[configEnum.RTcheckbox].trim() == "ON"){
               document.getElementById("RTMain").checked = true;
             }
             else{
@@ -432,29 +439,29 @@
             }
             //Updates info on third tab
             let dispRT = ""; // sets what to display for RT
-              if (dataarray[6].trim() == "true"){
+              if (dataarray[configEnum.RTcheckbox].trim() == "true"){
                 dispRT = "ON";
               }
               else{
                 dispRT = "OFF";
               }
-            document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" + " " + dataarray[2];
-            document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" + " " + dataarray[0];
-            document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" + " " + dataarray[1];
-            document.getElementById('ciFAM').innerHTML = "<span style = 'text-decoration: underline;'> FAM:</span>" + " " + dataarray[3];
-            document.getElementById('ciCY5').innerHTML = "<span style = 'text-decoration: underline;'> CY5:</span>" + " " + dataarray[4];
-            document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + " " + dataarray[5];
+            document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" + " " + dataarray[configEnum.projName];
+            document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" + " " + dataarray[configEnum.opName];
+            document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" + " " + dataarray[configEnum.email];
+            document.getElementById('ciFAM').innerHTML = "<span style = 'text-decoration: underline;'> FAM:</span>" + " " + dataarray[configEnum.FAM];
+            document.getElementById('ciCY5').innerHTML = "<span style = 'text-decoration: underline;'> CY5:</span>" + " " + dataarray[configEnum.CY5];
+            document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + " " + dataarray[configEnum.HEX];
             document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" + " " + dispRT;
-            document.getElementById('citotalCycles').innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " " + dataarray[7];
+            document.getElementById('citotalCycles').innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " " + dataarray[configEnum.totCycles];
             // variables to send to save on the server
-            senddefproj = dataarray[2];
-            senddefop = dataarray[0];
-            senddefem = dataarray[1];
-            sendfam = dataarray[3];
-            sendcy5 = dataarray[4];
-            sendhex = dataarray[5];
-            sendrt = dataarray[6];
-            sendtotcycles = dataarray[7];
+            senddefproj = dataarray[configEnum.projName];
+            senddefop = dataarray[configEnum.opName];
+            senddefem = dataarray[configEnum.email];
+            sendfam = dataarray[configEnum.FAM];
+            sendcy5 = dataarray[configEnum.CY5];
+            sendhex = dataarray[configEnum.HEX];
+            sendrt = dataarray[configEnum.RTcheckbox];
+            sendtotcycles = dataarray[configEnum.totCycles];
             document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
           break;
 
@@ -531,10 +538,11 @@
         console.log('The connection has been closed successfully.');
         clearInterval(sendPing);
       };
+/////////////////////////////////////////////////////////////////////////
+// Functions Begin
+/////////////////////////////////////////////////////////////////////////
 
-//Functions Begin
-
-      //Sends the Ping
+      // Sends the Ping
       function sendThePing(){
         var timeStamp = new Date(); //initialize Start Time
         var timeStampClean = timeStamp.toLocaleTimeString();
@@ -542,17 +550,17 @@
           id: "ping",
           timeStamp: timeStampClean
         };
-        try{ //try sending it first
+        try{ // try sending it first
           ws.send(JSON.stringify(msg));
           verifyPong = setTimeout(verifyThePong, 15000);
         }
-       catch (error){ //if it doesn't work, the client prolly doesnt have internet. Catch the error.
+       catch (error){ // if it doesn't work, the client prolly doesnt have internet. Catch the error.
           document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold; color: tomato;'> Not Connected </span>"; // updates server status
           clearInterval(sendPing);
         }
       }
 
-      //Verifies if a pong was recieved, changes status
+      // Verifies if a pong was recieved, changes status
       function verifyThePong(){
         if (pongRecieved){
           document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
@@ -583,15 +591,17 @@
             document.getElementById('RTMain').checked = true;
           }
           let dispRT1 = "";
-              if (msg.rt.trim() == "true"){
-                dispRT1 = "ON";
-              }
-              else{
-                dispRT1 = "OFF";
-              }
+          dispRT1 = (msg.rt.trim() == "true" ? "ON" : "OFF");
+          // if (msg.rt.trim() == "true"){
+          //   dispRT1 = "ON";
+          // } else{
+          //   dispRT1 = "OFF";
+          // }
+
           //Updates values in tab 2: experiment info
           document.getElementById("esConfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration:</span>" + " "  + msg.configname;
           document.getElementById("esProj").innerHTML = "<span style = 'text-decoration: underline;'> Project Name:</span>" + " "  + msg.projectname;
+          console.log("configname and projectname" + msg.configname + " " + msg.projectname);
           document.getElementById("esExp").innerHTML = "<span style = 'text-decoration: underline;'> Experiment Name:</span>" + " "  + msg.experimentname;
           document.getElementById("esOpName").innerHTML = "<span style = 'text-decoration: underline;'> Operator Name:</span>" + " "  + msg.operatorname;
           document.getElementById("esTotalCycles").innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " "  + msg.totcycles;
@@ -599,12 +609,13 @@
           document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + " "  + msg.starttime;
 
           let dispRT2 = "";
-              if (msg.defrt.trim() == "true"){
-                dispRT2 = "ON";
-              }
-              else{
-                dispRT2 = "OFF";
-              }
+          dispRT2 = (msg.defrt.trim() == "true" ? "ON" : "OFF");
+          // if (msg.defrt.trim() == "true"){
+          //   dispRT2 = "ON";
+          // } else{
+          //   dispRT2 = "OFF";
+          // }
+
           //Updates values in tab 3
           document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" + " " + msg.configname;
           document.getElementById("cirecipe").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" + " " + msg.recipename;          
@@ -651,7 +662,7 @@
          ws.send(JSON.stringify(msg));
         }
         lastRequest = dropdownID.options[dropdownID.selectedIndex].text;
-       }
+       }// end loadDataRequest
 
        // Patterned off loadDataRequiest above.
        var lastRecipeRequest = " "; // Ensures that a request isnt sent multiple times of the same thing
@@ -670,7 +681,7 @@
          ws.send(JSON.stringify(msg));
         }
         lastRecipeRequest = dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text;
-       }
+       }// end loadRecipeRequest
 
       // Checks if project name, operator name, and configuration are filled out before run can begin.
       // Also other safety checks for total cycles
@@ -759,10 +770,10 @@
                   runFinished = true;
                   startStopPCR();
                 }
-                else{}
+                else {}
             }
-          }
-        }
+          }// end if conditionsForStart
+      }// end stopStartConfirmation
 
     var timeStartDisplay; //Important to send
     var defaultFileName; //Important to send

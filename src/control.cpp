@@ -158,7 +158,7 @@ int cycle()
     double thresh = 0.005;
     double threshcool = 0.135;
     double dthreshheat = 0.25; // Other version has 0.25, 20220915 weg.
-    double dthreshcool = 0.7; // Other version has 0.8, ditto weg.
+    double dthreshcool = 0.9; // Other version has 0.8, ditto weg.
     coeffprev[0] = 0;
     coeffprev[1] = 0;
     coeffprev[2] = 0;

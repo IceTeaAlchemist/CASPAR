@@ -76,22 +76,18 @@ wss.on('connection', function connection(ws) {
 
     for (var i = 0; i<array.length; i++) {
         if (array[i].includes("cname: ")){
-            configstrings.push((array[i].substring(array[i].lastIndexOf("cname: ") + 7)).trim()); //sends all names in one string with a seperator
+            // Enum in UI    const configEnum = {"opName":0, "email":1, "projName":2, "FAM":3, "CY5":4, "HEX":5, "RTcheckbox":6, "totCycles":7}; 
+            configstrings.push((array[i].substring(array[i].lastIndexOf("cname: ") + 7)).trim()); 
+            //Sends all names for a single cname in one string with a seperator
         }
     }
     // fs.readdir() is the Async version and has a callback, the Sync version returns a list of files.
     recipefiles = fs.readdirSync('./configs/recipes/', 'utf8');
-    // fs.readdir('./configs/recipes/', 'utf8', function(err, files) {
-    //     if (err){ // Handle the error.  Still in CallBack function!!
-    //         console.log("caspar.js: fs.readdir(): Unable to scan directory: " + err);
-    //         return files;
-    //     } else { 
-    //         return files;
-    //     }// end else
-    // }//end callback function err, files                      
-    // );// end readdir
-    //recipefiles = files;
-    console.log("recipes recipefiles:");
+    // Put default.ini first.  https://stackoverflow.com/questions/23921683/javascript-move-an-item-of-an-array-to-the-front 
+    recipefiles = recipefiles.filter( function(item){ return item !== "default.ini"; } );  // Return all the elements not equal to default.ini .
+    // recipefiles = recipefiles.filter( item => item !== 'default.ini' );
+    recipefiles.unshift( 'default.ini' );
+    console.log('recipes recipefiles:');
     console.log(recipefiles);
 
     // Send a message to the client to confirm connection.
@@ -147,10 +143,8 @@ wss.on('connection', function connection(ws) {
                                 if(dataarray[j].includes("cname: ") == false)
                                 {
                                     console.log(dataarray[j]);
-                                    requestdata.push(dataarray[j].substring(dataarray[j].indexOf(":")+1).trim());
-                                }
-                                else
-                                {
+                                    requestdata.push( dataarray[j].substring( dataarray[j].indexOf(":")+1 ).trim() );  // .trim() seems not to work.
+                                } else {
                                     break;
                                 }
                                 j++;
@@ -377,7 +371,8 @@ wss.on('connection', function connection(ws) {
         // Log request received.
         console.log('received: %s', data);
     });
-})
+}// end function connection, the callback function.
+)// end ws.on
 
 function killserver()
 {

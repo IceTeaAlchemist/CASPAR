@@ -164,12 +164,22 @@ string timestamp()
 
     // Retrieve each member and put them into our string.
     string currenttime = to_string(1900 + ltm->tm_year); 
-    currenttime += to_string(1 + ltm->tm_mon);
-    currenttime += to_string(ltm->tm_mday);
+    int ival = 1+ltm->tm_mon;
+    currenttime += ( ival < 10 ? string(1,'0').append( to_string(ival) ) : to_string(ival) );
+    //currenttime += to_string(1 + ltm->tm_mon);  // Make sure this month is 01, 02, ..., 09, 10, 11, 12 .  Leading zero.
+    ival = ltm->tm_mday;
+    currenttime += ( ival < 10 ? string(1,'0').append( to_string(ival) ) : to_string(ival) );
+    //currenttime += to_string(ltm->tm_mday);
     currenttime += "_";
-    currenttime += to_string(ltm->tm_hour);
-    currenttime += to_string(ltm->tm_min);
-    currenttime += to_string(ltm->tm_sec);
+    ival = ltm->tm_hour;
+    currenttime += ( ival < 10 ? string(1,'0').append( to_string(ival) ) : to_string(ival) );
+    //currenttime += to_string(ltm->tm_hour);
+    ival = ltm->tm_min;
+    currenttime += ( ival < 10 ? string(1,'0').append( to_string(ival) ) : to_string(ival) );
+    //currenttime += to_string(ltm->tm_min);
+    ival = ltm->tm_sec;
+    currenttime += ( ival < 10 ? string(1,'0').append( to_string(ival) ) : to_string(ival) );
+    //currenttime += to_string(ltm->tm_sec);
 
     // Return the string.
     return currenttime;
