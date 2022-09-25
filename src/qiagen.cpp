@@ -465,6 +465,53 @@ void qiagen::fill_SoftwareVersion(){
 	SoftwareVersion = ascii;
 }
 
+int qiagen::calibrateGain(int minimum_reading, int method){
+	LED_off(1);
+    LED_off(2);
+    setMethod(method);
+	int LED;
+	if(method == 3)
+	{
+		LED = 2;
+	}
+	else
+	{
+		LED = 1;
+	}
+    writeqiagen(0, {255,255});
+    // Start at our minimum gain for this qiagen.
+    int basegain = getLED_min(LED);
+	int maxgain = getLED_max(LED);
+    double readinval;
+    do
+    {
+        if(basegain > maxgain) // If our gain outstrips the limits of the qiagen, exit the loop 
+        // and log that we're pushing the limits of our optics.
+        {
+            cout << "Couldn't find a suitable gain. Sample not present or illprepared." << endl;
+			LED_off(LED);
+            return 1;
+        }
+        // Log to console what gain is being tested.
+        cout << "Testing at gain of: " << basegain << "." << endl;
+        // Turn the LED, adjust the current, and turn it back on.
+        LED_off(LED);
+        LED_current(LED,basegain);
+        LED_on(LED);
+        startMethod();
+        usleep(400000);
+        // Measure what gain we receive.
+        readinval = measure();
+        // Log what reading we receive to console.
+        cout << "Reading: " << readinval << endl;
+        // Increase the gain.
+        basegain += 10;
+        stopMethod();
+    } while (readinval < minimum_reading); // Continue while we haven't reached our requested minimum calibration fluoresence.
+	LED_off(LED);
+	return 0;
+}
+
 //Closes the serial port. In the future it might be a good idea to have it also return the qiagen to default settings (i.e turning the LEDs off).
 qiagen::~qiagen()
 {

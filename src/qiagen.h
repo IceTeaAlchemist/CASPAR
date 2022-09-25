@@ -59,6 +59,7 @@ class qiagen
 		inline string getOpticRevision(){return OpticRevision;}
 		void fill_SoftwareVersion();
 		inline string getSoftwareVersion(){return SoftwareVersion;}
+		int calibrateGain(int minimum_reading, int method);
 
 		~qiagen();
 };
