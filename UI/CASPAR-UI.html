@@ -417,6 +417,11 @@
               {
                 data2.push([i+1, msg.FAMdata[i], msg.HEXdata[i], msg.cy5data[i]]); //Push the new data onto the graph source.
               }
+              // Drop the first point (0,0) if there are 2 or more points.
+              var data2plot = data2;
+              if (msg.FAMdata.length > 1) {
+                data2plot = data2.shift();
+              } 
               pcr.updateOptions( {'file': data2 } ); //Update it.
             }
           break;  // end case connect
