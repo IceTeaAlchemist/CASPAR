@@ -158,7 +158,7 @@ int cycle()
     double thresh = 0.005;
     double threshcool = 0.135;
     double dthreshheat = 0.25; // Other version has 0.25, 20220915 weg.
-    double dthreshcool = 0.9; // Other version has 0.8, ditto weg.
+    double dthreshcool = 0.8; // Other version has 0.8, ditto weg.
     coeffprev[0] = 0;
     coeffprev[1] = 0;
     coeffprev[2] = 0;
@@ -244,7 +244,7 @@ int cycle()
         }
         piUnlock(0);
 //        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1) // Other version, 20220915 weg.
-        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1)  
+        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 2)  
         {
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {

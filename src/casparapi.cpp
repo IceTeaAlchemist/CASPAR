@@ -62,6 +62,16 @@ namespace caspar
                 premelt();
                 runRT();
             }
+            recordflag = false;
+            delay(100);
+            sens1.calibrateGain(300,1);
+            sens2.calibrateGain(300,1);
+            sens2.calibrateGain(300,3);
+            sens1.calibrateGain(350, 3);
+            sens1.LED_on(2);
+            sens1.startMethod();
+            recordflag = true;
+            delay(100);
             runerror = cycle();
         }
 

@@ -508,6 +508,7 @@ int qiagen::calibrateGain(int minimum_reading, int method){
         basegain += 10;
         stopMethod();
     } while (readinval < minimum_reading); // Continue while we haven't reached our requested minimum calibration fluoresence.
+	cout << "Gain calibrated for LED " << LED << "." << endl; 
 	LED_off(LED);
 	return 0;
 }
