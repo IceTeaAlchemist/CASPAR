@@ -72,9 +72,9 @@ bool RTflag = false;
 string ts = timestamp();
 
 // Declare initial file names for saving the data. 
-string coeffstorage = "./data/coeff" + ts + ".txt";
-string pcrstorage = "./data/pcr" + ts + ".txt";
-string rawstorage = "./data/binaryoutput" + ts + ".bin";
+string coeffstorage = "./data/coeff_" + ts + ".csv";
+string pcrstorage = "./data/pcr_" + ts + ".csv";
+string rawstorage = "./data/binaryoutput_" + ts + ".bin";
 string runlog = "runtimelog.txt";
 
 /* Sets up the Pi's GPIO pins and initiates wiringPi's library for GPIO communications.
@@ -224,21 +224,21 @@ void openFiles()
     // Check that both fstreams are open, log any failures.
     if(!coeff_out.is_open())
     {
-        cout << "Failed to open " << coeffstorage << endl;
-        runtime_out << "Failed to open " << coeffstorage << endl;
+        cout << "openFiles: **Failed to open " << coeffstorage << endl;
+        runtime_out << "openFiles: **Failed to open " << coeffstorage << endl;
     }
     if(!pcr_out.is_open())
     {
-        cout << "Failed to open " << pcrstorage << endl;
-        runtime_out << "Failed to open " << coeffstorage << endl;
+        cout << "openFiles: **Failed to open " << pcrstorage << endl;
+        runtime_out << "openFiles: **Failed to open " << pcrstorage << endl;
     }
 
     // Try to open the binary output file, log if it fails.
     output = fopen(rawstorage.c_str(),"wb");
 	if(output == NULL)
 	{
-		cout << "File failed to open." << endl;
-        runtime_out << "Failed to open " << coeffstorage << endl;
+		cout << "openFiles: **Failed to open " << rawstorage << endl;
+        runtime_out << "openFiles: **Failed to open " << rawstorage << endl;
 	} 
 }
 
