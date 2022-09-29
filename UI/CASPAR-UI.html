@@ -70,6 +70,12 @@
   .div1-3 { grid-area: 1 / 1 / 5 / 3; border-style:solid; border-width: 2px} /*left content */
   .div2-3 { grid-area: 1 / 3 / 5 / 5; border-style:solid; border-width: 2px} /*right content */
 
+  #divPCR .dygraph-legend {
+    background-color: white !important;
+    width: 100px;
+    right: 10% !important;
+  }
+
   /* Specific CSS Classes for the dropdown on the first tab */
   .custom-select {position: relative; width: 99%; height:33px; border-width: 1px; font-size:12pt; background-color: #FFFFFF; padding:3px 3px;}
     .custom-select::after {position: relative; width: 99%; height:33px; border-width: 1px; font-size:12pt; background-color: #FFFFFF; padding:3px 3px;}
@@ -113,7 +119,7 @@
           </div>
       </div>
 
-      <div class="div2-1" id="divPCR" style="width:100%; height:100%; display:block;"></div> <!--graph goes here-->
+      <div class="div2-1" id="divPCR" style="text-align: left; width:100%; height:100%; display:block;"></div> <!--graph goes here-->
 
       <div class="div3-1" style = "text-align:center;">
         <button class="inrbtn" id="startStopPCR" onclick = "startStopConfirmation()"
@@ -289,6 +295,8 @@
          'Cy5': {
           axis:'y1'},
           },
+          labelsSeparateLines: true,
+          legend: 'always',
           axes: {
             'y1': {},
           },
@@ -298,6 +306,7 @@
           drawPoints: true,
           showRoller: true,
           digitsAfterDecimal: 3,
+          valueRange: [0,2500],
           dateWindow: [0,50], //This locks the x axis to 0-50.
           showRangeSelector: true,
           axisLabelFontSize: 14,
@@ -413,15 +422,16 @@
             onConnect(msg); // Replaced with calls in the function itself--should make it easier to scale. NAS 7/8/22
             if(msg.FAMdata.length > 0)
             {
-              for(var i = 0; i < msg.FAMdata.length; i++)
-              {
+              for(var i = 0; i < msg.FAMdata.length; i++) {
                 data2.push([i+1, msg.FAMdata[i], msg.HEXdata[i], msg.cy5data[i]]); //Push the new data onto the graph source.
               }
               // Drop the first point (0,0) if there are 2 or more points.
-              var data2plot = data2;
-              if (msg.FAMdata.length > 1) {
-                data2plot = data2.shift();
-              } 
+              //var data2plot = data2;
+              //if (data2.length > 1) { // This is "onconnect" --- shift only ONCE!
+              data2.shift();
+              //} 
+              console.log("UI: data2 ", data2);
+              pcr.updateOptions({labels: ["Cycle", msg.fam, msg.hex, msg.cy5]});
               pcr.updateOptions( {'file': data2 } ); //Update it.
             }
           break;  // end case connect
@@ -497,6 +507,12 @@
             cy5 = msg.cy5; //Retrieve Cy5 fluoresence.
             hex = msg.hex; //Retrieve HEX fluoresence.
             data2.push([cycleNo, fam, hex, cy5]); //Push the new data onto the graph source.
+            // Drop the first point (0,0) if there are 2 or more points.
+            if (data2.length > 1 && data2[0][0] == 0 ) { // If big array AND cycle no. 0 included; Shift only ONCE!
+              data2.shift();
+            }
+            console.log("UI: data2.length ", data2.length);
+            console.log("UI: data2 ", data2);
             pcr.updateOptions( {'file': data2 } ); //Update it.
             estFinishTime(msg.secs, msg.cycle); //Calculate the Estimated Finish Time using the data
 
@@ -523,6 +539,7 @@
           break;
 
           case "runcomplete":
+            console.log(msg);
             finishRun(); //function to run when run is complete.
             break;
 
@@ -614,7 +631,7 @@
           document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + " "  + msg.starttime;
 
           let dispRT2 = "";
-          dispRT2 = (msg.defrt.trim() == "true" ? "ON" : "OFF");
+          dispRT2 = (msg.rt.trim() == "true" ? "ON" : "OFF");
           // if (msg.defrt.trim() == "true"){
           //   dispRT2 = "ON";
           // } else{
@@ -715,8 +732,8 @@
             alert("\nPlease enter Total Cycles AS AN INTEGER.");
             return false;
         }
-        else if ((parseInt(String(document.getElementById("totCycles").value).trim()) < 30 || parseInt(String(document.getElementById("totCycles").value).trim()) > 60)){
-            alert("\nPlease enter Total Cycles as an integer BETWEEN 30 AND 60.");
+        else if ((parseInt(String(document.getElementById("totCycles").value).trim()) < 2 || parseInt(String(document.getElementById("totCycles").value).trim()) > 60)){
+            alert("\nPlease enter Total Cycles as an integer BETWEEN 2 AND 60.");
             return false;
         }
 
@@ -827,14 +844,15 @@
             dateWinMax = dateWinMin + 2*taxisIncrement;
             cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );
           data.push([t, 0, 0]);
-          data2.push([cycleNo, 0, 0, 0]);
+          data2.push([cycleNo, 0, 0, 0]);  // Initializing, not length to fam, etc, yet.
           cyc.updateOptions({ 'file': data});
-          pcr.updateOptions({ 'file': data2});
+          pcr.updateOptions({labels: ["Cycle", sendfam, sendhex, sendcy5]});
+          pcr.updateOptions( {'file': data2 } ); // Update it.
 
           changeFile();
           clientPressedStart = false;
 
-          //updates the info on the second tab
+          // Updates the info on the second tab.
           let dispRT4 = "";
               if (String(document.getElementById("RTMain").checked).trim() == "true"){
                 dispRT4 = "ON";
@@ -892,6 +910,10 @@
       if(document.getElementById('email').value.trim().includes("@"))
       {
         emailvaluetosend = document.getElementById('email').value.trim();
+      }
+      else
+      {
+        emailvaluetosend = "caspar@casparvu.com"
       }
       var msg = {
         id: "start/stop",
@@ -982,8 +1004,8 @@
             alert("\nPlease enter Total Cycles AS AN INTEGER.");
             return false;
         }
-        else if (((parseInt(String(document.getElementById("totalCycles").value).trim()) < 30 || parseInt(String(document.getElementById("totalCycles").value).trim()) > 60)) && ((String(document.getElementById("totalCycles").value).trim().length != 0))){
-            alert("\nPlease enter Total Cycles as an integer BETWEEN 30 AND 60.");
+        else if (((parseInt(String(document.getElementById("totalCycles").value).trim()) < 2 || parseInt(String(document.getElementById("totalCycles").value).trim()) > 60)) && ((String(document.getElementById("totalCycles").value).trim().length != 0))){
+            alert("\nPlease enter Total Cycles as an integer BETWEEN 2 AND 60.");
             return false;
         }
           else {return true;}
