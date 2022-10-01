@@ -56,6 +56,7 @@ var savedFAM = "";
 var savedCY5 = "";
 var savedHEX = "";
 var savedRT = "";
+var savedCycles = 0;
 
 // Vectors for storing PCR data server side. 
 var timestamprecord = [];
@@ -114,7 +115,8 @@ wss.on('connection', function connection(ws) {
         rt: savedRT,
         FAMdata: FAMrecord,
         HEXdata: HEXrecord,
-        cy5data: cy5record,       
+        cy5data: cy5record,
+        totcycles: savedCycles
     };
     ws.send(JSON.stringify(connect));
     
@@ -205,6 +207,7 @@ wss.on('connection', function connection(ws) {
                     console.log(msg);
                     // Start the PCR cycling if it's not.
                     engine.setCutoff(parseInt(msg.cutoffcycles));
+                    savedCycles = parseInt(msg.cutoffcycles);
                     engine.start(function (err, errorvalue){
                         console.log(errorvalue);
                         clearInterval(DataIntervId);
@@ -242,6 +245,10 @@ wss.on('connection', function connection(ws) {
                     ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
                     console.log('Ignition started.');
                     // Start the periodic cycling data send and PCR data check.
+                    FAMrecord = [];
+                    HEXrecord = [];
+                    timestamprecord = [];
+                    cy5record = [];
                     DataIntervId = setInterval(sendit, 300);
                     PCRIntervId = setInterval(sendPCR, 5000);
                 }
@@ -253,6 +260,7 @@ wss.on('connection', function connection(ws) {
                     clearInterval(PCRIntervId);
                     // Tell the engine to turn off.
                     engine.stop();
+                    sendPCR();
                     FAMrecord = [];
                     HEXrecord = [];
                     timestamprecord = [];
@@ -291,7 +299,7 @@ wss.on('connection', function connection(ws) {
                 if(isRunning === false)
                 {
                     // If the system's off, go ahead and change the filename.
-                    engine.changefiles(msg.newname);
+                    engine.changefiles(msg.newname, msg.projectName, msg.experimentName);
                     ws.send(JSON.stringify({id: "filestatus", status: "File changed."}));
                 }
                 else
