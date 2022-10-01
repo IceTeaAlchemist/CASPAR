@@ -209,7 +209,7 @@ namespace caspar
         recordflag = false;
         digitalWrite(HEATER_PIN, LOW);
         digitalWrite(FAN_PIN, LOW);
-        cout << "stopRun:  Info: pwm_enable is " << pwm_enable << endl;
+        cout << "stopRun:  pwm_enable is " << pwm_enable << endl;
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
         sens1.LED_off(1);
         sens1.LED_off(2);
@@ -242,8 +242,8 @@ namespace caspar
         coeffstorage = newfilename + "coeff_" + ts + ".csv";
         pcrstorage = newfilename + "pcr_" + ts + ".csv";
         rawstorage = newfilename + "binaryoutput_" + ts + ".bin";
-        cout << "reopenFiles: Info: newfilename " << newfilename << " projname " << projname << " exptname " << exptname << endl;
-        cout << "reopenFiles: Info: coeffstorage " << coeffstorage << " pcrstorage " << pcrstorage << " rawstorage " << rawstorage << endl;
+        cout << "reopenFiles:  newfilename " << newfilename << " projname " << projname << " exptname " << exptname << endl;
+        cout << "reopenFiles:  coeffstorage " << coeffstorage << " pcrstorage " << pcrstorage << " rawstorage " << rawstorage << endl;
         closeFiles();
         openFiles();
     }
@@ -253,7 +253,7 @@ namespace caspar
         Isolate* isolate = args.GetIsolate();
         int cyclefromserver = args[0].As<Number>()->Value();
         cyclecutoff = cyclefromserver;
-        cout << "Cycles set: " << cyclecutoff << endl;
+        cout << "setCutoff: Cycles set: " << cyclecutoff << endl;
     }
 
     void checkInit(const FunctionCallbackInfo<Value> &args)

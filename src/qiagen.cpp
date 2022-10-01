@@ -1,5 +1,5 @@
 #include <iostream>
-//#include <sstream> // For ostringstream? But maybe not, maybe from iostream in my test code.
+//#include <sstream> // ??For ostringstream? But maybe not, maybe from iostream in my test code.
 #include <string>
 #include <cstring>
 #include <iomanip>
@@ -21,7 +21,7 @@ using namespace std;
 qiagen::qiagen(string serial)
 {
 	string progName = "qiagen::qiagen";
-	string astring;
+	//string astring;
 	ostringstream bstream;
 
 	serial_port = open(serial.c_str(), O_RDWR);
@@ -35,9 +35,9 @@ qiagen::qiagen(string serial)
 	}
 	else
 	{
-		bstream << progName << ": Info: Communicating with " << serial << " on serial port "; 
-		bstream << 	serial_port << '\n';
-		cout << bstream.str();
+		cout << progName << ":  Communicating with " << serial << " on serial port "; 
+		cout << 	serial_port << endl;
+		// cout << bstream.str();
 		// astring = progName +": Info: Communicating with " + serial + " on serial port " + 
 		// 	serial_port + '\n';
 		// cout << astring;
@@ -45,8 +45,8 @@ qiagen::qiagen(string serial)
 		struct termios tty;
 		if(tcgetattr(serial_port,&tty) != 0)
 		{
-			astring = progName + ":**Error: reading attributes " + strerror(errno) + '\n';
-			cout << astring;
+			cout << progName << ":**Error: reading attributes " << strerror(errno) << endl;
+			// cout << bstream.str();
 			// cout << "Error reading attributes: " << strerror(errno) << endl;
 		}
 		tty.c_cflag &= ~PARENB;
@@ -69,8 +69,8 @@ qiagen::qiagen(string serial)
 		cfsetispeed(&tty, B57600);
 		cfsetospeed(&tty, B57600);
 		if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
-			astring = progName + ":**Error: setting attributes " + strerror(errno) + '\n';
-			cout << astring;
+			cout << progName << ":**Error: setting attributes " << strerror(errno) << endl;
+			// cout << bstream.str();
 			// cout << "Error setting attributes: " << strerror(errno) << endl;
 		}
 		address = 0;
@@ -78,24 +78,30 @@ qiagen::qiagen(string serial)
 
 		// Fill some default vectors of information for the Qiagen.
 		fill_LED_Currents();  // Fills the vector<unsigned int> LED_currents;
-		cout << progName << ": Info, LED_Currents, actual, default, max, min" << endl;
-		if (true){
-			for (int ii=0; ii < LED_Currents.size()/2; ii += 1){
+		fill_BoardName();    // Fills the string BoardName; 
+		fill_BoardSerialNumber();  // Fills the string BoardSerialNumber;
+		fill_BoardID(); // Fills the string BoardID; 
+		fill_HardwareRevision(); // Fills the string HardwareRevision;
+		fill_OpticRevision(); // Fills the string OpticRevision;
+		fill_SoftwareVersion(); // Fills the string OpticRevision;
+
+		cout << progName << ":  LED_Currents, actual, default, max, min" << endl;
+		if (true)
+		{
+			for (int ii=0; ii < LED_Currents.size()/2; ii += 1)
+			{
 				cout << LED_Currents[ii] << "\t" << LED_Currents[ii+4] << endl;
 			}
 		}
-		fill_BoardName();    // Fills the string BoardName;
-		if (0) cout << progName << ": Info, BoardName is: \n" << BoardName << endl;
-		fill_BoardSerialNumber();  // Fills the string BoardSerialNumber;
-		if (0) cout << progName << ": Info, BoardSerialNumber is: " << BoardSerialNumber << endl;
-		fill_BoardID(); // Fills the string BoardID;
-		if (0) cout << progName << ": Info, BoardID is: " << BoardID << endl;
-		fill_HardwareRevision(); // Fills the string HardwareRevision;
-		if (0) cout << progName << ": Info, HardwareRevision is: " << HardwareRevision << endl;
-		fill_OpticRevision(); // Fills the string OpticRevision;
-		if (0) cout << progName << ": Info, OpticRevision is: " << OpticRevision << endl;
-		fill_SoftwareVersion(); // Fills the string OpticRevision;
-		if (0) cout << progName << ": Info, SoftwareVersion is: " << SoftwareVersion << endl;
+		if (false) // Change to 1 to execute prints below.
+		{
+			cout << progName << ":  BoardName is: \n" << BoardName << endl;
+			cout << progName << ":  BoardSerialNumber is: " << BoardSerialNumber << endl;
+			cout << progName << ":  BoardID is: " << BoardID << endl;
+			cout << progName << ":  HardwareRevision is: " << HardwareRevision << endl;
+			cout << progName << ":  OpticRevision is: " << OpticRevision << endl;
+			cout << progName << ":  SoftwareVersion is: " << SoftwareVersion << endl;
+		}
 
 	}
 }
@@ -123,7 +129,6 @@ int qiagen::lrc(vector<unsigned int> arr)
 string qiagen::assemble(unsigned int reg, char rw, vector<unsigned int> command)
 {
 	string progName = "qiagen::assemble";
-	string astring;
 	string result = ":";
 	stringstream ss;
 	command.insert(command.begin(),reg % 256);
@@ -138,8 +143,7 @@ string qiagen::assemble(unsigned int reg, char rw, vector<unsigned int> command)
 	}
 	else
 	{
-		astring = progName + ": **Error: The qiagen only accepts read and write. Please check your usage." + '\n';
-		cout << astring;
+		cout << progName << ": **Error: The qiagen only accepts read and write. Please check your usage." << endl;
 		// cout << "The qiagen only accepts read and write. Please check your usage." << endl;
 	}
 	command.insert(command.begin(),address);
@@ -248,19 +252,16 @@ void qiagen::LED_current(int LED, unsigned int current)
 		max = LEDstuff[LED2max];
 		min = LEDstuff[LED2min];
 	} else {
-		string astring = "qiagen::LED_current: ***Error: requested incorrect LED " + LED;
-		astring += " (1 or 2 allowed), doing nothing." + '\n';
-		cout << astring;
+		cout << "qiagen::LED_current: ***Error: requested incorrect LED " << LED;
+		cout <<  " (1 or 2 allowed), doing nothing." << endl;
 		return;
 	}
 	// Check limits on current.
 	if ( current <= max && current >= min ){
 		writeqiagen(reg, {current, 00});
 	} else {
-		ostringstream astring;
-		astring << "qiagen::LED_current: ***Error: requested invalid current " << current;
-		astring << " min, max are " << min << ", " << max << " ." << '\n';
-		cout << endl << astring.str() << endl; 
+		cout << endl << "qiagen::LED_current: ***Error: requested invalid current " << current;
+		cout << " min, max are " << min << ", " << max << " ." << endl; 
 		return;
 
 	}
@@ -272,14 +273,12 @@ void qiagen::LED_current(int LED, unsigned int current)
 unsigned int qiagen::getLED_min(int LED)
 {
 	int reg;
-	string astring;
 	if (LED == 1) reg = 30;
 	else if (LED == 2) reg = 31;
 	else {
-		astring = "qiagen::getLED_min: ***Error: requested incorrect LED " + LED;
-		astring += " (1 or 2 allowed)." + '\n';
-		cout << astring;
-		return -999;
+		cout << "qiagen::getLED_min: ***Error: requested incorrect LED " << LED;
+		cout << " (1 or 2 allowed)." << endl;
+		return 999;  // Return at very high value so that you cannot pass a minimum check.
 	}
 	// String return like: :'00'03'02'HH'LL'RC'\r\n'  (my ticks and frame start is :)
 	//                            2 bytes, HH high byte, LL low byte (not used), RC is LRC code.
@@ -296,10 +295,9 @@ unsigned int qiagen::getLED_max(int LED)
 	if (LED == 1) reg = 28;
 	else if (LED == 2) reg = 29;
 	else {
-		astring = "qiagen::getLED_max: ***Error: requested incorrect LED " + LED;
-		astring += " (1 or 2 allowed)." + '\n';
-		cout << astring;
-		return -999;
+		cout << "qiagen::getLED_max: ***Error: requested incorrect LED " << LED;
+		cout <<  " (1 or 2 allowed)." << endl;
+		return -999; // Return a very low value so that you cannot pass a maximum check.
 	}
 	// String return like: :'00'03'02'HH'LL'RC'\r\n'  (my ticks and frame start is :)
 	//                            2 bytes, HH high byte, LL low byte (not used), RC is LRC code.
@@ -488,12 +486,12 @@ int qiagen::calibrateGain(int minimum_reading, int method){
         if(basegain > maxgain) // If our gain outstrips the limits of the qiagen, exit the loop 
         // and log that we're pushing the limits of our optics.
         {
-            cout << "Couldn't find a suitable gain. Sample not present or illprepared." << endl;
+            cout << "qiagen::calibrateGain: Couldn't find a suitable gain. Sample not present or illprepared." << endl;
 			LED_off(LED);
             return 1;
         }
         // Log to console what gain is being tested.
-        cout << "Testing at gain of: " << basegain << "." << endl;
+        cout << "qiagen::calibrateGain: Testing at gain of: " << basegain << "." << endl;
         // Turn the LED, adjust the current, and turn it back on.
         LED_off(LED);
         LED_current(LED,basegain);
@@ -503,12 +501,12 @@ int qiagen::calibrateGain(int minimum_reading, int method){
         // Measure what gain we receive.
         readinval = measure();
         // Log what reading we receive to console.
-        cout << "Reading: " << readinval << endl;
+        cout << "qiagen::calibrateGain: Reading fluor of: " << readinval << endl;
         // Increase the gain.
         basegain += 10;
         stopMethod();
     } while (readinval < minimum_reading); // Continue while we haven't reached our requested minimum calibration fluoresence.
-	cout << "Gain calibrated for LED " << LED << "." << endl; 
+	cout << "qiagen::calibrateGain: Gain calibrated for LED " << LED << "." << endl; 
 	LED_off(LED);
 	return 0;
 }

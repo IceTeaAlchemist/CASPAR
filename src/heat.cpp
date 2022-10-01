@@ -78,7 +78,7 @@ void heatgen(const double coeff[3], bool trigger)
             tempkey.push_back(temps[j]); // Pair it with the lowest temperature with a larger z score..
             i++;
         }
-        cout << "Temp " << temps[j] << " complete." << endl; // Provide feedback to the console.
+        cout << "heatgen: Temp " << temps[j] << " complete." << endl; // Provide feedback to the console.
         j++; // Move to the next temperature and z-score pair.
     }
 }
@@ -98,14 +98,14 @@ void holdtemp(double temp, double time)
 
     // Retrieve our target fluoresence from our heating curves.
     double fluortarget = heatquery(temp);
-    cout << "Target fluor: " << fluortarget << endl;
+    cout << "holdtemp: Target fluor: " << fluortarget << endl;
     while(y[y.size()-1] < fluortarget && runflag == true) // While we're below the temperature of interest, heat:
     {
         delay(10);
     }
     int start = 0;
     double ycurrent;
-    cout << "Activate hold." << endl; // Log that we're holding to the console.
+    cout << "holdtemp: Activate hold." << endl; // Log that we're holding to the console.
     while(start < time * 100 && runflag == true)
     {
         ycurrent = y[y.size()-1];
@@ -133,7 +133,7 @@ void waittotemp(double temp)
 {
     digitalWrite(HEATER_PIN, LOW);
     double fluortarget = heatquery(temp); // Retrieve the target fluoresence from the curves. 
-    cout << "Falling." << endl; // Log that we're falling.
+    cout << "waittotemp: Falling." << endl; // Log that we're falling.
     while(y[y.size()-1] > fluortarget && runflag == true)
     {
         delay(10); // Wait until we've dropped enough.

@@ -314,21 +314,23 @@
 
     // Declare our graph for cycling data.
     var cyc = new Dygraph(document.getElementById("divCYC"), data,
-      {labels: ['Time','F','Temp'],
+      {labels: ['Time','Fluor','Deriv'],
        series: {
-          'F': {
+          'Fluor': {
           axis:'y1'}, // Put our fluoresence on the left axis.
-          'Temp': {
+          'Deriv': {
           axis:'y2'}, // Put our temperature on the right axis.
           },
           axes: { // Declare two sets of axes.
             'y1': {},
             'y2': {},
           },
+          labelsSeparateLines: true,
+          legend: 'always',
           title: 'Cycling Information',
           xlabel: 'Time',
           ylabel: 'Fluoresence (mV)',
-          y2label: 'Temperature (Celsius)',
+          y2label: 'Derivative (mV/s)',
           drawPoints: true,
           showRoller: true,
           digitsAfterDecimal: 3,

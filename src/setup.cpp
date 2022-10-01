@@ -6,6 +6,7 @@
 #include <wiringPi.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 
 /*
@@ -86,7 +87,7 @@ string runlog = "runtimelog.txt";
  */
 void setupPi(void)
 {
-    string progName = "setupPi()";
+    string progName = "setupPi";
     // Print out the hardware config/ini file.
     // cout << hardCfg.print_file() << endl;
     wiringPiSetup();
@@ -108,14 +109,14 @@ void setupPi(void)
         // wiringPiISR(3,INT_EDGE_RISING,sampletriggered);
         // Open the runtime log file for appending and print the initialization time to it.
         delay(1000);
-        cout << progName << ": Info, pwm_enable is " << pwm_enable << " pwm_low is " << pwm_low << endl;
+        cout << progName << ":  pwm_enable is " << pwm_enable << " pwm_low is " << pwm_low << endl;
         pwmWrite(PWM_PIN, pwm_low);
     }
     digitalWrite(BOX_FAN, HIGH);
     digitalWrite(HEATER_PIN, LOW);
     // Open the runtime log file for appending and print the initialization time to it.
     runtime_out.open(runlogDir+runlog, std::ios_base::app | std::ios_base::in);
-    runtime_out << progName << ": Info: PCR Session initialized at " << timestamp() << endl;
+    runtime_out << progName << ":  PCR Session initialized at " << timestamp() << endl;
 }
 
 /* Sets up the Qiagen using default settings. Note that the qiagen itself is initialized externally. In 
@@ -177,6 +178,8 @@ void setupADC(void)
  */
 void calibrategain()
 {
+    string progName = "calibrategain";
+    ostringstream bstream;
     sens1.LED_off(1);
     sens1.LED_off(2);
     sens1.setMethod(3);
@@ -184,20 +187,22 @@ void calibrategain()
     // Start at our minimum gain for this qiagen.
     int basegain = 80;
     double readinval;
-    // Log to console and file that we're entering calibration. 
-    cout << "Calibrating gain." << endl;
-    runtime_out << "Calibrating gain." << endl;
+    // Log to console and file that we're entering calibration.
+    bstream << progName << ": Calibrating gain." << endl; 
+    cout << bstream.str();
+    runtime_out << bstream.str();
     do
     {
         if(basegain > 224) // If our gain outstrips the limits of the qiagen, exit the loop 
         // and log that we're pushing the limits of our optics.
         {
-            cout << "Couldn't find a suitable gain. Sample not present or illprepared." << endl;
-            runtime_out << "Couldn't find a suitable gain. Sample not present or illprepared." << endl;
+            bstream << progName << ": Couldn't find a suitable gain. Sample not present or illprepared." << endl;
+            cout << bstream.str();
+            runtime_out << bstream.str();
             break;
         }
         // Log to console what gain is being tested.
-        cout << "Testing at gain of: " << basegain << "." << endl;
+        cout << progName << ": Testing at gain of: " << basegain << "." << endl;
         // Turn the LED, adjust the current, and turn it back on.
         sens1.LED_off(2);
         sens1.LED_current(2,basegain);
@@ -207,7 +212,7 @@ void calibrategain()
         // Measure what gain we receive.
         readinval = sens1.measure();
         // Log what reading we receive to console.
-        cout << "Reading: " << readinval << endl;
+        cout << progName << ": Reading: " << readinval << endl;
         // Increase the gain.
         basegain += 10;
         sens1.stopMethod();
@@ -221,6 +226,8 @@ void calibrategain()
  */
 void openFiles()
 {
+    string progName = "openFiles";
+    ostringstream bstream;
     //Open coefficient and PCR storage files from provided strings. These names are generated from the timestamp the instrument was started or user input + timestamp.
     coeff_out.open(dataDir + coeffstorage,std::ios_base::out);
     pcr_out.open(dataDir + pcrstorage,std::ios_base::out);
@@ -229,21 +236,24 @@ void openFiles()
     // Check that both fstreams are open, log any failures.
     if(!coeff_out.is_open())
     {
-        cout << "openFiles: **Failed to open " << dataDir + coeffstorage << endl;
-        runtime_out << "openFiles: **Failed to open " << dataDir + coeffstorage << endl;
+        bstream << progName << ": **Failed to open " << dataDir + coeffstorage << endl;
+        cout << bstream.str();
+        runtime_out << bstream.str();
     }
     if(!pcr_out.is_open())
     {
-        cout << "openFiles: **Failed to open " << dataDir + pcrstorage << endl;
-        runtime_out << "openFiles: **Failed to open " << dataDir + pcrstorage << endl;
+        bstream << progName << ": **Failed to open " << dataDir + pcrstorage << endl;
+        cout << bstream.str();
+        runtime_out << bstream.str();
     }
 
     // Try to open the binary output file, log if it fails.
     output = fopen((dataDir+rawstorage).c_str(),"wb");
 	if(output == NULL)
 	{
-		cout << "openFiles: **Failed to open " << dataDir+rawstorage << endl;
-        runtime_out << "openFiles: **Failed to open " << dataDir+rawstorage << endl;
+        bstream << "openFiles: **Failed to open " << dataDir+rawstorage << endl;
+		cout << bstream.str();
+        runtime_out << bstream.str();
 	} 
 }
 

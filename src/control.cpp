@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "GaussNewton3.h"
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -59,7 +60,7 @@ void premelt()
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {
                 // Accept the fit and log the coefficients.
-                cout << "Coeff: " << coeff[0] << " " << coeff[1] << " " << coeff[2] << endl;
+                cout << "premelt: Coeffs: " << coeff[0] << " " << coeff[1] << " " << coeff[2] << endl;
                 // Keep going until we've found the endpoint of the current gaussian.
                 delaytocycleend(coeff, 0.05);
                 //Generate the heating curve for this gaussian.
@@ -85,7 +86,7 @@ void premelt()
         // Wait to try fitting again.
         delay(25);
     }
-}
+}//end premelt
 
 
 /* Runs the RT algorithm.
@@ -106,7 +107,7 @@ long delaytocycleend(const double coeff[3], double thresh)
     {
         delay(10);
     }
-    cout << "Absolute value of " << derivs[derivs.size()-1] << " is less than " << thresh*coeff[0] << endl;
+    cout << "delaytocycleend: Absolute value of derivs[last] " << derivs[derivs.size()-1] << " is less than thresh*coeff[0] " << thresh*coeff[0] << endl;
     return data[data.size()-1].timestamp;
 }
 
@@ -136,7 +137,8 @@ bool modeshift(bool state)
  */
 int cycle()
 {
-    string progName = "cycle()";
+    string progName = "cycle";
+    ostringstream bstream;
     int mode = 2;
     bool doublehump;
     if(mode == 2)
@@ -207,8 +209,9 @@ int cycle()
             if(state == true)
             {
                 temperrors++;
-                cout << "Heated for too long, error thrown." << endl;
-                runtime_out << "Heated for too long." << endl;
+                bstream << progName << ": Heated for too long, error thrown, " << 75 << " secs." << endl;
+                cout << bstream.str();
+                runtime_out << bstream.str();
                 digitalWrite(HEATER_PIN,LOW);
                 if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
                 digitalWrite(FAN_PIN, HIGH);
@@ -219,8 +222,9 @@ int cycle()
             else
             {
                 temperrors++;
-                cout << "Cooled for too long, error thrown." << endl;
-                runtime_out << "Cooled for too long." << endl;
+                bstream << progName << ": Cooled for too long, error thrown, " << 75 << " secs." << endl;
+                cout << bstream.str();
+                runtime_out << bstream.str();
                 digitalWrite(FAN_PIN,LOW);
                 digitalWrite(HEATER_PIN, HIGH);
                 if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
@@ -230,8 +234,9 @@ int cycle()
             }
             if(temperrors > allowed_temp_errors)
             {
-                cout << "Too many heating failures--cycling ended." << endl;
-                runtime_out << "Algorithm failed too many times. Cycling ended." << endl;
+                bstream << progName << ": Too many heating/cooling failures, " << allowed_temp_errors << " , cycling ended." << endl;
+                cout << bstream.str();
+                runtime_out << bstream.str();
                 runflag = false;
                 digitalWrite(HEATER_PIN, LOW);
                 digitalWrite(FAN_PIN, LOW);
@@ -248,7 +253,7 @@ int cycle()
         {
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {
-                cout << coeff[0] << "   " << coeff[1] << "  " << coeff[2]  << "   " << "  Iter: " << iter << endl;
+                cout << progName << ": coeffs[0] etc, Ampltude " << coeff[0] << " Center " << coeff[1] << " Width " << coeff[2]  << "  Iteration " << iter << endl;
                 if(doublehump == false)
                 {
                     if(state == true)
@@ -259,7 +264,7 @@ int cycle()
                     {
                         triggertime = delaytocycleend(coeff,threshcool);
                     }
-                    cout << "Control triggered at " << triggertime << " milliseconds after run initiation." << endl;
+                    cout << progName << ": Control triggered at " << triggertime << " milliseconds after run initiation." << endl;
                     coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - (long)run_start << endl; 
                     if(state == false)
                     {
@@ -276,7 +281,7 @@ int cycle()
                     {
                         //lb[0] = min_vals[0];
                         //ub[0] = max_vals[0];
-                        cout << "Cycle " << cycles << " complete." << endl;
+                        cout << progName << ": Cycle " << cycles << " complete." << endl;
                         cycles++;
                     }
                 }
@@ -311,10 +316,10 @@ int cycle()
                             cycles++;
                         }
                         state = modeshift(state);
-                        cout << "Cycle " << cycles << " complete." << endl;
+                        cout << progName << ": Cycle " << cycles << " complete." << endl;
                         dtrigger = false;
                     }
-                    cout << "Control triggered at " << triggertime - (long)run_start<< " milliseconds after run initiation." << endl;
+                    cout << progName << ": Control triggered at " << triggertime - (long)run_start<< " milliseconds after run initiation." << endl;
                     coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - (long)run_start << endl; 
                     clearactivedata();
                 }
@@ -331,7 +336,7 @@ int cycle()
     // fclose(output);
     runflag = false;
     digitalWrite(HEATER_PIN, LOW);
-    cout << progName << ": INFO: pwm_enabel is " << pwm_enable << endl;
+    cout << progName << ":  pwm_enable is " << pwm_enable << endl;
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     digitalWrite(FAN_PIN, LOW);
     sens1.LED_off(2);
