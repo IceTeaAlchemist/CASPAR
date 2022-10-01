@@ -15,7 +15,7 @@
 #define SMOOTHING 25
 #define CONVERGENCE_THRESHOLD 1
 #define RT_LENGTH 600
-#define CALIBRATION_MIN 350
+#define CALIBRATION_MIN 150
 
 const double max_vals[3] = {500, 60, 10};
 const double min_vals[3] = {-500, -60, -10};
@@ -56,9 +56,12 @@ extern double run_start;
 extern bool recordflag;
 extern bool pcrReady;
 extern vector<double> pcrValues;
+extern string dataDir;
 extern string pcrstorage;
 extern string coeffstorage;
 extern string rawstorage;
+extern string notesstorage;
+extern string runlogDir;
 extern string runlog;
 extern int runerror;
 extern int temperrors;

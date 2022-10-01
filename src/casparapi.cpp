@@ -67,7 +67,7 @@ namespace caspar
             sens1.calibrateGain(300,1);
             sens2.calibrateGain(300,1);
             sens2.calibrateGain(300,3);
-            sens1.calibrateGain(350, 3);
+            sens1.calibrateGain(300, 3);
             sens1.LED_on(2);
             sens1.startMethod();
             recordflag = true;
@@ -185,7 +185,7 @@ namespace caspar
      * None
      *
      * Returns:
-     * return[0]: Error log
+     * return[0]: Error log, Run log
      * return[1]: Coefficient log
      * return[2]: PCR data storage
      * return[3]: Raw data storage
@@ -194,10 +194,10 @@ namespace caspar
     {
         Isolate *isolate = args.GetIsolate();
         v8::Local<v8::Array> filehandoff = New<v8::Array>(4);
-        Nan::Set(filehandoff, 0, New<v8::String>(runlog.c_str()).ToLocalChecked());
-        Nan::Set(filehandoff, 1, New<v8::String>(coeffstorage.c_str()).ToLocalChecked());
-        Nan::Set(filehandoff, 2, New<v8::String>(pcrstorage.c_str()).ToLocalChecked());
-        Nan::Set(filehandoff, 3, New<v8::String>(rawstorage.c_str()).ToLocalChecked());
+        Nan::Set(filehandoff, 0, New<v8::String>((runlogDir+runlog).c_str()).ToLocalChecked());
+        Nan::Set(filehandoff, 1, New<v8::String>((dataDir+coeffstorage).c_str()).ToLocalChecked());
+        Nan::Set(filehandoff, 2, New<v8::String>((dataDir+pcrstorage).c_str()).ToLocalChecked());
+        Nan::Set(filehandoff, 3, New<v8::String>((dataDir+rawstorage).c_str()).ToLocalChecked());
         args.GetReturnValue().Set(filehandoff);
     }
 
@@ -218,23 +218,32 @@ namespace caspar
     }
 
     /*
-     * Accessible method for the server to change filenames. Takes a string from the node server and reopens the data output files with that filename.
+     * Method for the server to change filenames. Takes strings from the node server and reopens the data output files with those names.
      *
      * Args:
      * args[0]: The new filename key.
+     * args[1]: The project name for the directory.
+     * args[2]: The experiment name, also for the directory.   ./data/projName/exptName (or none)/timeStamp/
      *
      */
     void reopenFiles(const FunctionCallbackInfo<Value> &args)
     {
         Isolate *isolate = args.GetIsolate();
-        String::Utf8Value str(isolate, args[0]);
+        String::Utf8Value strName(isolate, args[0]);
+        String::Utf8Value strProjName(isolate, args[1]);
+        String::Utf8Value strExptName(isolate, args[2]);
 
-        string newfilename(*str);
+        string newfilename(*strName);
+        string projname(*strProjName);
+        string exptname(*strExptName);
+        exptname = (exptname == "" ? "none" : exptname);
         string ts = timestamp();
 
-        coeffstorage = "./data/" + newfilename + "coeff" + ts + ".txt";
-        pcrstorage = "./data/" + newfilename + "pcr" + ts + ".txt";
-        rawstorage = "./data/" + newfilename + "binaryoutput" + ts + ".bin";
+        coeffstorage = newfilename + "coeff_" + ts + ".csv";
+        pcrstorage = newfilename + "pcr_" + ts + ".csv";
+        rawstorage = newfilename + "binaryoutput_" + ts + ".bin";
+        cout << "reopenFiles: Info: newfilename " << newfilename << " projname " << projname << " exptname " << exptname << endl;
+        cout << "reopenFiles: Info: coeffstorage " << coeffstorage << " pcrstorage " << pcrstorage << " rawstorage " << rawstorage << endl;
         closeFiles();
         openFiles();
     }

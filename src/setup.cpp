@@ -68,13 +68,18 @@ int runerror;
 int temperrors;
 bool RTflag = false;
 
-// Get initialization time.
+// Get initialization time, format YYYYMMDD_HHMMSS .
 string ts = timestamp();
 
 // Declare initial file names for saving the data. 
-string coeffstorage = "./data/coeff_" + ts + ".csv";
-string pcrstorage = "./data/pcr_" + ts + ".csv";
-string rawstorage = "./data/binaryoutput_" + ts + ".bin";
+// For Project and Experiment (night be none) names, use the
+// directory ./data/ProjName/Expt/TimeStamp/<filename.csv> .
+string dataDir = "./data/";
+string coeffstorage = "coeff_" + ts + ".csv";
+string pcrstorage = "pcr_" + ts + ".csv";
+string rawstorage = "binaryoutput_" + ts + ".bin";
+string notesstorage = "notes_" + ts + ".txt";
+string runlogDir = "./";
 string runlog = "runtimelog.txt";
 
 /* Sets up the Pi's GPIO pins and initiates wiringPi's library for GPIO communications.
@@ -109,7 +114,7 @@ void setupPi(void)
     digitalWrite(BOX_FAN, HIGH);
     digitalWrite(HEATER_PIN, LOW);
     // Open the runtime log file for appending and print the initialization time to it.
-    runtime_out.open(runlog, std::ios_base::app | std::ios_base::in);
+    runtime_out.open(runlogDir+runlog, std::ios_base::app | std::ios_base::in);
     runtime_out << progName << ": Info: PCR Session initialized at " << timestamp() << endl;
 }
 
@@ -217,28 +222,28 @@ void calibrategain()
 void openFiles()
 {
     //Open coefficient and PCR storage files from provided strings. These names are generated from the timestamp the instrument was started or user input + timestamp.
-    coeff_out.open(coeffstorage,std::ios_base::out);
-    pcr_out.open(pcrstorage,std::ios_base::out);
+    coeff_out.open(dataDir + coeffstorage,std::ios_base::out);
+    pcr_out.open(dataDir + pcrstorage,std::ios_base::out);
     //Dump column headings into the PCR file. Commas are so Excel will see this as a CSV.
     pcr_out << "Time," << "FAM," << "HEX," << "Cy5," << endl;
     // Check that both fstreams are open, log any failures.
     if(!coeff_out.is_open())
     {
-        cout << "openFiles: **Failed to open " << coeffstorage << endl;
-        runtime_out << "openFiles: **Failed to open " << coeffstorage << endl;
+        cout << "openFiles: **Failed to open " << dataDir + coeffstorage << endl;
+        runtime_out << "openFiles: **Failed to open " << dataDir + coeffstorage << endl;
     }
     if(!pcr_out.is_open())
     {
-        cout << "openFiles: **Failed to open " << pcrstorage << endl;
-        runtime_out << "openFiles: **Failed to open " << pcrstorage << endl;
+        cout << "openFiles: **Failed to open " << dataDir + pcrstorage << endl;
+        runtime_out << "openFiles: **Failed to open " << dataDir + pcrstorage << endl;
     }
 
     // Try to open the binary output file, log if it fails.
-    output = fopen(rawstorage.c_str(),"wb");
+    output = fopen((dataDir+rawstorage).c_str(),"wb");
 	if(output == NULL)
 	{
-		cout << "openFiles: **Failed to open " << rawstorage << endl;
-        runtime_out << "openFiles: **Failed to open " << rawstorage << endl;
+		cout << "openFiles: **Failed to open " << dataDir+rawstorage << endl;
+        runtime_out << "openFiles: **Failed to open " << dataDir+rawstorage << endl;
 	} 
 }
 
@@ -246,7 +251,8 @@ void openFiles()
 */
 void closeFiles()
 {
-    coeff_out.close();
-    pcr_out.close();
-    fclose(output);
+    bool oneOpen = ( coeff_out.is_open() ) || ( pcr_out.is_open() );
+    if ( coeff_out.is_open() ) coeff_out.close();
+    if ( pcr_out.is_open() ) pcr_out.close();
+    if ( oneOpen ) fclose(output);  // Kludge, likely but not guaranteed that if coeff_out and pcr_out are open so is output.
 }
