@@ -47,3 +47,23 @@ cy5: NA
 hex: S Midas
 rtval:false
 cycles:40
+cname: Temps
+oname:  Bill
+ename: bill.gabella@gmail.com
+pname: Temps
+fam:  One
+cy5: Two
+hex: Three
+rtval:false
+cycles:50
+ 
+cname: Swine Testing
+oname: Nick
+ename: caspar@casparvu.com
+pname: SwineLyophilzationTesting 
+fam: FMD
+cy5: RNAse P
+hex: SVA
+rtval:true
+cycles:50
+ 
