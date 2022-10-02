@@ -10,6 +10,8 @@ to the Node needs to be in namespace caspar below.
 #include <wiringPi.h>
 #include <nan.h>   // CASPAR/node_modules/nan/nan.h
 #include <iostream>
+#include <sys/stat.h> // For the mkdir() function in Linux.
+#include <vector>
 
 namespace caspar
 {
@@ -64,9 +66,9 @@ namespace caspar
             }
             recordflag = false;
             delay(100);
-            sens1.calibrateGain(300,1);
-            sens2.calibrateGain(300,1);
-            sens2.calibrateGain(300,3);
+            sens1.calibrateGain(300, 1);
+            sens2.calibrateGain(300, 1);
+            sens2.calibrateGain(300, 3);
             sens1.calibrateGain(300, 3);
             sens1.LED_on(2);
             sens1.startMethod();
@@ -238,10 +240,15 @@ namespace caspar
         string exptname(*strExptName);
         exptname = (exptname == "" ? "none" : exptname);
         string ts = timestamp();
-
-        coeffstorage = newfilename + "coeff_" + ts + ".csv";
-        pcrstorage = newfilename + "pcr_" + ts + ".csv";
-        rawstorage = newfilename + "binaryoutput_" + ts + ".bin";
+        dataDir = "./data/" + projname + "/" + exptname + "/" + ts + "/";  // This is an extern, will be known to setup.cpp .
+        doMakeDirs(dataDir);  // Create the directory structure, the lower mkdir() calls give error is directory already exists but still makes subdir.
+        // coeffstorage = newfilename + "coeff_" + ts + ".csv";  // If new directory structure, do not need to prepend ProjName_ to files (?). weg
+        // pcrstorage = newfilename + "pcr_" + ts + ".csv";
+        // rawstorage = newfilename + "binaryoutput_" + ts + ".bin";
+        coeffstorage = "coeff_" + ts + ".csv";  // If new directory structure, do not need to prepend ProjName_ to files (?). weg
+        pcrstorage = "pcr_" + ts + ".csv";
+        rawstorage = "binaryoutput_" + ts + ".bin";
+        cout << "reopenFiles:  new directory dataDir " << dataDir << endl;
         cout << "reopenFiles:  newfilename " << newfilename << " projname " << projname << " exptname " << exptname << endl;
         cout << "reopenFiles:  coeffstorage " << coeffstorage << " pcrstorage " << pcrstorage << " rawstorage " << rawstorage << endl;
         closeFiles();

@@ -208,7 +208,8 @@ wss.on('connection', function connection(ws) {
                     // Start the PCR cycling if it's not.
                     engine.setCutoff(parseInt(msg.cutoffcycles));
                     savedCycles = parseInt(msg.cutoffcycles);
-                    engine.start(function (err, errorvalue){
+                    engine.start(function (err, errorvalue)
+                    {
                         console.log(errorvalue);
                         clearInterval(DataIntervId);
                         clearInterval(PCRIntervId);
@@ -219,7 +220,8 @@ wss.on('connection', function connection(ws) {
                         console.log('Cycling shutdown.');
                         if(errorvalue[0] > 0)
                         {
-                            var errorreport = {
+                            var errorreport = 
+                            {
                                 id: "errorreport",
                                 value: errorvalue[0]
                             }
@@ -299,6 +301,8 @@ wss.on('connection', function connection(ws) {
                 if(isRunning === false)
                 {
                     // If the system's off, go ahead and change the filename.
+                    console.log("caspar.js L304: msg.newname, msg.projectName, msg.experimentName  " + 
+                    msg.newname +" " + msg.projectName + " " + msg.experimentName);
                     engine.changefiles(msg.newname, msg.projectName, msg.experimentName);
                     ws.send(JSON.stringify({id: "filestatus", status: "File changed."}));
                 }

@@ -73,7 +73,7 @@ bool RTflag = false;
 string ts = timestamp();
 
 // Declare initial file names for saving the data. 
-// For Project and Experiment (night be none) names, use the
+// For Project and Experiment names (might be none), use the
 // directory ./data/ProjName/Expt/TimeStamp/<filename.csv> .
 string dataDir = "./data/";
 string coeffstorage = "coeff_" + ts + ".csv";
@@ -223,14 +223,16 @@ void calibrategain()
 
 
 /* Opens files for fit information, raw binary data, and PCR. These will need to be able to rewrite the headings influenced by recipe.
+   Modified to follow directory structure  ./data/<projname>/<exptname>/ .  20221002 weg
  */
 void openFiles()
 {
     string progName = "openFiles";
     ostringstream bstream;
     //Open coefficient and PCR storage files from provided strings. These names are generated from the timestamp the instrument was started or user input + timestamp.
-    coeff_out.open(dataDir + coeffstorage,std::ios_base::out);
-    pcr_out.open(dataDir + pcrstorage,std::ios_base::out);
+    cout << "openFiles: before coeff_out.open(), setup.cpp line 234." << endl;
+    coeff_out.open(dataDir + coeffstorage, std::ios_base::out);
+    pcr_out.open(dataDir + pcrstorage, std::ios_base::out);
     //Dump column headings into the PCR file. Commas are so Excel will see this as a CSV.
     pcr_out << "Time," << "FAM," << "HEX," << "Cy5," << endl;
     // Check that both fstreams are open, log any failures.
@@ -248,7 +250,7 @@ void openFiles()
     }
 
     // Try to open the binary output file, log if it fails.
-    output = fopen((dataDir+rawstorage).c_str(),"wb");
+    output = fopen( (dataDir+rawstorage).c_str(), "wb" );
 	if(output == NULL)
 	{
         bstream << "openFiles: **Failed to open " << dataDir+rawstorage << endl;
@@ -264,5 +266,68 @@ void closeFiles()
     bool oneOpen = ( coeff_out.is_open() ) || ( pcr_out.is_open() );
     if ( coeff_out.is_open() ) coeff_out.close();
     if ( pcr_out.is_open() ) pcr_out.close();
-    if ( oneOpen ) fclose(output);  // Kludge, likely but not guaranteed that if coeff_out and pcr_out are open so is output.
+    if ( oneOpen ) fclose(output);  // Kludge, likely but not guaranteed that if coeff_out OR pcr_out are open so is output.
 }
+
+// Must include <sys/stat.h> for the mkdir() function.  Requires a dir name and permissions, usually 0777.
+// For subdirs, the function below splits string at Linux / (slashes), and cascades the directory creation.
+// Likely the top ones, the first ones already exist, maybe the whole thing.
+// Expect longdirname like ./data/myproject/myexperiment/timestamp/  , ignore last /. 
+void doMakeDirs(string longdirname)
+{
+    string progName = "doMakeDirs";
+    vector <string> subdirs;
+    string delim = "/";
+    string subdir, therest;
+    int dlen = delim.length();
+    // cout << "longdirname " << longdirname << " with delimiter " << delim << endl;
+
+    // Split the longdirname into subdirectories.
+    therest = longdirname;
+    int pos = 0;
+    while (pos < longdirname.length()-1 ) // Iteratively search for delimiter.
+    {
+        pos = therest.find(delim);
+        if ( pos > 0 ) subdirs.push_back( therest.substr(0,pos) );
+        therest = therest.substr(pos+dlen);  // Set to the string AFTER the delimiter.
+    }
+
+    // Printouts just for debugging.
+    // cout << "All positions of delim..." << endl;
+    // for ( int iter: posdelims ){
+    //     cout << "pos is " << iter << endl;
+    // }
+    // cout << "All subdirs ... " << endl;
+    // for ( string iter: subdirs ){
+    //     cout << "subdir is " << iter << endl;
+    // }
+    // cout << endl;
+
+    // Do the mkdir()'s.
+    mode_t perm = 0777;
+    string prev = "";  // Previous directory in the hierarchy, top to bottom subdirectory.
+    int rc, rctot;
+    for (string iter: subdirs)
+    {
+        if (iter==".") continue;  // Skip the . of ./.
+        if (prev == "")  // First time through, top directory only.
+        {
+        rc = mkdir( iter.c_str(), perm);  // Many of these may already exist.  That is fine.
+        // rc = 0 success, rc = -1 if already exists or a problem.
+        prev = iter;
+        } else  // Already made the top directory, these are all subdirs.
+        {
+        rc = mkdir( (prev+"/"+iter).c_str(), perm);
+        prev = prev + "/" + iter;
+        }
+        if ( rc == -1 )
+        {
+            cout << progName << ": Either directory already exists or a problem creating it, like bad path." << endl;
+            cout << progName << ": rc " << rc << " iter " << iter << " prev " << prev << endl;
+            rctot = -1;
+        }
+        // All permissions look like 755 and not 777, careful playing with perms easy to make it not allow subdirectories.
+    }      
+    // return rctot;  // Do not need return code, the upper code will not fix any of this.
+}
+

@@ -5,6 +5,7 @@
 #include <deque>
 #include <vector>
 #include <string>
+#include <sys/stat.h> // For the mkdir() function in Linux.
 //#include <iostream> // For ostringstream for couts.
 
 #define DEVICE_ID 0x48
@@ -82,6 +83,7 @@ void openFiles(void);
 void setupADC(void);
 void calibrategain(void);
 void closeFiles();
+void doMakeDirs(string longdirname);
 
 //heat.cpp function definitions. These handle generation of fluoresence based heat curves and temperature-based control.
 
