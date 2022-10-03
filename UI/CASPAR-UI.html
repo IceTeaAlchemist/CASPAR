@@ -752,49 +752,58 @@
             if(String(document.getElementById('startStopPCR').innerHTML) == "Start PCR"){
               var displayFileName1;
               var timeStarted1 = new Date();
-                //Sets the default file name to display if there is no file name entered or if old and new file names match
-                if (String(document.getElementById("filename").value).trim().length == 0 || oldFileName == newFileName) {
-                  var nameOfProject = document.getElementById("projName").value;
-                  var date = ("0" + (timeStarted1.getMonth()+1).toString()).slice(-2) + "-" + ("0" + timeStarted1.getDate().toString()).slice(-2)  + "-" +
-                    timeStarted1.getFullYear().toString().slice(-2);
-                  // var time = ("0" + timeStarted1.getHours()).slice(-2)  + "." +  ("0" + timeStarted1.getMinutes()).slice(-2);
-                  // var dateTime = date+ "_" + time;
-                  displayFileName1 = nameOfProject + "_";
-                  }
-                else {displayFileName1 = document.getElementById("filename").value;
-                  }
+              //Sets the default file name to display if there is no file name entered or if old and new file names match
+              if (String(document.getElementById("filename").value).trim().length == 0 || oldFileName == newFileName) 
+              {
+                var nameOfProject = document.getElementById("projName").value;
+                var date = ("0" + (timeStarted1.getMonth()+1).toString()).slice(-2) + "-" + ("0" + timeStarted1.getDate().toString()).slice(-2)  + "-" +
+                  timeStarted1.getFullYear().toString().slice(-2);
+                // var time = ("0" + timeStarted1.getHours()).slice(-2)  + "." +  ("0" + timeStarted1.getMinutes()).slice(-2);
+                // var dateTime = date+ "_" + time;
+                displayFileName1 = nameOfProject + "_";
+              }
+              else 
+              {
+                displayFileName1 = document.getElementById("filename").value;
+              }
               let dispRT3 = "";
-              if (String(document.getElementById("RTMain").checked).trim() == "true"){
+              if (String(document.getElementById("RTMain").checked).trim() == "true")
+              {
                 dispRT3 = "ON";
               }
-              else{
+              else
+              {
                 dispRT3 = "OFF";
               }
-              let text = "Are you sure you want to start this PCR?\n\nAll previous data will be cleared and you will be starting this experiment with the following parameters:\n\n" +
+              let text = "Are you sure you want to start this PCR?\n\n" +
+                "All previous data will be cleared and you will be starting this experiment with the following parameters:\n\n" +
                 "Save Data Filename: " + displayFileName1  + "\nOperator Name: " + document.getElementById("opName").value + "\nExperiment Name: " +
-                document.getElementById("expName").value + "\nConfiguration: " + dropdownID.options[dropdownID.selectedIndex].text
-                + "\nTotal Cycles: " + document.getElementById("totCycles").value + "\nReverse Transcription: " + dispRT3 + "\n\nPress 'OK' to confirm.";
-                if (confirm(text) == true) {
-                  //Changes Button and System Vars
+                document.getElementById("expName").value + "\nConfiguration: " + dropdownID.options[dropdownID.selectedIndex].text +
+                "\nRecipe: " + dropdownID.options[dropdownIDRecipes.selectedIndex].text +
+                "\nTotal Cycles: " + document.getElementById("totCycles").value + "\nReverse Transcription: " + dispRT3 + "\n\nPress 'OK' to confirm.";
+                if (confirm(text) == true) // Checks that you hit "Ok" on the dialog.
+                {
+                  // Changes Button and System Vars
                   document.getElementById('startStopPCR').innerHTML = "Stop PCR";
-                    document.getElementById('startStopPCR').style.backgroundColor = 'Tomato';
+                  document.getElementById('startStopPCR').style.backgroundColor = 'Tomato';
                   clientPressedStart = true;
                   runFinished = false;
                   startStopPCR();
                 }
                 else {}
             }
-            else{
+            else
+            {
               let text = "\nAttention: you are currently losing data. \n\nAre you sure you want to stop this PCR? \n\n If you do, the experiment will end.";
-                if (confirm(text) == true) {
-                  //Changes Button and System Vars
-                  document.getElementById('startStopPCR').innerHTML = "Start PCR";
-                    document.getElementById('startStopPCR').style.backgroundColor = 'LimeGreen';
-                  clientPressedStart = false;
-                  runFinished = true;
-                  startStopPCR();
-                }
-                else {}
+              if (confirm(text) == true) {
+                //Changes Button and System Vars
+                document.getElementById('startStopPCR').innerHTML = "Start PCR";
+                document.getElementById('startStopPCR').style.backgroundColor = 'LimeGreen';
+                clientPressedStart = false;
+                runFinished = true;
+                startStopPCR();
+              }
+              else {}
             }
           }// end if conditionsForStart
       }// end stopStartConfirmation
@@ -803,65 +812,70 @@
     var defaultFileName; //Important to send
 
     // Start or stop the PCR depending on its current state.
-    function startStopPCR() {
-      if (clientPressedStart){ //Changes the file name between runs if its the exact same
-        if (oldFileName == newFileName){
+    function startStopPCR() { 
+      if (clientPressedStart)  //Changes the file name between runs if its the exact same.
+      { 
+        if (oldFileName == newFileName)
+        {
           newFileName = " ";
           document.getElementById('filename').value = " ";
         }
-        //Displays Start Time
-        var timeStarted = new Date(); //initialize Start Time
+        // Displays Start Time.
+        var timeStarted = new Date(); // Initialize Start Time.
         timeStartDisplay = timeStarted.toLocaleTimeString();
         document.getElementById("startTime").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
-        timeStartDisplay.bold() + "</span>";
+          timeStartDisplay.bold() + "</span>";
         document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + " " + timeStartDisplay;
         document.getElementById("finTime").innerHTML =  "<br> Finish Time: <br> <br> <span style=font-size:110%> &emsp; &emsp; -" + "</span>";
         //This code alters the default file name.
-          if (String(document.getElementById("filename").value).trim().length == 0){
-            var nameOfProject = document.getElementById("projName").value;
-            var date = ("0" + (timeStarted.getMonth()+1).toString()).slice(-2) + "-" + ("0" + timeStarted.getDate().toString()).slice(-2)  + "-" +
-              timeStarted.getFullYear().toString().slice(-2);
-            // var time = ("0" + timeStarted.getHours()).slice(-2)  + "." +  ("0" + timeStarted.getMinutes()).slice(-2);
-            // var dateTime = date+ "_" + time;
-            defaultFileName = nameOfProject + "_";
-            document.getElementById('filename').value = defaultFileName;
-          }
-          newFileName = String(document.getElementById('filename').value);
-          //This code disables all major entry fields
-            document.getElementById('projName').disabled = true;
-            document.getElementById('opName').disabled = true;
-            document.getElementById('expName').disabled = true;
-            document.getElementById("dropdown").style.pointerEvents = "none";
-              document.getElementById("dropdown").style.opacity = "0.6";
-            document.getElementById('filename').disabled = true;
-            document.getElementById('totCycles').disabled = true;
-            document.getElementById('RTMain').disabled = true;
-          //Code to reset graph related things
-          data = [];
-          data2 = [];
-          cycleNo = 0;
-            document.getElementById("currentCycle").innerHTML =  "<span style='font-weight:bold; font-size:110%'>" + cycleNo + "</span>";
-          t = new Date();
-            dateWinMin = t.getTime();
-            dateWinMax = dateWinMin + 2*taxisIncrement;
-            cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );
-          data.push([t, 0, 0]);
-          data2.push([cycleNo, 0, 0, 0]);  // Initializing, not length to fam, etc, yet.
-          cyc.updateOptions({ 'file': data});
-          pcr.updateOptions({labels: ["Cycle", sendfam, sendhex, sendcy5]});
-          pcr.updateOptions( {'file': data2 } ); // Update it.
+        if ( String( document.getElementById("filename").value ).trim().length == 0 )  // If filename is null or blank or " ".
+        {
+          var nameOfProject = document.getElementById("projName").value;
+          var date = timeStarted.getFullYear().toString().slice(-2) + ("0" + (timeStarted.getMonth()+1).toString()).slice(-2) +
+           ("0" + timeStarted.getDate().toString()).slice(-2);
+          // var time = ("0" + timeStarted.getHours()).slice(-2)  + "." +  ("0" + timeStarted.getMinutes()).slice(-2);
+          // var dateTime = date+ "_" + time;
+          defaultFileName = nameOfProject + "_";
+          document.getElementById('filename').value = defaultFileName;
+        }
+        newFileName = String(document.getElementById('filename').value);
+        //This code disables all major entry fields
+        document.getElementById('projName').disabled = true;
+        document.getElementById('opName').disabled = true;
+        document.getElementById('expName').disabled = true;
+        document.getElementById("dropdown").style.pointerEvents = "none";
+        document.getElementById("dropdown").style.opacity = "0.6";
+        document.getElementById('filename').disabled = true;
+        document.getElementById('totCycles').disabled = true;
+        document.getElementById('RTMain').disabled = true;
+        //Code to reset graph related things
+        data = [];
+        data2 = [];
+        cycleNo = 0;
+        document.getElementById("currentCycle").innerHTML =  "<span style='font-weight:bold; font-size:110%'>" + cycleNo + "</span>";
+        t = new Date();
+        dateWinMin = t.getTime();
+        dateWinMax = dateWinMin + 2*taxisIncrement;
+        cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );
+        data.push([t, 0, 0]);
+        data2.push([cycleNo, 0, 0, 0]);  // Initializing, not length to fam, etc, yet.
+        cyc.updateOptions({ 'file': data});
+        pcr.updateOptions({labels: ["Cycle", sendfam, sendhex, sendcy5]});
+        pcr.updateOptions( {'file': data2 } ); // Update it.
 
-          changeFile();
-          clientPressedStart = false;
+        changeFile();
+        clientPressedStart = false;
 
           // Updates the info on the second tab.
           let dispRT4 = "";
-              if (String(document.getElementById("RTMain").checked).trim() == "true"){
-                dispRT4 = "ON";
-              }
-              else{
-                dispRT4 = "OFF";
-              }
+          if (String(document.getElementById("RTMain").checked).trim() == "true")
+          {
+            dispRT4 = "ON";
+          }
+          else
+          {
+            dispRT4 = "OFF";
+          }
 
           document.getElementById("esConfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration:</span>" + " "  + dropdownID.options[dropdownID.selectedIndex].text;
           document.getElementById("esProj").innerHTML = "<span style = 'text-decoration: underline;'> Project Name:</span>" + " "  + document.getElementById("projName").value;
@@ -871,7 +885,7 @@
           document.getElementById("esTotalCycles").innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " "  + document.getElementById("totCycles").value;
           document.getElementById("esRT").innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" + " "  + dispRT4;
 
-          //Sends important data to server for storage (for safety reasons incase client leaves)
+          // Sends important data to server for storage (for safety reasons in case client leaves).
           let msg = {
             id: "startSave",
             startTime: timeStartDisplay,
@@ -894,20 +908,21 @@
           };
           ws.send(JSON.stringify(msg)); //sends message
       }
-      else{
+      else  // Client did NOT press start.
+      {
         //This code enables all major entry fields
         document.getElementById('projName').disabled = false;
         document.getElementById('opName').disabled = false;
         document.getElementById('expName').disabled = false;
         document.getElementById("dropdown").style.pointerEvents = "auto";
-          document.getElementById("dropdown").style.opacity = "1";
+        document.getElementById("dropdown").style.opacity = "1";
         document.getElementById('filename').disabled = false;
         document.getElementById('totCycles').disabled = false;
         document.getElementById('RTMain').disabled = false;
         oldFileName = newFileName; //for storing purposes
         clientPressedStart = true;
         finishRun();
-        }
+      }
       var emailvaluetosend = "false";
       if(document.getElementById('email').value.trim().includes("@"))
       {
