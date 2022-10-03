@@ -843,8 +843,8 @@
         document.getElementById('projName').disabled = true;
         document.getElementById('opName').disabled = true;
         document.getElementById('expName').disabled = true;
-        document.getElementById("dropdown").style.pointerEvents = "none";
-        document.getElementById("dropdown").style.opacity = "0.6";
+        document.getElementById('dropdown').style.pointerEvents = 'none';
+        document.getElementById('dropdown').style.opacity = '0.6';
         document.getElementById('filename').disabled = true;
         document.getElementById('totCycles').disabled = true;
         document.getElementById('RTMain').disabled = true;
@@ -978,11 +978,18 @@
       //Changes file name based off the textbox on the page and sends the name to the server.
       //This Function should run prior to the actual start. Never called on outside of a function.
       function changeFile()
-        {var nameforchange = document.getElementById("filename").value;
-          var msg = {
-            id: "filename",
-            newname: nameforchange};
-          ws.send(JSON.stringify(msg));}
+      {
+        var nameforchange = document.getElementById("filename").value;
+        var currprojname = document.getElementById("projName").value;
+        var currexptname = document.getElementById("expName").value;
+        var msg = {
+          id: "filename",
+          newname: nameforchange,
+          projname: currprojname,
+          exptname: currexptname,
+        };
+        ws.send(JSON.stringify(msg));
+      }
 
       //This function should only be called when Email Data is pressed.
       function sendFiles() {

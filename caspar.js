@@ -301,9 +301,14 @@ wss.on('connection', function connection(ws) {
                 if(isRunning === false)
                 {
                     // If the system's off, go ahead and change the filename.
-                    console.log("caspar.js L304: msg.newname, msg.projectName, msg.experimentName  " + 
-                    msg.newname +" " + msg.projectName + " " + msg.experimentName);
-                    engine.changefiles(msg.newname, msg.projectName, msg.experimentName);
+                    // The below are undefined here!!
+                    // console.log("caspar.js L304: msg.newname, msg.projectName, msg.experimentName  " + 
+                    // msg.newname +" " + msg.projectName + " " + msg.experimentName);
+                    // engine.changefiles(msg.newname, msg.projectName, msg.experimentName);
+                    // Below might work if the above startSave case went first.
+                    console.log("caspar.js L309: savedFileName, savedProjName, savedExperimentName  " + 
+                    msg.newname +" " + msg.projname + " " + msg.exptname); // These are all empty strings.
+                    engine.changefiles(msg.newname, msg.projname, msg.exptname);
                     ws.send(JSON.stringify({id: "filestatus", status: "File changed."}));
                 }
                 else

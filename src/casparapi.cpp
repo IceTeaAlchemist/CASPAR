@@ -238,6 +238,8 @@ namespace caspar
         string newfilename(*strName);
         string projname(*strProjName);
         string exptname(*strExptName);
+        newfilename = (newfilename == "" ? "none" : newfilename);  // Handle the null case.
+        projname = (projname == "" ? "none" : projname);
         exptname = (exptname == "" ? "none" : exptname);
         string ts = timestamp();
         dataDir = "./data/" + projname + "/" + exptname + "/" + ts + "/";  // This is an extern, will be known to setup.cpp .

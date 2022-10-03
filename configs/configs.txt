@@ -32,8 +32,8 @@ cname: New Nanorods
 oname: Nick
 ename: caspar@casparvu.com
 pname: New Nanorods
-fam: NA
-cy5: NA
+fam: NAOne
+cy5: NATwo
 hex: S Midas
 rtval:false
 cycles:50
@@ -42,8 +42,8 @@ cname: evaporation
 oname: Nick
 ename: caspar@casparvu.com
 pname: Evaporation Testing
-fam: NA
-cy5: NA
+fam: NAOne
+cy5: NATwo
 hex: S Midas
 rtval:false
 cycles:40
@@ -62,7 +62,7 @@ oname: Nick
 ename: caspar@casparvu.com
 pname: SwineLyophilzationTesting 
 fam: FMD
-cy5: RNAse P
+cy5: RNAseP
 hex: SVA
 rtval:true
 cycles:50
