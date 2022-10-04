@@ -90,8 +90,7 @@
     <button class="tablinks" id = "tab3" onclick="show(event, 'tab3c')">Configuration</button>
     <button class="tablinks" id = "tab4" style = "visibility: hidden">Developer Mode</button>
     <button id="help" style="float:right" onclick="help()"> Help </button>
-    <button id="close" style = "float:right;" onclick = "closeConfirmation()"> Close Website </button>
-    <button id="closeServer" style="float:right" onclick = "shutdownConfirmation()"> Shutdown Server (DO NOT PRESS) </button>
+    <button id="closeServer" style="float:right" onclick = "shutdownConfirmation()"> Shutdown Server </button>
     <button id="serverStatus" style="float:right;"
       onClick="document.location.reload(true)"> Server Status: <span style = "font-weight:bold; color: tomato;"> Not Connected </span> </button>
   </div>
@@ -143,8 +142,8 @@
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; &ensp; - </span></p> <!--Changes-->
         <p class="inrtxt3" id="finTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Finish Time:
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; - </span></p> <!--Changes-->
-        <button class="inrbtn2" id="RTSettings" onclick = "devModeShow()" style = "display:inline; display:inline; float:left; margin-left:55px;">
-          RT Settings </button> <!--Goes to Dev Mode-->
+        <button class="inrbtn2" id="RTSettings" onclick = "downloadData()" style = "display:inline; display:inline; float:left; margin-left:55px;">
+          Download Data </button> <!--Goes to Dev Mode-->
       </div>
 
     </div>
@@ -1055,15 +1054,6 @@
           ws.send(JSON.stringify(msg));
           alert("\nConfiguration Saved! \n\nPlease reload the page to update the system.");
         }
-      }
-
-      //opens a window prompt to confirm whether the user meant to close the website
-      function closeConfirmation()
-      {
-        let text = "\nAre you sure you want to close this website?\n\n If currently running, the machine will continue to run.\n\nPress 'OK' to confirm.";
-        if (confirm(text) == true) {
-          window.close();
-        } else {}
       }
 
       //opens a window prompt to confirm whether the user meant to shutdown the server.
