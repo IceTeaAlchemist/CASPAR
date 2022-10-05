@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # To run
+# chmod +x ./runSetup.sh
 # ./runSetup.sh
 # 20220711 weg, started with Nick.
+# 20221005 weg, comment edits.
 
 # Function that echoes the command to the terminal.
 domod () {

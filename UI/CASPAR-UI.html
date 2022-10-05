@@ -301,7 +301,7 @@
           },
           title: 'PCR Output',
           xlabel: 'Cycle',
-          ylabel: 'Fluoresence (mV)',
+          ylabel: 'Fluorescence (mV)',
           drawPoints: true,
           showRoller: true,
           digitsAfterDecimal: 3,
@@ -316,7 +316,7 @@
       {labels: ['Time','Fluor','Deriv'],
        series: {
           'Fluor': {
-          axis:'y1'}, // Put our fluoresence on the left axis.
+          axis:'y1'}, // Put our fluorescence on the left axis.
           'Deriv': {
           axis:'y2'}, // Put our temperature on the right axis.
           },
@@ -328,7 +328,7 @@
           legend: 'always',
           title: 'Cycling Information',
           xlabel: 'Time',
-          ylabel: 'Fluoresence (mV)',
+          ylabel: 'Fluorescence (mV)',
           y2label: 'Derivative (mV/s)',
           drawPoints: true,
           showRoller: true,
@@ -504,9 +504,9 @@
           case "PCRdata": //In the future, msg.cycleNo will give us the real cycleNo -- NS: Done June 28th 2022
             cycleNo = msg.cycle; //Increase PCR cycle on receipt of PCR data.
             document.getElementById("currentCycle").innerHTML =  "<span style='font-weight:bold; font-size:110%'>" + cycleNo + "</span>"; //Changes Cycle Number
-            fam = msg.fam; //Retrieve FAM fluoresence.
-            cy5 = msg.cy5; //Retrieve Cy5 fluoresence.
-            hex = msg.hex; //Retrieve HEX fluoresence.
+            fam = msg.fam; //Retrieve FAM fluorescence.
+            cy5 = msg.cy5; //Retrieve Cy5 fluorescence.
+            hex = msg.hex; //Retrieve HEX fluorescence.
             data2.push([cycleNo, fam, hex, cy5]); //Push the new data onto the graph source.
             // Drop the first point (0,0) if there are 2 or more points.
             if (data2.length > 1 && data2[0][0] == 0 ) { // If big array AND cycle no. 0 included; Shift only ONCE!
@@ -525,7 +525,7 @@
 
           case "cycledata":
             x = new Date();  // Get current time
-            y = msg.fluor; // Get fluoresence.
+            y = msg.fluor; // Get fluorescence.
             temp = msg.temp; // Get temperature.
           //Move the window if needed:
             if (x.getTime() >= dateWinMax) {
