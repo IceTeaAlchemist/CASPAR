@@ -67,3 +67,13 @@ hex: SVA
 rtval:true
 cycles:50
  
+cname: PWM Laser AuNRs
+oname:  Rosana
+ename: caspar@casparvu.com
+pname:  PWM 
+fam: Nothing 1
+cy5: Nothing 2
+hex:  S. Mitis
+rtval:false
+cycles: 50
+ 

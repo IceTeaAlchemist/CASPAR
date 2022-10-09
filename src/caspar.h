@@ -32,7 +32,7 @@ struct reading
 };
 
 
-//Global variable declarations. External variables are set in setup.cpp.
+// Global variable declarations. External variables are set in setup.cpp.
 extern adc D2;
 extern adc TEMP;
 extern qiagen sens1;
@@ -50,6 +50,7 @@ extern deque<double> yaverage;
 extern deque<double> derivaverage;
 extern fstream coeff_out;
 extern fstream pcr_out;
+extern fstream notes_out;
 extern fstream runtime_out;
 extern int cycles;
 extern FILE *output;
@@ -60,6 +61,7 @@ extern bool pcrReady;
 extern vector<double> pcrValues;
 extern string dataDir;
 extern string pcrstorage;
+extern string notesstorage;
 extern string coeffstorage;
 extern string rawstorage;
 extern string notesstorage;
@@ -75,7 +77,7 @@ extern const double pwm_low_ratio;
 extern const int pwm_low;
 extern int cyclecutoff;
 
-//setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
+// setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
 
 void setupPi(void);
 void setupQiagen(void);
@@ -84,8 +86,11 @@ void setupADC(void);
 void calibrategain(void);
 void closeFiles();
 void doMakeDirs(string longdirname);
+// In casparapi, void writeComments(string savedComments, string savedStartTime, string savedFinishTime);
+void doWriteComments(string savedComments, string savedStartTime, string savedFinishTime,
+   string savedProjName, string savedOperator, string savedExperimentName);
 
-//heat.cpp function definitions. These handle generation of fluoresence based heat curves and temperature-based control.
+// heat.cpp function definitions. These handle generation of fluoresence based heat curves and temperature-based control.
 
 double heatquery(double temp);
 double fluorquery(double fluor);
@@ -93,7 +98,7 @@ void waittotemp(double temp);
 void heatgen(const double coeff[3], bool trigger);
 void holdtemp(double temp, double time);
 
-//control.cpp function definitions. These handle the control loop for cycling and RT.
+// control.cpp function definitions. These handle the control loop for cycling and RT.
 
 void premelt(void);
 void runRT(void);

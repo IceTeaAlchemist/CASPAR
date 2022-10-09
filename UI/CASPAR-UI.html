@@ -111,9 +111,9 @@
             <select id = "configDropdown" class="custom-select" style="text-align:left;" onclick = "loadDataRequest()"> <!--Options Change-->
             </select>
           </div>
-        <p class="inrtxt2">Recipes:</p>
-          <div id = "dropdown2" style="width:93%; margin:0 auto; margin-bottom: 30px;"> <!--Value Changes-->
-            <select id = "recipeDropdown" class="custom-select" style="text-align:left;" onclick = "loadRecipeRequest()"> <!--Options Change-->
+        <p hidden="true" class="inrtxt2">Recipes:</p>
+          <div id = "dropdown2" style="visibility: hidden; width:93%; margin:0 auto; margin-bottom: 30px;"> <!--Value Changes-->
+            <select id = "recipeDropdown" class="custom-select", style="text-align:left;" onclick = "loadRecipeRequest()"> <!--Options Change-->
             </select>            
           </div>
       </div>
@@ -243,8 +243,8 @@
 
           <button class="inrbtn3" id="saveConfig" onclick="saveConfig()" style= "display: inline; float:left; margin-left: 70px;
             margin-bottom: 20px;"> Save <br> This <br> Configuration </button>
-          <button class="inrbtn3" id="devMode" onclick="devModeShow()" style= "display: inline; float:right;
-            margin-right: 70px; margin-bottom: 20px;"> Launch <br> Developer <br> Mode </button>
+          <!--WEG 20221009 to hide button <button class="inrbtn3" id="devMode" onclick="devModeShow()" style= "display: inline; float:right;
+            margin-right: 70px; margin-bottom: 20px;"> Launch <br> Developer <br> Mode </button> -->
       </div>
 
       <div id="tab4c" class="tabcontent">  <!--Fourth tab content, Needs to be added based on how Nick and Bill desire-->
@@ -539,6 +539,18 @@
                cyc.updateOptions( { 'file': data } );}
           break;
 
+          case "downloadresponse":
+            console.log(msg);
+            var notefilename = "/home/pi/Documents/githubs/CASPAR" + msg.notefile.substring(1);
+            // Indeed notefile is like "./data/laser_heating/none/20221008_163754/notes_20221008_163754.txt"
+            // so drop the "." with substring().
+            var pcrfilename = "/home/pi/Documents/githubs/CASPAR" + msg.pcrfile.substring(1);
+            //window.open(notefilename);
+            //window.open(pcrfilename);
+            myDownloadFunction(pcrfilename);
+            myDownloadFunction(notefilename);
+            break;
+
           case "runcomplete":
             console.log(msg);
             finishRun(); //function to run when run is complete.
@@ -601,8 +613,9 @@
           //Updates major values.
           dropdownID.value = msg.configname;
           dropdownIDRecipes.value = msg.recipename;
+          //savedStartTime = msg.starttime;//??
           document.getElementById("startTime").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
-          msg.starttime.bold() + "</span>";
+            msg.starttime.bold() + "</span>";
           document.getElementById("projName").value = msg.projectname;
           document.getElementById("opName").value = msg.operatorname;
           document.getElementById('expName').value = msg.experimentname;
@@ -624,7 +637,7 @@
           //Updates values in tab 2: experiment info
           document.getElementById("esConfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration:</span>" + " "  + msg.configname;
           document.getElementById("esProj").innerHTML = "<span style = 'text-decoration: underline;'> Project Name:</span>" + " "  + msg.projectname;
-          console.log("configname and projectname" + msg.configname + " " + msg.projectname);
+          console.log("configname and projectname  " + msg.configname + " " + msg.projectname);
           document.getElementById("esExp").innerHTML = "<span style = 'text-decoration: underline;'> Experiment Name:</span>" + " "  + msg.experimentname;
           document.getElementById("esOpName").innerHTML = "<span style = 'text-decoration: underline;'> Operator Name:</span>" + " "  + msg.operatorname;
           document.getElementById("esTotalCycles").innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " "  + msg.totcycles;
@@ -920,7 +933,7 @@
         document.getElementById('RTMain').disabled = false;
         oldFileName = newFileName; //for storing purposes
         clientPressedStart = true;
-        finishRun();
+        //finishRun(); // WEG 20221008  Nick told me to:)
       }
       var emailvaluetosend = "false";
       if(document.getElementById('email').value.trim().includes("@"))
@@ -943,7 +956,7 @@
 
     //This function is called if the client manually presses stop or if the experiment ends
     function finishRun() {
-      //enables all major entry fields
+      // Enables all major entry fields.
       runFinished = true;
       document.getElementById('projName').disabled = false;
       document.getElementById('opName').disabled = false;
@@ -954,28 +967,30 @@
       document.getElementById('filename').disabled = false;
       document.getElementById('totCycles').disabled = false;
       document.getElementById('RTMain').disabled = false;
-      //Displays Finish Time, updates buttons
-      var timeFinished = new Date(); //initialize Start Time
+      // Displays Finish Time, updates buttons.
+      var timeFinished = new Date(); // Initialize Start Time.
       timeFinishDisplay = timeFinished.toLocaleTimeString();
       document.getElementById("finTime").innerHTML =  "<br> Finish Time: <br> <br> <span style=font-size:110%> &emsp;" +
-      timeFinishDisplay.bold() + "</span>";
+        timeFinishDisplay.bold() + "</span>";
       document.getElementById("esFin").innerHTML =  "<span style = 'text-decoration: underline;'> Finish Time:</span> " + " " +
-      timeFinishDisplay;
+        timeFinishDisplay;
       document.getElementById('startStopPCR').innerHTML = "Start PCR";
       document.getElementById('startStopPCR').style.backgroundColor = 'LimeGreen';
       clientPressedStart = true;
       runFinished = true;
 
-      var msg = { // sends data to store in server when run finishes
+      var msg = {
         id: "savefinish",
         comments: document.getElementById('comments').value,
+        starttime: 12.0,
         finishtime: timeFinishDisplay,
-      };
+      };  // starttime not set here, known in the engine. weg
+      console.log("finishRun: ", msg);
       ws.send(JSON.stringify(msg));
     }
 
-      //Changes file name based off the textbox on the page and sends the name to the server.
-      //This Function should run prior to the actual start. Never called on outside of a function.
+      // Changes file name based off the textbox on the page and sends the name to the server.
+      // This Function should run prior to the actual start. Never called on outside of a function.
       function changeFile()
       {
         var nameforchange = document.getElementById("filename").value;
@@ -1073,7 +1088,10 @@
 
       //Opens a new page so the user can get Help (Implement it so its the manual) --> change in the future
       function help(){
-        window.open("https://my.vanderbilt.edu/haseltonlab/");
+        //window.open("https://my.vanderbilt.edu/haseltonlab/");
+        var helpfiledir = "/home/pi/Documents/githubs/CASPAR/docs/";
+        var helpfilename = "22 October 7 CASPAR Brief Quickstart.pdf";
+        window.open(helpfiledir + helpfilename);
       }
 
       //Calculates the Estimated Finish Time
@@ -1100,8 +1118,8 @@
 
       }
 
-      //Need to implement a feature that downloads data --> Should be error prone.
-      //This function should only be called when Download Data is pressed.
+      // Need to implement a feature that downloads data --> Should be error prone.
+      // This function should only be called when Download Data is pressed.
       function downloadData(){
         if(runFinished){
           var msg = {
@@ -1170,6 +1188,34 @@
   // Safety Feature if someone accidently refreshes or leaves the page
   window.onbeforeunload = function leaving() {
     return "Are you sure you want to leave this page?";};
+
+
+// From https://stackoverflow.com/questions/72490229/how-to-generate-a-download-file-in-javascript
+// And for downloading files.
+// Nick is aware of this method and it is not general but should work for our use case for now.  weg 20221008
+function myDownloadFunction(fullfilename) {
+  // Check existence first, might re-use this hidden element for many files.
+  var hElemExists = !!document.getElementById('a');  
+  // This is the "double not trick", first ! turns it into logic and negates, next ! brings it back as boolean.
+  var hiddenElement = (hElemExists? document.getElementById('a') : document.createElement('a') );
+  // hiddenElement.setAttribute('download', justname);
+  // fullfilename like  
+  //   /home/pi/Documents/githubs/CASPAR/data/laser_heating/none/20221008_150018/pcr_20221008_150018.csv
+  // 'data:application/octet-stream'
+  hiddenElement.href = 'file://'+fullfilename;
+  hiddenElement.target = '_blank';
+  //hiddenElement.style.display = 'none';  // Used to hide regular elements.
+  var strarray = fullfilename.split("/");
+  var justname = strarray[strarray.length-1];
+  //hiddenElement.set_header("Content-Type", "application/octet-stream");  // Bad syntax.
+  //hiddenElement.setAttribute("Content-Type", "application/octet-stream")
+  hiddenElement.download = justname;
+  hiddenElement.click();
+
+  console.log('myDownloadFunction: href then just file name:');
+  console.log('file://'+fullfilename);
+  console.log(justname);
+}
 
 //Functions End
 

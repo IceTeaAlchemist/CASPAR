@@ -52,6 +52,7 @@ deque<double> derivaverage(SMOOTHING,0);
 fstream coeff_out;
 fstream pcr_out;
 fstream runtime_out;
+fstream notes_out;
 
 // Declare cycle number variable.
 int cycles = 0;
@@ -78,8 +79,8 @@ string ts = timestamp();
 string dataDir = "./data/";
 string coeffstorage = "coeff_" + ts + ".csv";
 string pcrstorage = "pcr_" + ts + ".csv";
-string rawstorage = "binaryoutput_" + ts + ".bin";
 string notesstorage = "notes_" + ts + ".txt";
+string rawstorage = "binaryoutput_" + ts + ".bin";
 string runlogDir = "./";
 string runlog = "runtimelog.txt";
 
@@ -222,17 +223,20 @@ void calibrategain()
 
 
 
-/* Opens files for fit information, raw binary data, and PCR. These will need to be able to rewrite the headings influenced by recipe.
+/* Opens files for fit information, raw binary data, PCR, and Notes. These will need to be able 
+   to rewrite the headings influenced by recipe.
    Modified to follow directory structure  ./data/<projname>/<exptname>/ .  20221002 weg
  */
 void openFiles()
 {
     string progName = "openFiles";
     ostringstream bstream;
-    //Open coefficient and PCR storage files from provided strings. These names are generated from the timestamp the instrument was started or user input + timestamp.
-    cout << "openFiles: before coeff_out.open(), setup.cpp line 234." << endl;
+    // Open coefficient and PCR storage files from provided strings. These names are generated 
+    // from the timestamp the instrument was started or user input + timestamp.
+    cout << progName << ": before coeff_out.open(), setup.cpp line 234." << endl;
     coeff_out.open(dataDir + coeffstorage, std::ios_base::out);
     pcr_out.open(dataDir + pcrstorage, std::ios_base::out);
+    notes_out.open(dataDir + notesstorage, std::ios_base::out);
     //Dump column headings into the PCR file. Commas are so Excel will see this as a CSV.
     pcr_out << "Time," << "FAM," << "HEX," << "Cy5," << endl;
     // Check that both fstreams are open, log any failures.
@@ -248,12 +252,18 @@ void openFiles()
         cout << bstream.str();
         runtime_out << bstream.str();
     }
+    if(!notes_out.is_open())
+    {
+        bstream << progName << ": **Failed to open " << dataDir + notesstorage << endl;
+        cout << bstream.str();
+        runtime_out << bstream.str();
+    }
 
     // Try to open the binary output file, log if it fails.
     output = fopen( (dataDir+rawstorage).c_str(), "wb" );
 	if(output == NULL)
 	{
-        bstream << "openFiles: **Failed to open " << dataDir+rawstorage << endl;
+        bstream << progName << ": **Failed to open " << dataDir+rawstorage << endl;
 		cout << bstream.str();
         runtime_out << bstream.str();
 	} 
@@ -266,6 +276,7 @@ void closeFiles()
     bool oneOpen = ( coeff_out.is_open() ) || ( pcr_out.is_open() );
     if ( coeff_out.is_open() ) coeff_out.close();
     if ( pcr_out.is_open() ) pcr_out.close();
+    if ( notes_out.is_open() ) notes_out.close();
     if ( oneOpen ) fclose(output);  // Kludge, likely but not guaranteed that if coeff_out OR pcr_out are open so is output.
 }
 
@@ -331,3 +342,20 @@ void doMakeDirs(string longdirname)
     // return rctot;  // Do not need return code, the upper code will not fix any of this.
 }
 
+void doWriteComments(string savedComments, string savedStartTime, string savedFinishTime,
+   string savedProjName, string savedOperator, string savedExperimentName)
+{
+    cout << "Comments: " << endl << savedComments << endl << savedStartTime << "   " << savedFinishTime << endl;
+    cout << savedProjName << endl << savedOperator << endl << savedExperimentName << endl;
+
+    string actExperimentName;
+    actExperimentName = (savedExperimentName == "" ? "none": savedExperimentName);
+
+    notes_out << "##################################################" << endl;
+    notes_out << "Comments: " << endl << savedComments << endl;
+    notes_out << "Start Time: " << savedStartTime << "   " << "Finish Time: " << savedFinishTime << endl;
+    notes_out << "Project Name: " << savedProjName << endl;
+    notes_out << "Operator Name: " << savedOperator << endl;
+    notes_out << "Experiment Name (if given): " << actExperimentName << endl;
+    notes_out << "##################################################" << endl;
+}

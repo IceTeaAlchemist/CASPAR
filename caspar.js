@@ -317,14 +317,25 @@ wss.on('connection', function connection(ws) {
                     ws.send(JSON.stringify({id: "filestatus", status: "Currently running PCR. Filename rejected."}));
                 }
                 break;
-                //Kunal (4): new case "save finish" that saves comments and finish time when the run ends
             case "savefinish":
-                savedComments = msg.comments;
+                // Kunal (4): new case "save finish" that saves comments and finish time when the run 
+                // ends.  Needs to get sent WEG.
+                savedComments = msg.comments;  // Setting globals, should we?
+                //savedStartTime = msg.starttime;
                 savedFinishTime = msg.finishtime;
+                // Put the comments to notes_<ts>.txt here.
+                // Add project name, operator name, experiment name (or none).
+                console.log("In savefinish case:");
+                console.log(savedComments, savedStartTime, savedFinishTime, 
+                    savedProjName, savedOperator, savedExperimentName);
+
+                engine.putComments(savedComments, savedStartTime, savedFinishTime, 
+                    savedProjName, savedOperator, savedExperimentName);
                 break;
-                //Kunal (9): new case "saveconfiguration" saves the new configuration the client wants in the configs document
             case "saveconfiguration":
-                let newConfig = "cname: " + msg.name.trim() + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "rtval:" + msg.rt + "\n" + "cycles:" + msg.totalcycles + "\n \n";
+                 // Kunal (9): new case "saveconfiguration" saves the new configuration the client 
+                 // wants in the configs document.
+                 let newConfig = "cname: " + msg.name.trim() + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "rtval:" + msg.rt + "\n" + "cycles:" + msg.totalcycles + "\n \n";
                 fs.appendFile('./configs/configs.txt', newConfig, (err) => { //adds to the file
                     if (err) {
                         console.error(err);
@@ -367,6 +378,16 @@ wss.on('connection', function connection(ws) {
                         console.log('Email sent: ' + info.response);
                     }
                 });
+                break;
+            case "downloadDataRequest":
+                var filenames = engine.getfiles();
+                var msg = {
+                    id: "downloadresponse",
+                    notefile: filenames[4],
+                    pcrfile: filenames[2]
+                };
+                ws.send(JSON.stringify(msg));
+                console.log(msg);
                 break;
             case "shutdown": 
                 // Turn off the engine if it's running.
@@ -455,3 +476,5 @@ var transporter = nodemailer.createTransport({
     pass: 'thefriendlyghostinthemachine'
   }
 });
+
+

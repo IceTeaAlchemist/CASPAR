@@ -85,7 +85,7 @@ namespace caspar
             Local<Value> argv[] = {Null(), results};
             callback->Call(2, argv);
         }
-    };
+    };// end CASPARCycler
 
     void initializePCR(const FunctionCallbackInfo<Value> &args)
     {
@@ -195,11 +195,12 @@ namespace caspar
     void readoutFilenames(const FunctionCallbackInfo<Value> &args)
     {
         Isolate *isolate = args.GetIsolate();
-        v8::Local<v8::Array> filehandoff = New<v8::Array>(4);
+        v8::Local<v8::Array> filehandoff = New<v8::Array>(5);
         Nan::Set(filehandoff, 0, New<v8::String>((runlogDir+runlog).c_str()).ToLocalChecked());
         Nan::Set(filehandoff, 1, New<v8::String>((dataDir+coeffstorage).c_str()).ToLocalChecked());
         Nan::Set(filehandoff, 2, New<v8::String>((dataDir+pcrstorage).c_str()).ToLocalChecked());
         Nan::Set(filehandoff, 3, New<v8::String>((dataDir+rawstorage).c_str()).ToLocalChecked());
+        Nan::Set(filehandoff, 4, New<v8::String>((dataDir+notesstorage).c_str()).ToLocalChecked());
         args.GetReturnValue().Set(filehandoff);
     }
 
@@ -217,6 +218,34 @@ namespace caspar
         sens1.LED_off(2);
         sens2.LED_off(1);
         sens2.LED_off(2);
+
+
+
+    }
+
+    void writeComments(const FunctionCallbackInfo<Value> &args)
+    {
+        // savedComments, savedStartTime, savedFinishTime, savedProjName, savedOperator, savedExperimentName
+        Isolate *isolate = args.GetIsolate();
+        String::Utf8Value strSavedComments(isolate, args[0]);
+        String::Utf8Value strSavedStartTime(isolate, args[1]);
+        String::Utf8Value strSavedFinishTime(isolate, args[2]);
+        String::Utf8Value strSavedProjName(isolate, args[3]);
+        String::Utf8Value strSavedOperator(isolate, args[4]);
+        String::Utf8Value strSavedExperimentName(isolate, args[5]);
+        string savedComments(*strSavedComments);
+        string savedStartTime(*strSavedStartTime);
+        string savedFinishTime(*strSavedFinishTime);
+        string savedProjName(*strSavedProjName);
+        string savedOperator(*strSavedOperator);
+        string savedExperimentName(*strSavedExperimentName);
+
+        cout << "Comments: " << endl << savedComments << endl << savedStartTime << "   " << savedFinishTime << endl;
+        cout << savedProjName << endl << savedOperator << endl << savedExperimentName << endl;
+
+        doWriteComments(savedComments, savedStartTime, savedFinishTime,
+            savedProjName, savedOperator, savedExperimentName); // fstream notes_out only known in setup.cpp!!
+
     }
 
     /*
@@ -244,15 +273,15 @@ namespace caspar
         string ts = timestamp();
         dataDir = "./data/" + projname + "/" + exptname + "/" + ts + "/";  // This is an extern, will be known to setup.cpp .
         doMakeDirs(dataDir);  // Create the directory structure, the lower mkdir() calls give error is directory already exists but still makes subdir.
-        // coeffstorage = newfilename + "coeff_" + ts + ".csv";  // If new directory structure, do not need to prepend ProjName_ to files (?). weg
-        // pcrstorage = newfilename + "pcr_" + ts + ".csv";
-        // rawstorage = newfilename + "binaryoutput_" + ts + ".bin";
+
         coeffstorage = "coeff_" + ts + ".csv";  // If new directory structure, do not need to prepend ProjName_ to files (?). weg
         pcrstorage = "pcr_" + ts + ".csv";
+        notesstorage = "notes_" + ts + ".txt";
         rawstorage = "binaryoutput_" + ts + ".bin";
         cout << "reopenFiles:  new directory dataDir " << dataDir << endl;
         cout << "reopenFiles:  newfilename " << newfilename << " projname " << projname << " exptname " << exptname << endl;
-        cout << "reopenFiles:  coeffstorage " << coeffstorage << " pcrstorage " << pcrstorage << " rawstorage " << rawstorage << endl;
+        cout << "reopenFiles:  coeffstorage " << coeffstorage << " pcrstorage " << pcrstorage << " rawstorage " << rawstorage;
+        cout << " notesstorage " << notesstorage << endl;
         closeFiles();
         openFiles();
     }
@@ -290,6 +319,8 @@ namespace caspar
         NODE_SET_METHOD(exports, "setCutoff", setCutoff);
         NODE_SET_METHOD(exports, "RToff", RToff);
         NODE_SET_METHOD(exports, "RTon", RTon);
+        NODE_SET_METHOD(exports, "putComments", writeComments); 
+        // WEG, make these functions, putComments in caspar.js and writeComments in casparapi.cpp  or setup.cpp ??
     }
 
     NODE_MODULE(casparengine, Initialize)
