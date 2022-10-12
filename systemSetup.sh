@@ -20,9 +20,9 @@ domod () {
 ######################
 #  User defined names.
 ######################
-MYHOSTNAME=rpi3
+MYHOSTNAME=rpi5
 CURHOSTNAME=`hostname`
-NETWORK=CASPAR01
+NETWORK=CASPAR02
 PASSWORD=thefriendlyghostinthemachine
 ######################
 

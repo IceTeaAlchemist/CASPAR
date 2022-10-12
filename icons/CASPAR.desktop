@@ -1,0 +1,9 @@
+[Desktop Entry]
+Comment=Start the CASPAR server.
+Terminal=true
+Name=CASPAR
+Exec=/home/pi/bin/startServer.sh
+Type=Application
+Icon=/home/pi/bin/ghost-icon-12496.png
+# Exec=lxterminal -e <the script/command>
+StartupNotify=false

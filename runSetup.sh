@@ -31,6 +31,7 @@ caspar
 ISC
 yes
 EOF
+
 domod npm install ws
 domod npm install nodemailer
 domod npm install fs
@@ -49,8 +50,8 @@ domod node-gyp rebuild
 # Fix that the script is being run as sudo for the build dir.
 domod sudo chown -R pi.pi build
 
-domod mkdir data
-domod mkdir configs
+domod mkdir -p data/serverlog
+domod mkdir -p configs
 domod touch ./configs/configs.txt
 
 # domod sudo cp -i ./UI/CASPAR-UI.html /var/www/html/
@@ -58,3 +59,10 @@ domod sudo ln -s ${PWD}/UI/CASPAR-UI.html /var/www/html/
 
 echo "sudo cp -fpr ./\"JS Libraries/src\" /var/www/html/"
 sudo cp -fpr ./"JS Libraries/src" /var/www/html/
+
+# Copy over the startSever script and the Desktop icon.
+domod cp -p ./icons/startServer.sh ~/bin
+domod cp -p ./icons/ghost-icon-12496.png ~/bin
+domod cp -p ./icons/CASPAR.desktop ~/Desktop
+
+
