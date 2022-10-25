@@ -26,6 +26,7 @@ namespace caspar
     using v8::String;
     using v8::Value;
     int iterate = 0;
+    int threadIter = 0; // For sampler thread below print statements.
 
     void pollSample()
     {
@@ -39,6 +40,7 @@ namespace caspar
     PI_THREAD(sampler)
     {
         pollSample();
+        return 0;
     }
 
     class CASPARCycler : public AsyncWorker

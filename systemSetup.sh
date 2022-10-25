@@ -35,7 +35,7 @@ domod sudo raspi-config nonint do_i2c 0
 
 echo "***Using hostname ${myhostname}"
 domod sudo hostnamectl set-hostname ${myhostname}
-# Above fixes /etc/hostname but not /etc/hosts
+# Above fixes /etc/hostname but not /etc/hosts, below fixes that one.
 domod sudo sed -i "s/127.0.1.1.*$CURHOSTNAME/127.0.1.1\t$MYHOSTNAME/g" /etc/hosts
 
 cat >> ${HOME}/.bash_aliases <<EOF
@@ -182,7 +182,7 @@ echo "    bash ./runSetup.sh"
 echo
 echo "Reboot the system."
 echo
-echo "You will want a working network connection for debugging.n."
+echo "You will want a working network connection for debugging."
 echo "Optional: install VS Code with"
 echo "          sudo apt install code"
 echo

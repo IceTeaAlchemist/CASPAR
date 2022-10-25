@@ -404,7 +404,7 @@ wss.on('connection', function connection(ws) {
                 engine.boxfanoff();
                 console.log("Delaying to allow threads to wrap up. Closing in five seconds.");
                 // Hard shutdown. There should be a better way.
-                setTimeout(killserver,5000);
+                setTimeout(killserver, 5000);
         }
         // Log request received.
         console.log('received: %s', data);

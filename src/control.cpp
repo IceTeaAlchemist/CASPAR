@@ -11,7 +11,8 @@ using namespace std;
 
 bool runflag = false;
 
-/* Runs a premelt to calculate the thermal fluoresence values (for our current RT implementation) and ensure good annealing of L-DNA. 
+/* Runs a premelt to calculate the thermal fluoresence values (for our current RT implementation) 
+   and ensure good annealing of L-DNA. 
  */
 void premelt()
 {
@@ -32,11 +33,13 @@ void premelt()
     digitalWrite(FAN_PIN, LOW);
     delay(3000);
 
-    while(tempflag == false && runflag == true) // While we haven't finished the melt and the user hasn't cancelled the run:
+    // While we haven't finished the melt and the user hasn't cancelled the run:
+    while(tempflag == false && runflag == true) 
     {
-        piLock(0); // Lock the thread to run a fit
+        piLock(0); // Lock the thread to run a fit.
 
-        // Find the maximum element in the fitting day, and use that as our guess for midpoint and amplitude of gaussian.
+        // Find the maximum element in the fitting day, and use that as our guess for midpoint 
+        // and amplitude of gaussian.
         auto maxlocation = max_element(begin(derivs), end(derivs));
         beta0[0] = *maxlocation;
         beta0[1] = x[distance(derivs.begin(), maxlocation)];
@@ -73,7 +76,8 @@ void premelt()
                 else
                 {
                     digitalWrite(HEATER_PIN, LOW); // Turn the heater off.
-                    tempflag = true; // Say that we're done generating the heat curves and doing the heat melt.
+                    tempflag = true; // Say that we're done generating the heat curves 
+                    // and doing the heat melt.
                     clearactivedata(); // Clear our data.
                 }
             }
@@ -98,9 +102,9 @@ void runRT()
     waittotemp(55);
 }
 
-// Delays to a point based on the fitted coefficients and the value of the derivative, depending on a fraction 
-// of peak threshold. Returns the time from epoch when control triggered.
-// changed to long from int, weg 20220822
+// Delays to a point based on the fitted coefficients and the value of the derivative, depending 
+// on a fraction of peak threshold. Returns the time from epoch when control triggered.
+// Changed to long from int, weg 20220822.
 long delaytocycleend(const double coeff[3], double thresh)
 {
     while(abs(derivs[derivs.size()-1]) > abs(coeff[0] * thresh))
@@ -111,7 +115,8 @@ long delaytocycleend(const double coeff[3], double thresh)
     return data[data.size()-1].timestamp;
 }
 
-// Shifts the shift between heating and cooling. Takes the current mode as an argument, returns the new one.
+// Shifts the shift between heating and cooling. Takes the current mode as an argument, 
+// returns the new one.
 bool modeshift(bool state)
 {
     if(state == true)
@@ -139,7 +144,7 @@ int cycle()
 {
     string progName = "cycle";
     ostringstream bstream;
-    int mode = 2;
+    int mode = 2;  // Hard coded double hump.  See Nick edits.
     bool doublehump;
     if(mode == 2)
     {
