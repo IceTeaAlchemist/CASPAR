@@ -10,6 +10,9 @@
 using namespace std;
 
 bool runflag = false;
+double heattoolong = 75;  // secs, 75 typically, too long? 20221027 weg
+double cooltoolong = 75;  // secs, 75 typically
+
 
 /* Runs a premelt to calculate the thermal fluoresence values (for our current RT implementation) 
    and ensure good annealing of L-DNA. 
@@ -57,7 +60,8 @@ void premelt()
         }
         piUnlock(0); // Unlock the thread so it can keep taking samples.
 
-        if (iter < 24 && abs(coeff[0]) > 5 && coeff[1] > 5)  // If we found a fit and it's not just a flat line or existing before known data:
+        // If we found a fit and it's not just a flat line or existing before known data:
+        if (iter < 24 && abs(coeff[0]) > 5 && coeff[1] > 5)  
         {
             // If we're past the hump and this fit is within a reasonable threshold of the previous one:
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
@@ -65,7 +69,7 @@ void premelt()
                 // Accept the fit and log the coefficients.
                 cout << "premelt: Coeffs: " << coeff[0] << " " << coeff[1] << " " << coeff[2] << endl;
                 // Keep going until we've found the endpoint of the current gaussian.
-                delaytocycleend(coeff, 0.05);
+                delaytocycleend(coeff, 0.05);  // Hardcoded heating threshold number!!
                 //Generate the heating curve for this gaussian.
                 heatgen(coeff,dtrigger);
                 if(dtrigger == false) // If we're on the first hump:
@@ -162,7 +166,7 @@ int cycle()
     double iter;
     double coeffprev[3];
     double coeffdouble[3];
-    double thresh = 0.005;
+    double thresh = 0.05;  // Looked at LV and recipe for CDZ double hump has 0.05 here, 20221026 weg.
     double threshcool = 0.135;
     double dthreshheat = 0.25; // Other version has 0.25, 20220915 weg.
     double dthreshcool = 0.8; // Other version has 0.8, ditto weg.
@@ -177,7 +181,8 @@ int cycle()
     digitalWrite(HEATER_PIN,LOW);
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     clearactivedata();
-    delay(3000);
+    //delay(3000);// At the start of every cycle, we delay 3sec!!
+    delay(100); // weg 20221027 from above
 
     // Begin heating.
     digitalWrite(HEATER_PIN, HIGH);
@@ -209,49 +214,62 @@ int cycle()
         {
             past_the_hump = false;
         }
-        if(x[x.size()-1] > 75)// WEG was 75, playing with laser.
-        {   
-            if(state == true)
+
+        // Check the heat or cool too long.  How to handle the clearing of data after first hump---save it somewhere.
+        // Separately for cooling and heating, heattoolong and cooltoolong in caspar.h .
+        if ( state == true )  // The heating cycle.
+        {
+            if(x[x.size()-1] > heattoolong)// Check for first or second hump, add in the time from the first hump.
             {
                 temperrors++;
-                bstream << progName << ": Heated for too long, error thrown, " << 75 << " secs." << endl;
+                bstream << progName << ": Heated for too long, error thrown, " << heattoolong << " secs." << endl;
                 cout << bstream.str();
                 runtime_out << bstream.str();
-                digitalWrite(HEATER_PIN,LOW);
-                if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
-                digitalWrite(FAN_PIN, HIGH);
-                state = false;
+
+                state = modeshift(state);
+                // digitalWrite(HEATER_PIN,LOW);
+                // if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
+                // digitalWrite(FAN_PIN, HIGH);
+                // state = false;
                 dtrigger = false;
                 clearactivedata();
             }
-            else
+
+        }
+        else  // The cooling cycle.
+        {
+            if(x[x.size()-1] > cooltoolong)// Check for first or second hump, add in the time from the first hump.
             {
                 temperrors++;
-                bstream << progName << ": Cooled for too long, error thrown, " << 75 << " secs." << endl;
+                bstream << progName << ": Cooled for too long, error thrown, " << cooltoolong << " secs." << endl;
                 cout << bstream.str();
                 runtime_out << bstream.str();
-                digitalWrite(FAN_PIN,LOW);
-                digitalWrite(HEATER_PIN, HIGH);
-                if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
+
+                state = modeshift(state);
+                // digitalWrite(FAN_PIN,LOW);
+                // digitalWrite(HEATER_PIN, HIGH);
+                // if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
+                // state = true;
                 dtrigger = false;
-                state = true;
                 clearactivedata();
-            }
-            if(temperrors > allowed_temp_errors)
-            {
-                bstream << progName << ": Too many heating/cooling failures, " << allowed_temp_errors << " , cycling ended." << endl;
-                cout << bstream.str();
-                runtime_out << bstream.str();
-                runflag = false;
-                digitalWrite(HEATER_PIN, LOW);
-                digitalWrite(FAN_PIN, LOW);
-                piUnlock(0);
-                delay(100);
-                sens1.stopMethod();
-                sens1.LED_off(2);
-                return 1;
             }
         }
+
+        if(temperrors > allowed_temp_errors)
+        {
+            bstream << progName << ": Too many heating/cooling failures, " << allowed_temp_errors << " , cycling ended." << endl;
+            cout << bstream.str();
+            runtime_out << bstream.str();
+            runflag = false;
+            digitalWrite(HEATER_PIN, LOW);
+            digitalWrite(FAN_PIN, LOW);
+            piUnlock(0);
+            delay(100);
+            sens1.stopMethod();
+            sens1.LED_off(2);
+            return 1;
+        }
+
         piUnlock(0);
 //        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1) // Other version, 20220915 weg.
         if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 2)  
@@ -269,7 +287,7 @@ int cycle()
                     {
                         triggertime = delaytocycleend(coeff,threshcool);
                     }
-                    cout << progName << ": Control triggered at " << triggertime << " milliseconds after run initiation." << endl;
+                    cout << progName << ": Control triggered at " << triggertime - (long)run_start << " milliseconds after initiation." << endl;
                     coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - (long)run_start << endl; 
                     if(state == false)
                     {
@@ -290,7 +308,7 @@ int cycle()
                         cycles++;
                     }
                 }
-                else
+                else // doublehump is true
                 {
                     if(dtrigger == false)
                     {
@@ -324,7 +342,7 @@ int cycle()
                         cout << progName << ": Cycle " << cycles << " complete." << endl;
                         dtrigger = false;
                     }
-                    cout << progName << ": Control triggered at " << triggertime - (long)run_start<< " milliseconds after run initiation." << endl;
+                    cout << progName << ": Control triggered at " << triggertime - (long)run_start << " milliseconds after initiation." << endl;
                     coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - (long)run_start << endl; 
                     clearactivedata();
                 }

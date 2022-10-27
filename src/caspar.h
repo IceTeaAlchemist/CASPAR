@@ -31,7 +31,6 @@ struct reading
     double voltage;
 };
 
-
 // Global variable declarations. External variables are set in setup.cpp.
 extern adc D2;
 extern adc TEMP;
@@ -76,6 +75,8 @@ extern const int pwm_high;
 extern const double pwm_low_ratio;
 extern const int pwm_low;
 extern int cyclecutoff;
+extern double heattoolong; // secs, 75 typically, too long? 20221027 weg
+extern double cooltoolong; // secs, 75 typically, in control.cpp .
 
 // setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
 
