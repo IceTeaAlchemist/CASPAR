@@ -1,0 +1,9 @@
+# Tab separated columns with IP number and name.  The
+# hash starts a comment line.
+# IPv4 address <tab> machine name <tab>
+default	Default
+129.59.93.58	Production1
+129.59.93.224	Production2
+129.59.93.130	Development
+129.59.93.93	PeltierDevelopment
+#10.67.237.94	PeltierDevelopment
