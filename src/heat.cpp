@@ -47,7 +47,8 @@ double heatquery(double temp)
     return -1; // Else, return a negative 1--temperature out of our keyed range.
 }
 
-/* Generates the vector of heats and corresponding fluorescences for waittotemp and holdtemp. Be sure you're using this function with them.
+/* Generates the vector of heats and corresponding fluorescences for waittotemp and holdtemp. Be sure you're using this 
+*  function with them.
  *
  * Args:
  *  coeff[3]: Coefficients acquired from the GaussNewton3 function.

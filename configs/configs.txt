@@ -77,3 +77,13 @@ hex:  S. Mitis
 rtval:false
 cycles: 50
  
+cname: Longitudinal Study
+oname: Nick and Emma
+ename: caspar@casparvu.com
+pname: Longitudinal Study
+fam: FMD
+cy5: RNAseP
+hex: SVA
+rtval:true
+cycles:40
+ 

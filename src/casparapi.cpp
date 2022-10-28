@@ -56,7 +56,7 @@ namespace caspar
             data.clear();
             setupADC();
             runflag = true;
-            calibrategain();
+            calibrategain();  // Done before RT step.
             sens1.startMethod();
             piThreadCreate(sampler);
             delay(100);
@@ -68,10 +68,11 @@ namespace caspar
             }
             recordflag = false;
             delay(100);
-            sens1.calibrateGain(300, 1);
-            sens2.calibrateGain(300, 1);
-            sens2.calibrateGain(300, 3);
-            sens1.calibrateGain(300, 3);
+            // After the RT step if there is one.
+            sens1.calibrateGain(300, 1); // E1D1 470ex 520em, FAM
+            sens2.calibrateGain(300, 1); // E1D1 520ex 570em, HEX
+            sens2.calibrateGain(300, 3); // E2D2 625ex 680em, CY5
+            sens1.calibrateGain(300, 3); // LDNA, i.e.Tex Red, the "back qiagen". E2D2 590ex 640em
             sens1.LED_on(2);
             sens1.startMethod();
             recordflag = true;

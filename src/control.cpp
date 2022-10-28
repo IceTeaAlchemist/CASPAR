@@ -181,8 +181,8 @@ int cycle()
     digitalWrite(HEATER_PIN,LOW);
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     clearactivedata();
-    //delay(3000);// At the start of every cycle, we delay 3sec!!
-    delay(100); // weg 20221027 from above
+    delay(3000);// Tried 100ms and it for sure causes a segmentation violation AFTER
+    // the heater starts!!  Mess with this at your peril.  20221028 weg
 
     // Begin heating.
     digitalWrite(HEATER_PIN, HIGH);
