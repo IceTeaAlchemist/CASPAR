@@ -106,6 +106,15 @@ void runRT()
     waittotemp(55);
 }
 
+/* Runs the RT algorithm.
+ */
+void reconstitute()
+{
+    int sec_hold = 600;
+    holdtemp(55, sec_hold);
+    waittotemp(55);
+}
+
 // Delays to a point based on the fitted coefficients and the value of the derivative, depending 
 // on a fraction of peak threshold. Returns the time from epoch when control triggered.
 // Changed to long from int, weg 20220822.

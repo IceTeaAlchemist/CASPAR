@@ -64,6 +64,8 @@ namespace caspar
             if (RTflag)
             {
                 premelt();
+                reconstitute();
+                premelt();
                 runRT();
             }
             recordflag = false;

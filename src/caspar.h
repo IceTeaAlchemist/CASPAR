@@ -103,6 +103,7 @@ void holdtemp(double temp, double time);
 
 void premelt(void);
 void runRT(void);
+void reconstitute(void);
 int cycle(void);
 long delaytocycleend(const double coeff[3], double thresh);
 bool modeshift(bool state);
