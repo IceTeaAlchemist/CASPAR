@@ -1202,7 +1202,7 @@ function myDownloadFunction(fullfilename) {
   // fullfilename like  
   //   /home/pi/Documents/githubs/CASPAR/data/laser_heating/none/20221008_150018/pcr_20221008_150018.csv
   // 'data:application/octet-stream'
-  hiddenElement.href = 'file://'+fullfilename;
+  hiddenElement.href =  'file://'+fullfilename; //'ftp://'+fullfilename;  // No FTP server. 
   hiddenElement.target = '_blank';
   //hiddenElement.style.display = 'none';  // Used to hide regular elements.
   var strarray = fullfilename.split("/");

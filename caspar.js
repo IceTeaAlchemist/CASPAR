@@ -414,7 +414,7 @@ wss.on('connection', function connection(ws) {
 
 function killserver()
 {
-    process.exit();
+    process.exit();// Do we need a more robust exit, a 1 or 2 here?
 }
 
 function sendit()
