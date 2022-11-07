@@ -138,12 +138,69 @@ bool modeshift(bool state)
         // digitalWrite(BOX_FAN, LOW),
         digitalWrite(FAN_PIN, HIGH);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
+        piLock(0);
+        if(HTP[0] == 1)
+        {
+            if(HTP[1] == 3)
+            {
+                sens1.LED_off(2);
+            }
+            else
+            {
+                sens1.LED_off(1);
+            }
+        }
+        else
+        {
+            if(HTP[1] == 3)
+            {
+                sens2.LED_off(2);
+            }
+            else
+            {
+                sens2.LED_off(1);
+            }
+        }
+        changeQiagen(LTP);
+        piUnlock(0);
+        delay(500);
         return false;
     }
     else
     {
         digitalWrite(FAN_PIN,LOW);
+        recordflag = false;
+        piLock(0);
+        if(LTP[1] == 1)
+        {
+            if(LTP[2] == 3)
+            {
+                sens1.LED_off(2);
+            }
+            else
+            {
+                sens1.LED_off(1);
+            }
+        }
+        else
+        {
+            if(LTP[2] == 3)
+            {
+                sens2.LED_off(2);
+            }
+            else
+            {
+                sens2.LED_off(1);
+            }
+        }
+        sens1.stopMethod();
+        sens2.stopMethod();
         readPCR();
+        changeQiagen(HTP);
+        piUnlock(0);
+        delay(500);
+        // Turn the cycling LED back on.
+        recordflag = true;
         // digitalWrite(BOX_FAN,HIGH);
         digitalWrite(HEATER_PIN, HIGH);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
@@ -285,7 +342,7 @@ int cycle()
         {
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {
-                cout << progName << ": coeffs[0] etc, Ampltude " << coeff[0] << " Center " << coeff[1] << " Width " << coeff[2]  << "  Iteration " << iter << endl;
+                cout << progName << ": coeffs[0] etc, Amplitude " << coeff[0] << " Center " << coeff[1] << " Width " << coeff[2]  << "  Iteration " << iter << endl;
                 if(doublehump == false)
                 {
                     if(state == true)
@@ -375,3 +432,34 @@ int cycle()
     return 0;
 }// end cycle
 
+void changeQiagen(vector<int> qiagenproperties)
+{
+    int LED;
+    if(qiagenproperties[1] == 3)
+    {
+        LED = 2;
+    }
+    else
+    {
+        LED = 1;
+    }
+    sens1.stopMethod();
+    sens2.stopMethod();
+    fittingqiagen = qiagenproperties[0];
+    if(qiagenproperties[0] == 1)
+    {
+        sens1.setMethod(qiagenproperties[1]);
+        sens1.writeqiagen(0, {255,255});
+        sens1.startMethod();
+        sens1.LED_on(LED);
+    }
+    else
+    {
+        sens2.setMethod(qiagenproperties[1]);
+        sens2.writeqiagen(0, {255,255});
+        sens2.startMethod();
+        sens2.LED_on(LED);
+    }
+    cout << "Shifting to method " << qiagenproperties[1] << " on Qiagen " << qiagenproperties[0] << "." << endl;
+    cout << "Fitting qiagen is " << fittingqiagen << "." << endl;
+}

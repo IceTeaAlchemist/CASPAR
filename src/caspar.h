@@ -77,6 +77,9 @@ extern const int pwm_low;
 extern int cyclecutoff;
 extern double heattoolong; // secs, 75 typically, too long? 20221027 weg
 extern double cooltoolong; // secs, 75 typically, in control.cpp .
+extern vector<int> LTP;
+extern vector<int> HTP;
+extern int fittingqiagen;
 
 // setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
 
@@ -107,6 +110,7 @@ void reconstitute(void);
 int cycle(void);
 long delaytocycleend(const double coeff[3], double thresh);
 bool modeshift(bool state);
+void changeQiagen(vector<int> qiagenproperties);
 
 
 //data.cpp function definitions. These are for data handling and processing.

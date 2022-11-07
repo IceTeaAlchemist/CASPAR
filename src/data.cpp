@@ -117,7 +117,15 @@ void retrieveSample()
     // Declare a reading object and put our timestamp and fluoresence inside, then push it into our data vector.
     reading now;
     now.timestamp = millisecs;
-    now.voltage = sens1.measure();
+
+    if(fittingqiagen == 1)
+    {
+        now.voltage = sens1.measure();
+    }
+    else
+    {
+        now.voltage = sens2.measure();
+    }
     data.push_back(now);
     // If it's our first entry this fitting, set the starting time for our fit to our current reading.
     if(x.size() == 0)
@@ -189,14 +197,10 @@ string timestamp()
  */
 void readPCR()
 {
-    // Turn off the cycling LED.
-    recordflag = false;
-    piLock(0);
-    sens1.stopMethod();
-    sens1.LED_off(2);
     auto millisecs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     pcrValues.push_back(cycles);
     pcrValues.push_back(millisecs);
+    
     // Take our first detector value. Each of these follows the same format, so I'll only comment the first.
     sens1.LED_on(1); // Turn the relevant LED on.
     sens1.setMethod(1); // Set our method to the relevant one.
@@ -229,15 +233,5 @@ void readPCR()
     sens2.LED_off(2); 
 
     pcr_out << endl; // Send a new line to the file to get ready for the next cycle.
-    sens1.setMethod(3);
-    sens1.writeqiagen(0, {255,255});
-    sens1.startMethod();
-    sens1.LED_on(2);
-    piUnlock(0);
-
-    delay(500);
-     // Turn the cycling LED back on.
-    recordflag = true;
     pcrReady = true; // Say that our PCR readings are ready for output to the gui.
-    delay(3000); // Wait for a second to allow the moving average filters to fill back up. 
 }

@@ -58,6 +58,11 @@ fstream notes_out;
 int cycles = 0;
 int cyclecutoff = 40;
 
+// Set qiagen properties for fitting-- format is {QIAGEN, METHOD}
+vector<int> LTP = {1,3};
+vector<int> HTP = {1,3};
+int fittingqiagen;
+
 // Declare the file operator and a few check variables for the thread.
 FILE *output;
 int datapoints = 0;
