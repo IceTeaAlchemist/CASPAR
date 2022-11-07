@@ -1,3 +1,14 @@
+cname: default
+oname: Jasons
+ename: jasons.deli@gmail.com
+pname: default
+rname: default.ini
+fam: one
+cy5: two
+hex: three
+rtval:false
+cycles: 3
+
 cname: laser heating
 oname: bill rosana franz nick
 ename: bill.gabella@gmail.com
@@ -8,7 +19,6 @@ cy5: two
 hex: three
 rtval:false
 cycles: 40
-
 cname: zTestOne
 oname: zest
 ename: zest@stuff.com
