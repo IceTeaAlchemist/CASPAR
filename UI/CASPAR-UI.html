@@ -102,6 +102,8 @@
       <div class="div1-1"  style = "text-align:center;">
         <p class="inrtxt2">Project Name:</p>
           <input class = "inrinp" type="text" id="projName"> <!--Changes-->
+        <p class="inrtxt2">Recipe Name:</p>
+          <input class = "inrinp" type="text" id="recName"> <!--Changes-->
         <p class="inrtxt2">Operator:</p>
           <input class = "inrinp" type="text" id="opName"> <!--Changes-->
         <p class="inrtxt2">Experiment Name:</p>
@@ -111,8 +113,8 @@
             <select id = "configDropdown" class="custom-select" style="text-align:left;" onclick = "loadDataRequest()"> <!--Options Change-->
             </select>
           </div>
-        <p hidden="true" class="inrtxt2">Recipes:</p>
-          <div id = "dropdown2" style="visibility: hidden; width:93%; margin:0 auto; margin-bottom: 30px;"> <!--Value Changes-->
+        <p style="visibility:visible" class="inrtxt2">Recipe:</p>
+          <div id = "dropdown2" style="visibility:visible; width:93%; margin:0 auto; margin-bottom: 30px;"> <!--Value Changes-->
             <select id = "recipeDropdown" class="custom-select", style="text-align:left;" onclick = "loadRecipeRequest()"> <!--Options Change-->
             </select>            
           </div>
@@ -197,6 +199,7 @@
           <p class = 'inrtxt7' id="ciopName"> <span style = "text-decoration: underline;"> Default Operator Name:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciemail"> <span style = "text-decoration: underline;"> Default Email:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciprojName"> <span style = "text-decoration: underline;"> Default Project Name:</span> <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="cirecName"> <span style = "text-decoration: underline;"> Default Recipe Name:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="citotalCycles"> <span style = "text-decoration: underline;"> Total Cycles:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciFAM"> <span style = "text-decoration: underline;"> FAM:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciCY5"> <span style = "text-decoration: underline;"> CY5:</span> <br> </p> <!--Changes-->
@@ -224,6 +227,9 @@
               <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
           <p class = 'inrtxt6' style= "display: inline-block;"> <br> Default Project Name: </p>
             <input class = "inrinp2" type="text" id="defProjName" value = " "> <!--Changes-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> Default Recipe Name: </p>
+            <input class = "inrinp2" type="text" id="defRecName" value = " "> <!--Changes-->
               <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
           <p class = 'inrtxt6' style= "display: inline-block;"> <br> Total Cycles: </p>
             <input class = "inrinp2" type="text" id="totalCycles" value = " "> <!--Changes-->
@@ -270,7 +276,9 @@
     // Setup some "enums" though JS does not actually have those, see
     // https://stackoverflow.com/questions/287903/how-can-i-guarantee-that-my-enums-definition-doesnt-change-in-javascript
     // Use the below in the dataarray[<num>] by dataarray[configEnum.opName] etc.
-    const configEnum = {"opName":0, "email":1, "projName":2, "FAM":3, "CY5":4, "HEX":5, "RTcheckbox":6, "totCycles":7}; 
+    // COPY to caspar.js !!
+    const configEnum = {"opName":0, "email":1, "projName":2, "recName":3, "FAM":4, "CY5":5, "HEX":6, "RTcheckbox":7, "totCycles":8}; 
+    //"FAM":3, "CY5":4, "HEX":5, "RTcheckbox":6, "totCycles":7};
     Object.freeze(configEnum);
 
 
@@ -442,33 +450,46 @@
             var dataarray = msg.data; //graps all data and puts it in an array
             //Updates info on first and second tabs
             document.getElementById("projName").value = dataarray[configEnum.projName];  //dataarray[2];
+            document.getElementById("recName").value = dataarray[configEnum.recName];
             document.getElementById("opName").value = dataarray[configEnum.opName];
-            document.getElementById('email').value = dataarray[configEnum.email];
-            document.getElementById('totCycles').value = (dataarray[configEnum.totCycles]).trim();
+            document.getElementById("email").value = dataarray[configEnum.email];
+            document.getElementById("totCycles").value = (dataarray[configEnum.totCycles]).trim();
 
             //Updates the checkbox on the first tab
             if(dataarray[configEnum.RTcheckbox].trim() == "true" || dataarray[configEnum.RTcheckbox].trim() == "ON"){
               document.getElementById("RTMain").checked = true;
             }
-            else{
+            else
+            {
               document.getElementById("RTMain").checked = false;
             }
             //Updates info on third tab
             let dispRT = ""; // sets what to display for RT
-              if (dataarray[configEnum.RTcheckbox].trim() == "true"){
-                dispRT = "ON";
-              }
-              else{
-                dispRT = "OFF";
-              }
-            document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" + " " + dataarray[configEnum.projName];
-            document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" + " " + dataarray[configEnum.opName];
-            document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" + " " + dataarray[configEnum.email];
-            document.getElementById('ciFAM').innerHTML = "<span style = 'text-decoration: underline;'> FAM:</span>" + " " + dataarray[configEnum.FAM];
-            document.getElementById('ciCY5').innerHTML = "<span style = 'text-decoration: underline;'> CY5:</span>" + " " + dataarray[configEnum.CY5];
-            document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + " " + dataarray[configEnum.HEX];
-            document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" + " " + dispRT;
-            document.getElementById('citotalCycles').innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " " + dataarray[configEnum.totCycles];
+            if (dataarray[configEnum.RTcheckbox].trim() == "true")
+            {
+              dispRT = "ON";
+            }
+            else{
+              dispRT = "OFF";
+            }
+            document.getElementById("ciprojName").innerHTML = "<span style = 'text-decoration: underline;'> Default Project Name:</span>" +
+              " " + dataarray[configEnum.projName];
+            document.getElementById("cirecName").innerHTML = "<span style = 'text-decoration: underline;'> Default Recipe Name:</span>" +
+              " " + dataarray[configEnum.recName];            
+            document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" +
+              " " + dataarray[configEnum.opName];
+            document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" +
+              " " + dataarray[configEnum.email];
+            document.getElementById('ciFAM').innerHTML = "<span style = 'text-decoration: underline;'> FAM:</span>" + 
+              " " + dataarray[configEnum.FAM];
+            document.getElementById('ciCY5').innerHTML = "<span style = 'text-decoration: underline;'> CY5:</span>" + 
+              " " + dataarray[configEnum.CY5];
+            document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + 
+              " " + dataarray[configEnum.HEX];
+            document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" 
+              + " " + dispRT;
+            document.getElementById('citotalCycles').innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" 
+              + " " + dataarray[configEnum.totCycles];
             // variables to send to save on the server
             senddefproj = dataarray[configEnum.projName];
             senddefop = dataarray[configEnum.opName];
@@ -1060,6 +1081,7 @@
             defaultoperator: String(document.getElementById("defOpName").value),
             defaultemail: String(document.getElementById("defEmail").value),
             defaultproject: String(document.getElementById("defProjName").value),
+            defaultrecipe: String(document.getElementById("defRecName").value),
             totalcycles: String(document.getElementById("totalCycles").value),
             fam: String(document.getElementById("FAM").value),
             cy5: String(document.getElementById("CY5").value),

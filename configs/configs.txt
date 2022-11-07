@@ -2,6 +2,7 @@ cname: laser heating
 oname: bill rosana franz nick
 ename: bill.gabella@gmail.com
 pname: laser_heating
+rname: default.ini
 fam: one
 cy5: two
 hex: three
@@ -12,6 +13,7 @@ cname: zTestOne
 oname: zest
 ename: zest@stuff.com
 pname: zestProjectOne
+rname: default.ini
 fam: one
 cy5: two
 hex: three
@@ -22,6 +24,7 @@ cname: zTestTwo
 oname: zestTwo
 ename: zestTwo@stuff.com
 pname: zestProjectTwo
+rname: default.ini
 fam: one
 cy5: two
 hex: three
@@ -32,6 +35,7 @@ cname: New Nanorods
 oname: Nick
 ename: caspar@casparvu.com
 pname: New Nanorods
+rname: default.ini
 fam: NAOne
 cy5: NATwo
 hex: S Midas
@@ -42,15 +46,18 @@ cname: evaporation
 oname: Nick
 ename: caspar@casparvu.com
 pname: Evaporation Testing
+rname: default.ini
 fam: NAOne
 cy5: NATwo
 hex: S Midas
 rtval:false
 cycles:40
+
 cname: Temps
 oname:  Bill
 ename: bill.gabella@gmail.com
 pname: Temps
+rname: default.ini
 fam:  One
 cy5: Two
 hex: Three
@@ -60,7 +67,8 @@ cycles:50
 cname: Swine Testing
 oname: Nick
 ename: caspar@casparvu.com
-pname: SwineLyophilzationTesting 
+pname: SwineLyophilzationTesting
+rname: default.ini
 fam: FMD
 cy5: RNAseP
 hex: SVA
@@ -70,7 +78,8 @@ cycles:50
 cname: PWM Laser AuNRs
 oname:  Rosana
 ename: caspar@casparvu.com
-pname:  PWM 
+pname:  PWM
+rname: default.ini
 fam: Nothing 1
 cy5: Nothing 2
 hex:  S. Mitis
@@ -81,9 +90,20 @@ cname: Longitudinal Study
 oname: Nick and Emma
 ename: caspar@casparvu.com
 pname: Longitudinal Study
+rname: default.ini
 fam: FMD
 cy5: RNAseP
 hex: SVA
 rtval:true
 cycles:40
+ 
+cname: jus testing
+oname: bill e.g.
+ename: bill.gabella@somewhere.com
+pname: stuff
+fam: one
+cy5: three
+hex: four
+rtval:true
+cycles:55
  

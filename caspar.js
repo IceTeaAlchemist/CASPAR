@@ -29,7 +29,9 @@ serverforip.listen(7071,hostname, () => {
 });
 const wss = new WebSocket.Server({ server: serverforip });
 
-
+// From main UI about L278.  Needed?? weg
+// const configEnum = {"opName":0, "email":1, "projName":2, "recName":3, "FAM":4, "CY5":5, "HEX":6, "RTcheckbox":7, "totCycles":8};
+// Object.freeze(configEnum);
 
 // These are for handling the SetInterval functions.
 let DataIntervId;
@@ -77,7 +79,6 @@ wss.on('connection', function connection(ws) {
 
     for (var i = 0; i<array.length; i++) {
         if (array[i].includes("cname: ")){
-            // Enum in UI    const configEnum = {"opName":0, "email":1, "projName":2, "FAM":3, "CY5":4, "HEX":5, "RTcheckbox":6, "totCycles":7}; 
             configstrings.push((array[i].substring(array[i].lastIndexOf("cname: ") + 7)).trim()); 
             //Sends all names for a single cname in one string with a seperator
         }
@@ -136,17 +137,20 @@ wss.on('connection', function connection(ws) {
                     var requestdata = [];
                     let alldata = fs.readFileSync('./configs/configs.txt', 'utf8'); //read file
                     var dataarray = alldata.toString().split("\n");
-                    for (i = 0; i<dataarray.length; i++) {
+                    for (i = 0; i<dataarray.length; i++) { // Loop over the lines in the long configs.txt file.
                         console.log(dataarray[i]);
-                        if (dataarray[i].includes("cname: " + msg.config)){
+                        if (dataarray[i].includes("cname: " + msg.config)){  // Find the line for the config you asked for.
                             let j = i+1;
                             while(j < dataarray.length)
                             {
-                                if(dataarray[j].includes("cname: ") == false)
+                                if(dataarray[j].includes("cname: ") == false)  // Have not hit the next config list.
                                 {
                                     console.log(dataarray[j]);
-                                    requestdata.push( dataarray[j].substring( dataarray[j].indexOf(":")+1 ).trim() );  // .trim() seems not to work.
-                                } else {
+                                    requestdata.push( dataarray[j].substring( dataarray[j].indexOf(":")+1 ).trim() );  
+                                    // .trim() seems not to work.
+                                } 
+                                else  // Hit the next cname: xxx line.
+                                {
                                     break;
                                 }
                                 j++;
@@ -333,9 +337,12 @@ wss.on('connection', function connection(ws) {
                     savedProjName, savedOperator, savedExperimentName);
                 break;
             case "saveconfiguration":
-                 // Kunal (9): new case "saveconfiguration" saves the new configuration the client 
-                 // wants in the configs document.
-                 let newConfig = "cname: " + msg.name.trim() + "\n" + "oname: " + msg.defaultoperator + "\n" + "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "rtval:" + msg.rt + "\n" + "cycles:" + msg.totalcycles + "\n \n";
+                // Kunal (9): new case "saveconfiguration" saves the new configuration the client 
+                // wants in the configs document.
+                let newConfig = "cname: " + msg.name.trim() + "\n" + "oname: " + msg.defaultoperator + "\n" + 
+                  "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "rname: " + msg.defaultrecipe + "\n" +
+                  "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + 
+                  "rtval:" + msg.rt + "\n" + "cycles:" + msg.totalcycles + "\n \n";
                 fs.appendFile('./configs/configs.txt', newConfig, (err) => { //adds to the file
                     if (err) {
                         console.error(err);
