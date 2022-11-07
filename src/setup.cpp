@@ -16,21 +16,21 @@
  */
 
 // Read the config file with sections [Qiagen] and [ADC], etc.
-config hardCfg("configs/devices.ini");
+config devicesIni("configs/devices.ini");
 config recipeDef("configs/recipes/default.ini");
 
 // Set up the qiagens on relevant USB ports.
-qiagen sens1( hardCfg.get_value("Qiagen", "Q0SerialPort") );  // "/dev/ttyUSB0"
-qiagen sens2( hardCfg.get_value("Qiagen", "Q1SerialPort") ); // "/dev/ttyUSB1"
+qiagen sens1( devicesIni.get_value("Qiagen", "Q0SerialPort") );  // "/dev/ttyUSB0"
+qiagen sens2( devicesIni.get_value("Qiagen", "Q1SerialPort") ); // "/dev/ttyUSB1"
 
 // Set up the ADCs to use interrupts as well as declare them.
 adc D2(DEVICE_ID, 0x8000, 0x7FFF);
 adc TEMP(TEMP_ID, 0x8000, 0x7FFF);
 
-bool pwm_enable = (hardCfg.get_value("PWM", "Enable") == "true"); // Turn off PWM avoid sudo node caspar.js .
-const double pwm_high_ratio = stof( hardCfg.get_value("PWM", "HighRatio") ); //0.90;
+bool pwm_enable = (devicesIni.get_value("PWM", "Enable") == "true"); // Turn off PWM avoid sudo node caspar.js .
+const double pwm_high_ratio = stof( devicesIni.get_value("PWM", "HighRatio") ); //0.90;
 const int pwm_high = 1024.0*pwm_high_ratio;
-const double pwm_low_ratio = stof( hardCfg.get_value("PWM", "LowRatio") );  //0.001;
+const double pwm_low_ratio = stof( devicesIni.get_value("PWM", "LowRatio") );  //0.001;
 const int pwm_low = 1024.0*pwm_low_ratio;
 
 // Declare vectors for tracking the thermal/fluor correspondence.
@@ -95,7 +95,7 @@ void setupPi(void)
 {
     string progName = "setupPi";
     // Print out the hardware config/ini file.
-    // cout << hardCfg.print_file() << endl;
+    // cout << devicesIni.print_file() << endl;
     wiringPiSetup();
     // Set pins for Alert, heating and cooling.
 	pinMode(3,INPUT);
