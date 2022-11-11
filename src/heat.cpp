@@ -96,6 +96,7 @@ void holdtemp(double temp, double time)
 {
     // Turn the heater on.
     digitalWrite(HEATER_PIN,HIGH);
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
 
     // Retrieve our target fluoresence from our heating curves.
     double fluortarget = heatquery(temp);
@@ -113,10 +114,12 @@ void holdtemp(double temp, double time)
         if (ycurrent < fluortarget - 20) // If our current fluoresence is below the target minus 20:
         {
             digitalWrite(HEATER_PIN, HIGH); // Turn the heater on.
+            if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
         }
         else if (ycurrent > fluortarget) // If it's above the target:
         {
             digitalWrite(HEATER_PIN, LOW); // Turn the heater off.
+            if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
         }
         delay(10); // Wait 10 milliseconds before checking again.
         start++; // Increment our wait.
@@ -133,6 +136,7 @@ void holdtemp(double temp, double time)
 void waittotemp(double temp)
 {
     digitalWrite(HEATER_PIN, LOW);
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     double fluortarget = heatquery(temp); // Retrieve the target fluoresence from the curves. 
     cout << "waittotemp: Falling." << endl; // Log that we're falling.
     while(y[y.size()-1] > fluortarget && runflag == true)

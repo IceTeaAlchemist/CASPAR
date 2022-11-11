@@ -56,29 +56,27 @@ namespace caspar
             data.clear();
             setupADC();
             runflag = true;
+            sens1.LED_off(1);
+            sens1.LED_off(2);
+            sens2.LED_off(1);
+            sens2.LED_off(2);
             if(LTP[0] == 1)
             {
-                sens1.calibrateGain(300,LTP[1]);
+                sens1.calibrateGain(FluorCalibPremelt,LTP[1]);
             }
             else
             {
-                sens2.calibrateGain(300,LTP[1]);
+                sens2.calibrateGain(FluorCalibPremelt,LTP[1]);
             }
             if(HTP[0] == 1)
             {
-                sens1.calibrateGain(300,HTP[1]);
-                sens1.setMethod(HTP[1]);
-                sens1.LED_on(1);
-                sens1.startMethod();
+                sens1.calibrateGain(FluorCalibPremelt,HTP[1]);
             }
             else
             {
-                sens2.calibrateGain(300,HTP[1]);
-                sens2.setMethod(HTP[1]);
-                sens2.LED_on(1);
-                sens2.startMethod();
+                sens2.calibrateGain(FluorCalibPremelt,HTP[1]);
             }
-            fittingqiagen = HTP[0];
+            changeQiagen(HTP);
             piThreadCreate(sampler);
             delay(100);
             recordflag = true;
@@ -93,12 +91,15 @@ namespace caspar
             delay(100);
             // After the RT step if there is one.
             // This is an AsyncWorker/thread, so check runflag just in case someone else changed it to false.
-            if (runflag) sens1.calibrateGain(300, 1); // E1D1 470ex 520em, FAM
-            if (runflag) sens2.calibrateGain(300, 1); // E1D1 520ex 570em, HEX
-            if (runflag) sens2.calibrateGain(300, 3); // E2D2 625ex 680em, CY5
-            if (runflag) sens1.calibrateGain(300, 3); // LDNA, i.e.Tex Red, the "back qiagen". E2D2 590ex 640em
-            sens1.LED_on(2);
-            sens1.startMethod();
+            sens1.LED_off(1);
+            sens1.LED_off(2);
+            sens2.LED_off(1);
+            sens2.LED_off(2);
+            if (runflag) sens1.calibrateGain(FluorCalib, 1); // E1D1 470ex 520em, FAM
+            if (runflag) sens2.calibrateGain(FluorCalib, 1); // E1D1 520ex 570em, HEX
+            if (runflag) sens2.calibrateGain(FluorCalib, 3); // E2D2 625ex 680em, CY5
+            if (runflag) sens1.calibrateGain(FluorCalibLDNA, 3); // LDNA, i.e.Tex Red, the "back qiagen". E2D2 590ex 640em
+            changeQiagen(HTP);
             recordflag = true;
             delay(100);
             runerror = cycle();

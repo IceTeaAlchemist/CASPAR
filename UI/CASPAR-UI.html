@@ -102,8 +102,10 @@
       <div class="div1-1"  style = "text-align:center;">
         <p class="inrtxt2">Project Name:</p>
           <input class = "inrinp" type="text" id="projName"> <!--Changes-->
-        <p class="inrtxt2">Recipe Name:</p>
-          <input class = "inrinp" type="text" id="recName"> <!--Changes-->
+          <!-- Below is redundant with the pull down further down, maybe.-->
+          <!-- style="visibility:hidden" still takes up space, style="display:none;" should not. -->
+       <p style="display:none;" class="inrtxt2">Recipe Name:</p>
+          <input style="display:none;" class = "inrinp" type="text" id="recName"> 
         <p class="inrtxt2">Operator:</p>
           <input class = "inrinp" type="text" id="opName"> <!--Changes-->
         <p class="inrtxt2">Experiment Name:</p>

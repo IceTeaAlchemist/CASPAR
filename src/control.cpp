@@ -34,6 +34,7 @@ void premelt()
     // Turn the heater on and the fan off, then delay to allow the data to fill again.
     digitalWrite(HEATER_PIN, HIGH);
     digitalWrite(FAN_PIN, LOW);
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
     delay(3000);
 
     // While we haven't finished the melt and the user hasn't cancelled the run:
@@ -61,7 +62,8 @@ void premelt()
         piUnlock(0); // Unlock the thread so it can keep taking samples.
 
         // If we found a fit and it's not just a flat line or existing before known data:
-        if (iter < 24 && abs(coeff[0]) > 5 && coeff[1] > 5)  
+        // Was 24, 5, 5, weg 20221111.
+        if (iter < ITER_MAX_PREMELT && abs(coeff[0]) > AMPL_MIN_PREMELT && coeff[1] > CTR_MIN_PREMELT)  
         {
             // If we're past the hump and this fit is within a reasonable threshold of the previous one:
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
@@ -80,6 +82,7 @@ void premelt()
                 else
                 {
                     digitalWrite(HEATER_PIN, LOW); // Turn the heater off.
+                    if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
                     tempflag = true; // Say that we're done generating the heat curves 
                     // and doing the heat melt.
                     clearactivedata(); // Clear our data.
@@ -101,18 +104,16 @@ void premelt()
  */
 void runRT()
 {
-    int sec_hold = RT_LENGTH;
-    holdtemp(60, RT_LENGTH);
-    waittotemp(55);
+    holdtemp(RT_TEMP, RT_LENGTH);
+    waittotemp(RT_WAITTOTEMP);
 }
 
 /* Runs the RT algorithm.
  */
 void reconstitute()
 {
-    int sec_hold = 600;
-    holdtemp(55, sec_hold);
-    waittotemp(55);
+    holdtemp(RECON_TEMP, RECON_LENGTH);
+    waittotemp(RECON_WAITTOTEMP);
 }
 
 // Delays to a point based on the fitted coefficients and the value of the derivative, depending 
@@ -135,7 +136,6 @@ bool modeshift(bool state)
     if(state == true)
     {
         digitalWrite(HEATER_PIN, LOW);
-        // digitalWrite(BOX_FAN, LOW),
         digitalWrite(FAN_PIN, HIGH);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
         piLock(0);
@@ -193,6 +193,10 @@ bool modeshift(bool state)
                 sens2.LED_off(1);
             }
         }
+        sens1.LED_off(1);
+        sens2.LED_off(1);
+        sens1.LED_off(2);
+        sens2.LED_off(2);
         sens1.stopMethod();
         sens2.stopMethod();
         readPCR();
@@ -232,10 +236,14 @@ int cycle()
     double iter;
     double coeffprev[3];
     double coeffdouble[3];
-    double thresh = 0.05;  // Looked at LV and recipe for CDZ double hump has 0.05 here, 20221026 weg.
-    double threshcool = 0.135;
-    double dthreshheat = 0.25; // Other version has 0.25, 20220915 weg.
-    double dthreshcool = 0.8; // Other version has 0.8, ditto weg.
+    // double thresh = 0.05;  // Looked at LV and recipe for CDZ double hump has 0.05 here, 20221026 weg.
+    // double threshcool = 0.135;
+    // double dthreshheat = 0.25; // Other version has 0.25, 20220915 weg.
+    // double dthreshcool = 0.8; // Other version has 0.8, ditto weg.
+    double thresh = THRESH;
+    double threshcool = THRESHCOOL;
+    double dthreshheat = DTHRESHHEAT;
+    double dthreshcool = DTHRESHCOOL;
     coeffprev[0] = 0;
     coeffprev[1] = 0;
     coeffprev[2] = 0;
@@ -329,6 +337,7 @@ int cycle()
             runflag = false;
             digitalWrite(HEATER_PIN, LOW);
             digitalWrite(FAN_PIN, LOW);
+            if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
             piUnlock(0);
             delay(100);
             sens1.stopMethod();
@@ -338,7 +347,7 @@ int cycle()
 
         piUnlock(0);
 //        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1) // Other version, 20220915 weg.
-        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 2)  
+        if (iter < ITER_MAX && abs(coeff[0]) > AMPL_MIN && coeff[1] > CTR_MIN)  
         {
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {

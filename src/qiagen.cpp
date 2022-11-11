@@ -27,29 +27,22 @@ qiagen::qiagen(string serial)
 	serial_port = open(serial.c_str(), O_RDWR);
 	if(serial_port < 0)
 	{
-		bstream << progName << ":**Error:" << errno << " from open: \n\t" << strerror(errno) << '\n';
+		bstream << progName << ":**Error: " << errno << " from open: \n\t" << strerror(errno);
+		bstream << '\n' << '\tserial is ' << serial << '\n';
 		cout << bstream.str();
-		//astring = progName + ":**Error:" + stoi(int(errno)) + " from open: " + strerror(errno) + '\n';
-		//cout << astring;
-		// cout << "Error " << errno << " from open: " << strerror(errno) << endl;
 	}
 	else
 	{
 		cout << progName << ":  Communicating with " << serial << " on serial port "; 
-		cout << 	serial_port << endl;
-		// cout << bstream.str();
-		// astring = progName +": Info: Communicating with " + serial + " on serial port " + 
-		// 	serial_port + '\n';
-		// cout << astring;
-		// cout << "Communicating with " << serial << " on serial port " << serial_port << endl;
+		cout << serial_port << endl;
+
 		struct termios tty;
 		if(tcgetattr(serial_port,&tty) != 0)
 		{
 			cout << progName << ":**Error: reading attributes " << strerror(errno) << endl;
-			// cout << bstream.str();
-			// cout << "Error reading attributes: " << strerror(errno) << endl;
+			cout << "\tAttributes tty.c_cflag is " << tty.c_cflag << endl;
 		}
-		tty.c_cflag &= ~PARENB;
+		tty.c_cflag &= ~PARENB;  // In system termios-c_cflg.h as DEFINES.
 		tty.c_cflag &= ~CSTOPB;
 		tty.c_cflag &= ~CSIZE;
 		tty.c_cflag |= CS8;
@@ -68,29 +61,31 @@ qiagen::qiagen(string serial)
 		tty.c_cc[VMIN] = 1;
 		cfsetispeed(&tty, B57600);
 		cfsetospeed(&tty, B57600);
-		if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
+		if (tcsetattr(serial_port, TCSANOW, &tty) != 0) 
+		{
 			cout << progName << ":**Error: setting attributes " << strerror(errno) << endl;
-			// cout << bstream.str();
-			// cout << "Error setting attributes: " << strerror(errno) << endl;
+			cout << "\tAttributes tty.c_cflag is " << tty.c_cflag << endl;
 		}
 		address = 0;
 		active_method = 1;
 
 		// Fill some default vectors of information for the Qiagen.
 		fill_LED_Currents();  // Fills the vector<unsigned int> LED_currents;
-		fill_BoardName();    // Fills the string BoardName; 
+		fill_BoardName();     // Fills the string BoardName; 
 		fill_BoardSerialNumber();  // Fills the string BoardSerialNumber;
-		fill_BoardID(); // Fills the string BoardID; 
-		fill_HardwareRevision(); // Fills the string HardwareRevision;
+		fill_BoardID();       // Fills the string BoardID; 
+		fill_HardwareRevision();   // Fills the string HardwareRevision;
 		fill_OpticRevision(); // Fills the string OpticRevision;
-		fill_SoftwareVersion(); // Fills the string OpticRevision;
+		fill_SoftwareVersion();    // Fills the string OpticRevision;
 
-		cout << progName << ":  LED_Currents, actual, default, max, min" << endl;
+		cout << progName << ":  BoardID " << getBoardID() << " SerialNumber " << getBoardSerialNumber() << endl;
+
 		if (true)
 		{
-			for (int ii=0; ii < LED_Currents.size()/2; ii += 1)
+			cout << "\tLED_Currents, actual, default, max, min" << endl;			
+			for (int ii=0; ii < LED_Currents.size()/2; ii += 1)// Could use getLEDCurrents() but seems to work as is.
 			{
-				cout << LED_Currents[ii] << "\t" << LED_Currents[ii+4] << endl;
+				cout << "\t" << LED_Currents[ii] << "\t" << LED_Currents[ii+4] << endl;
 			}
 		}
 		if (false) // Change to 1 to execute prints below.
@@ -478,8 +473,9 @@ int qiagen::calibrateGain(int minimum_reading, int method){
 	}
     writeqiagen(0, {255,255});
     // Start at our minimum gain for this qiagen.
-    int basegain = getLED_min(LED);
+    int mingain = getLED_min(LED);
 	int maxgain = getLED_max(LED);
+	int basegain = mingain;
     double readinval;
     do
     {
@@ -487,6 +483,7 @@ int qiagen::calibrateGain(int minimum_reading, int method){
         // and log that we're pushing the limits of our optics.
         {
             cout << "qiagen::calibrateGain: Couldn't find a suitable gain. Sample not present or illprepared." << endl;
+			cout << "\tGain min, max " << mingain << ", " << maxgain << " and basegain final at " << basegain << " ." << endl;
 			LED_off(LED);
             return 1;
         }

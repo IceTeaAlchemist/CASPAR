@@ -20,18 +20,56 @@ config devicesIni("configs/devices.ini");
 config recipeDef("configs/recipes/default.ini");
 
 // Set up the qiagens on relevant USB ports.
-qiagen sens1( devicesIni.get_value("Qiagen", "Q0SerialPort") );  // "/dev/ttyUSB0"
-qiagen sens2( devicesIni.get_value("Qiagen", "Q1SerialPort") ); // "/dev/ttyUSB1"
+qiagen sens1( devicesIni.get_value("Qiagen", "Q1SerialPort") );  // "/dev/ttyUSB0"
+qiagen sens2( devicesIni.get_value("Qiagen", "Q2SerialPort") );  // "/dev/ttyUSB1"
+// Check that it matches devices.ini file for Q1 and Q2.  Adjust which is Q1 (front one) and which Q2 (back one).
+// put in control.cpp??  checkRenameQiagens(sens1, sens2, devicesIni);
 
 // Set up the ADCs to use interrupts as well as declare them.
-adc D2(DEVICE_ID, 0x8000, 0x7FFF);
-adc TEMP(TEMP_ID, 0x8000, 0x7FFF);
+int DEVICE_ID = stoul(devicesIni.get_value("ADC", "ADC0DevID"));
+int TEMP_ID = stoul(devicesIni.get_value("ADC", "ADC1DevID")); 
+adc D2( DEVICE_ID, 0x8000, 0x7FFF);  // Was define DEVICE_ID, 0x48 .
+adc TEMP( TEMP_ID, 0x8000, 0x7FFF);  // Was define TEMP_ID, 0x49 .
 
 bool pwm_enable = (devicesIni.get_value("PWM", "Enable") == "true"); // Turn off PWM avoid sudo node caspar.js .
-const double pwm_high_ratio = stof( devicesIni.get_value("PWM", "HighRatio") ); //0.90;
+const double pwm_high_ratio = stof( devicesIni.get_value("PWM", "HighRatio") ); //0.85;
 const int pwm_high = 1024.0*pwm_high_ratio;
-const double pwm_low_ratio = stof( devicesIni.get_value("PWM", "LowRatio") );  //0.001;
+const double pwm_low_ratio = stof( devicesIni.get_value("PWM", "LowRatio") );  //0.0;
 const int pwm_low = 1024.0*pwm_low_ratio;
+
+// Some GPIO extern values from the devices.ini file.
+int HEATER_PIN = stoi( devicesIni.get_value("GPIO", "HEATER_PIN") ); // Typ 7.
+int FAN_PIN = stoi( devicesIni.get_value("GPIO", "FAN_PIN") ); // Typ 4.
+int BOX_FAN = stoi( devicesIni.get_value("GPIO", "BOX_FAN") ); // Typ 5.
+int PWM_PIN = stoi( devicesIni.get_value("GPIO", "PWM_PIN") ); // Typ 23.
+int ALERT_PIN = stoi( devicesIni.get_value("GPIO", "ALERT_PIN") ); // Typ 23.
+
+// Miscellaneous Fit and RT values.  Some of these should be in Assay Recipes too.
+int SMOOTHING = stoi( devicesIni.get_value("MISC", "SMOOTHING") );  // 25
+int CONVERGENCE_THRESHOLD = stoi( devicesIni.get_value("MISC", "CONVERGENCE_THRESHOLD") );  // 1
+int RT_LENGTH = stoi( devicesIni.get_value("MISC", "RT_LENGTH") );  // 600
+int RT_TEMP = stoi( devicesIni.get_value("MISC", "RT_TEMP") );  // 60
+int RT_WAITTOTEMP = stoi( devicesIni.get_value("MISC", "RT_WAITTOTEMP") );  // 55
+int RECON_LENGTH = stoi( devicesIni.get_value("MISC", "RECON_LENGTH") );  // 600
+int RECON_TEMP = stoi( devicesIni.get_value("MISC", "RECON_TEMP") );  // 55
+int RECON_WAITTOTEMP = stoi( devicesIni.get_value("MISC", "RECON_WAITTOTEMP") );  // 55
+int CALIBRATION_MIN = stoi( devicesIni.get_value("MISC", "CALIBRATION_MIN") );  // 150
+// Some fitting params in control.cpp L345-ish.
+int ITER_MAX = stoi( devicesIni.get_value("MISC", "ITER_MAX") ); // 24
+double AMPL_MIN = stod( devicesIni.get_value("MISC", "AMPL_MIN") );; // 10
+double CTR_MIN = stod( devicesIni.get_value("MISC", "CTR_MIN") ); // 2
+int ITER_MAX_PREMELT = stoi( devicesIni.get_value("MISC", "ITER_MAX_PREMELT") );
+double AMPL_MIN_PREMELT = stod( devicesIni.get_value("MISC", "AMPL_MIN_PREMELT") );
+double CTR_MIN_PREMELT = stod( devicesIni.get_value("MISC", "CTR_MIN_PREMELT") );
+// Thresholds for switching, see control.cpp Lxxx.  Lower case variable names show up a lot in code.
+double THRESH = stod( devicesIni.get_value("MISC", "THRESH") ); // 0.05
+double THRESHCOOL = stod( devicesIni.get_value("MISC", "THRESHCOOL") ); // 0.135
+double DTHRESHHEAT = stod( devicesIni.get_value("MISC", "DTHRESHHEAT") );  // 0.25
+double DTHRESHCOOL = stod( devicesIni.get_value("MISC", "DTHRESHCOOL") );
+// casparapi L65-102
+double FluorCalibPremelt = stod( devicesIni.get_value("MISC", "FluorCalibPremelt") );  // 150
+double FluorCalib = stod( devicesIni.get_value("MISC", "FluorCalib") ); // 300
+double FluorCalibLDNA = stod( devicesIni.get_value("MISC", "FluorCalibLDNA") ); // 200
 
 // Declare vectors for tracking the thermal/fluor correspondence.
 vector<double> tempkey;
@@ -98,7 +136,7 @@ void setupPi(void)
     // cout << devicesIni.print_file() << endl;
     wiringPiSetup();
     // Set pins for Alert, heating and cooling.
-	pinMode(3,INPUT);
+	pinMode(ALERT_PIN,INPUT);
     pinMode(HEATER_PIN, OUTPUT);
     pinMode(FAN_PIN, OUTPUT);
     pinMode(BOX_FAN, OUTPUT);
@@ -182,16 +220,20 @@ void setupADC(void)
 
 /* Runs the calibration algorithm for the L-DNA. CALIBRATION_MIN can be set in caspar.h.
  */
+// NOT USED ANYMORE, see casparapi.h and sensN.calibrateGain() calls.
 void calibrategain()
 {
     string progName = "calibrategain";
     ostringstream bstream;
     sens1.LED_off(1);
     sens1.LED_off(2);
-    sens1.setMethod(3);
+    sens1.setMethod(3); // Hard coded!  e2d2 here, so LED 2.
     sens1.writeqiagen(0, {255,255});
     // Start at our minimum gain for this qiagen.
-    int basegain = 80;
+    // int basegain = 80;
+    int gainmin = sens1.getLED_min(2);
+    int gainmax = sens1.getLED_max(2);
+    int basegain = gainmin;  // Was 80.
     double readinval;
     // Log to console and file that we're entering calibration.
     bstream << progName << ": Calibrating gain." << endl; 
@@ -199,10 +241,11 @@ void calibrategain()
     runtime_out << bstream.str();
     do
     {
-        if(basegain > 224) // If our gain outstrips the limits of the qiagen, exit the loop 
+        if(basegain > gainmax) // Was 244.  If our gain outstrips the limits of the qiagen, exit the loop.
         // and log that we're pushing the limits of our optics.
         {
             bstream << progName << ": Couldn't find a suitable gain. Sample not present or illprepared." << endl;
+            bstream << "\tMin, Max allowed gains " << gainmin << ", " << gainmax << " and basegain at " << basegain << " ." << endl;
             cout << bstream.str();
             runtime_out << bstream.str();
             break;
@@ -363,4 +406,34 @@ void doWriteComments(string savedComments, string savedStartTime, string savedFi
     notes_out << "Operator Name: " << savedOperator << endl;
     notes_out << "Experiment Name (if given): " << actExperimentName << endl;
     notes_out << "##################################################" << endl;
+}
+
+// Put some parts or all of this in the Qiagen class when it reads the BoardID and the BoardSerialNumber
+// IF it knows its number, that is.
+// checkRenameQiagens(&sens1, &sens2, devicesIni);
+/* Copmares the actual Qiagens with the devices.ini file and renames them, assigns a reference.
+*/
+void checkRenameQiagens(qiagen s1, qiagen s2, config devIni)
+{
+string Q1BoardID = devIni.get_value("Qiagen", "Q1BoardID");  // The expected board IDs.
+string Q2BoardID = devIni.get_value("Qiagen", "Q2BoardID");
+string Sens1BoardID = s1.getBoardID();  // The actual board IDs.
+string Sens2BoardID = s2.getBoardID();
+string Q1BoardSerialNumber = devIni.get_value("Qiagen", "Q1BoardSerialNumber");
+string Q2BoardSerialNumber = devIni.get_value("Qiagen", "Q2BoardSerialNumber");
+string Sens1BoardSerialNumber = s1.getBoardSerialNumber();
+string Sens2BoardSerialNumber = s2.getBoardSerialNumber();
+
+array<bool,4> myCheck;  // Check equality with BoardID and then Serial Number.
+myCheck = {false, false, false, false};
+//      S1ID=Q1ID S1S/N=Q1S/N etc S2 Q2
+
+// Check Q1.
+// if ( Sens1BoardID == Q1BoardID ) 
+// {
+//     myCheck[0] = true;
+//     if ( Sens1BoardSerialNumber == Q1BoardSerialNumber )
+//     }
+
+
 }

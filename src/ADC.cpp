@@ -1,4 +1,5 @@
 #include "ADC.h"
+#include "caspar.h"  // For devicesIni .
 #include <wiringPiI2C.h>
 #include <wiringPi.h>
 #include <byteswap.h>
@@ -8,6 +9,10 @@
 #define CONFIG 0x01
 #define LOWTHRESH 0x02
 #define HITHRESH 0x03
+// inline unsigned long CONVERSION = stoul( devicesIni.get_value("ADC", "CONVERSION") );
+// inline unsigned long CONFIG = stoul( devicesIni.get_value("ADC", "CONFIG") );
+// inline unsigned long LOWTHRESH = stoul( devicesIni.get_value("ADC", "LOWTHRESH") );
+// inline unsigned long HITHRESH = stoul( devicesIni.get_value("ADC", "HITHRESH") );
 
 using namespace std;
 
