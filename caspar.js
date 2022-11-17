@@ -3,7 +3,6 @@ caspar.js -
 
 */
 
-
 // Import the C++ addon as well as websocket and mail handler libraries.
 const engine = require('./build/Release/casparengine');
 const WebSocket = require('ws');

@@ -53,10 +53,10 @@ int RT_WAITTOTEMP = stoi( devicesIni.get_value("MISC", "RT_WAITTOTEMP") );  // 5
 int RECON_LENGTH = stoi( devicesIni.get_value("MISC", "RECON_LENGTH") );  // 600
 int RECON_TEMP = stoi( devicesIni.get_value("MISC", "RECON_TEMP") );  // 55
 int RECON_WAITTOTEMP = stoi( devicesIni.get_value("MISC", "RECON_WAITTOTEMP") );  // 55
-int CALIBRATION_MIN = stoi( devicesIni.get_value("MISC", "CALIBRATION_MIN") );  // 150
+// int CALIBRATION_MIN = stoi( devicesIni.get_value("MISC", "CALIBRATION_MIN") );  // 150
 // Some fitting params in control.cpp L345-ish.
 int ITER_MAX = stoi( devicesIni.get_value("MISC", "ITER_MAX") ); // 24
-double AMPL_MIN = stod( devicesIni.get_value("MISC", "AMPL_MIN") );; // 10
+double AMPL_MIN = stod( devicesIni.get_value("MISC", "AMPL_MIN") ); // 10
 double CTR_MIN = stod( devicesIni.get_value("MISC", "CTR_MIN") ); // 2
 int ITER_MAX_PREMELT = stoi( devicesIni.get_value("MISC", "ITER_MAX_PREMELT") );
 double AMPL_MIN_PREMELT = stod( devicesIni.get_value("MISC", "AMPL_MIN_PREMELT") );
@@ -70,6 +70,10 @@ double DTHRESHCOOL = stod( devicesIni.get_value("MISC", "DTHRESHCOOL") );
 double FluorCalibPremelt = stod( devicesIni.get_value("MISC", "FluorCalibPremelt") );  // 150
 double FluorCalib = stod( devicesIni.get_value("MISC", "FluorCalib") ); // 300
 double FluorCalibLDNA = stod( devicesIni.get_value("MISC", "FluorCalibLDNA") ); // 200
+
+// Was in control.cpp L14.
+double heattoolong = stod( devicesIni.get_value("MISC", "heattoolong") );  // secs, 75 typically, too long? 20221027 weg
+double cooltoolong = stod( devicesIni.get_value("MISC", "cooltoolong") );  // secs, 75 typically
 
 // Declare vectors for tracking the thermal/fluor correspondence.
 vector<double> tempkey;
@@ -218,56 +222,56 @@ void setupADC(void)
 }
 
 
-/* Runs the calibration algorithm for the L-DNA. CALIBRATION_MIN can be set in caspar.h.
+/* Runs the calibration algorithm for the L-DNA. CALIBRATION_MIN can be set in devices.ini .
  */
 // NOT USED ANYMORE, see casparapi.h and sensN.calibrateGain() calls.
-void calibrategain()
-{
-    string progName = "calibrategain";
-    ostringstream bstream;
-    sens1.LED_off(1);
-    sens1.LED_off(2);
-    sens1.setMethod(3); // Hard coded!  e2d2 here, so LED 2.
-    sens1.writeqiagen(0, {255,255});
-    // Start at our minimum gain for this qiagen.
-    // int basegain = 80;
-    int gainmin = sens1.getLED_min(2);
-    int gainmax = sens1.getLED_max(2);
-    int basegain = gainmin;  // Was 80.
-    double readinval;
-    // Log to console and file that we're entering calibration.
-    bstream << progName << ": Calibrating gain." << endl; 
-    cout << bstream.str();
-    runtime_out << bstream.str();
-    do
-    {
-        if(basegain > gainmax) // Was 244.  If our gain outstrips the limits of the qiagen, exit the loop.
-        // and log that we're pushing the limits of our optics.
-        {
-            bstream << progName << ": Couldn't find a suitable gain. Sample not present or illprepared." << endl;
-            bstream << "\tMin, Max allowed gains " << gainmin << ", " << gainmax << " and basegain at " << basegain << " ." << endl;
-            cout << bstream.str();
-            runtime_out << bstream.str();
-            break;
-        }
-        // Log to console what gain is being tested.
-        cout << progName << ": Testing at gain of: " << basegain << "." << endl;
-        // Turn the LED, adjust the current, and turn it back on.
-        sens1.LED_off(2);
-        sens1.LED_current(2,basegain);
-        sens1.LED_on(2);
-        sens1.startMethod();
-        delay(400);
-        // Measure what gain we receive.
-        readinval = sens1.measure();
-        // Log what reading we receive to console.
-        cout << progName << ": Reading: " << readinval << endl;
-        // Increase the gain.
-        basegain += 10;
-        sens1.stopMethod();
-    } while (readinval < CALIBRATION_MIN && runflag == true); // Continue while we haven't reached our 
-    // requested minimum calibration fluoresence. This is defined in the header.
-}
+// void calibrategain()
+// {
+//     string progName = "calibrategain";
+//     ostringstream bstream;
+//     sens1.LED_off(1);
+//     sens1.LED_off(2);
+//     sens1.setMethod(3); // Hard coded!  e2d2 here, so LED 2.
+//     sens1.writeqiagen(0, {255,255});
+//     // Start at our minimum gain for this qiagen.
+//     // int basegain = 80;
+//     int gainmin = sens1.getLED_min(2);
+//     int gainmax = sens1.getLED_max(2);
+//     int basegain = gainmin;  // Was 80.
+//     double readinval;
+//     // Log to console and file that we're entering calibration.
+//     bstream << progName << ": Calibrating gain." << endl; 
+//     cout << bstream.str();
+//     runtime_out << bstream.str();
+//     do
+//     {
+//         if(basegain > gainmax) // Was 244.  If our gain outstrips the limits of the qiagen, exit the loop.
+//         // and log that we're pushing the limits of our optics.
+//         {
+//             bstream << progName << ": Couldn't find a suitable gain. Sample not present or illprepared." << endl;
+//             bstream << "\tMin, Max allowed gains " << gainmin << ", " << gainmax << " and basegain at " << basegain << " ." << endl;
+//             cout << bstream.str();
+//             runtime_out << bstream.str();
+//             break;
+//         }
+//         // Log to console what gain is being tested.
+//         cout << progName << ": Testing at gain of: " << basegain << "." << endl;
+//         // Turn the LED, adjust the current, and turn it back on.
+//         sens1.LED_off(2);
+//         sens1.LED_current(2,basegain);
+//         sens1.LED_on(2);
+//         sens1.startMethod();
+//         delay(400);
+//         // Measure what gain we receive.
+//         readinval = sens1.measure();
+//         // Log what reading we receive to console.
+//         cout << progName << ": Reading: " << readinval << endl;
+//         // Increase the gain.
+//         basegain += 10;
+//         sens1.stopMethod();
+//     } while (readinval < CALIBRATION_MIN && runflag == true); // Continue while we haven't reached our 
+//     // requested minimum calibration fluoresence. This is defined in the header.
+// }
 
 
 

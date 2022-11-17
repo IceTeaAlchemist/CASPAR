@@ -101,7 +101,7 @@ extern int RT_WAITTOTEMP;
 extern int RECON_LENGTH; // 600 
 extern int RECON_TEMP;
 extern int RECON_WAITTOTEMP;
-extern int CALIBRATION_MIN;  // 150
+// extern int CALIBRATION_MIN;  // 150
 extern int ITER_MAX; // 24
 extern double AMPL_MIN; // 10
 extern double CTR_MIN; // 2

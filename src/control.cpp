@@ -10,9 +10,12 @@
 using namespace std;
 
 bool runflag = false;
-double heattoolong = 75;  // secs, 75 typically, too long? 20221027 weg
-double cooltoolong = 75;  // secs, 75 typically
-
+// Cannot call devicesIni.get_value() here, gives sementation fault.  Is an extern in caspar.h .  20221117 weg
+// double heattoolong = stod( devicesIni.get_value("MISC", "heattoolong") );  // secs, 75 typically, too long? 20221027 weg
+// double cooltoolong = stod( devicesIni.get_value("MISC", "cooltoolong") );  // secs, 75 typically
+// double heattoolong = 75;
+// double cooltoolong = 75;
+// For above see L75 in setup.cpp .  The above are called BEFORE the devicesINI is instantiated...betchya.
 
 /* Runs a premelt to calculate the thermal fluoresence values (for our current RT implementation) 
    and ensure good annealing of L-DNA. 

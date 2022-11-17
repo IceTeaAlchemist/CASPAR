@@ -117,9 +117,11 @@ namespace caspar
 
     void initializePCR(const FunctionCallbackInfo<Value> &args)
     {
+        cout << "casparapi.cpp: initializePCR(): At the start of routine." << endl;
         setupPi();
         setupQiagen();
         openFiles();
+        cout << "casparapi.cpp: initializePCR(): At the end of routine." << endl;
     }
 
     void turnOffBoxFan(const FunctionCallbackInfo<Value> &args)
