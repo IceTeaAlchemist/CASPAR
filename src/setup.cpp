@@ -394,21 +394,23 @@ void doMakeDirs(string longdirname)
     // return rctot;  // Do not need return code, the upper code will not fix any of this.
 }
 
-void doWriteComments(string savedComments, string savedStartTime, string savedFinishTime,
+void doWriteComments(string savedComments, string savedStartDate, string savedStartTime, string savedFinishTime,
    string savedProjName, string savedOperator, string savedExperimentName)
 {
-    cout << "Comments: " << endl << savedComments << endl << savedStartTime << "   " << savedFinishTime << endl;
+    cout << "Comments: " << endl << savedComments << endl << savedStartDate << "   " << savedStartTime << "   " << 
+        savedFinishTime << endl;
     cout << savedProjName << endl << savedOperator << endl << savedExperimentName << endl;
 
-    string actExperimentName;
-    actExperimentName = (savedExperimentName == "" ? "none": savedExperimentName);
+    string useExperimentName;
+    useExperimentName = (savedExperimentName == "" ? "none": savedExperimentName);
 
     notes_out << "##################################################" << endl;
     notes_out << "Comments: " << endl << savedComments << endl;
-    notes_out << "Start Time: " << savedStartTime << "   " << "Finish Time: " << savedFinishTime << endl;
+    notes_out << "Start Date: " << savedStartDate << "   " << "Start Time: " << savedStartTime << "   " << 
+        "Finish Time: " << savedFinishTime << endl;
     notes_out << "Project Name: " << savedProjName << endl;
     notes_out << "Operator Name: " << savedOperator << endl;
-    notes_out << "Experiment Name (if given): " << actExperimentName << endl;
+    notes_out << "Experiment Name (if given): " << useExperimentName << endl;
     notes_out << "##################################################" << endl;
 }
 

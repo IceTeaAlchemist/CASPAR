@@ -255,25 +255,28 @@ namespace caspar
 
     void writeComments(const FunctionCallbackInfo<Value> &args)
     {
-        // savedComments, savedStartTime, savedFinishTime, savedProjName, savedOperator, savedExperimentName
+        // savedComments, savedStartDate, savedStartTime, savedFinishTime, savedProjName, savedOperator, savedExperimentName
         Isolate *isolate = args.GetIsolate();
         String::Utf8Value strSavedComments(isolate, args[0]);
-        String::Utf8Value strSavedStartTime(isolate, args[1]);
-        String::Utf8Value strSavedFinishTime(isolate, args[2]);
-        String::Utf8Value strSavedProjName(isolate, args[3]);
-        String::Utf8Value strSavedOperator(isolate, args[4]);
-        String::Utf8Value strSavedExperimentName(isolate, args[5]);
+        String::Utf8Value strSavedStartDate(isolate, args[1]);
+        String::Utf8Value strSavedStartTime(isolate, args[2]);
+        String::Utf8Value strSavedFinishTime(isolate, args[3]);
+        String::Utf8Value strSavedProjName(isolate, args[4]);
+        String::Utf8Value strSavedOperator(isolate, args[5]);
+        String::Utf8Value strSavedExperimentName(isolate, args[6]);
         string savedComments(*strSavedComments);
+        string savedStartDate(*strSavedStartDate);
         string savedStartTime(*strSavedStartTime);
         string savedFinishTime(*strSavedFinishTime);
         string savedProjName(*strSavedProjName);
         string savedOperator(*strSavedOperator);
         string savedExperimentName(*strSavedExperimentName);
 
-        cout << "Comments: " << endl << savedComments << endl << savedStartTime << "   " << savedFinishTime << endl;
+        cout << "Comments: " << endl << savedComments << endl << savedStartDate << "   " << savedStartTime << "   " << 
+            savedFinishTime << endl;
         cout << savedProjName << endl << savedOperator << endl << savedExperimentName << endl;
 
-        doWriteComments(savedComments, savedStartTime, savedFinishTime,
+        doWriteComments(savedComments, savedStartDate, savedStartTime, savedFinishTime,
             savedProjName, savedOperator, savedExperimentName); // fstream notes_out only known in setup.cpp!!
 
     }

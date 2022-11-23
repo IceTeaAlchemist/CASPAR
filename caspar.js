@@ -40,6 +40,7 @@ let PCRIntervId;
 var isRunning = false;
 
 //Kunal: New variables to store data from client
+var savedStartDate = "";
 var savedStartTime = "";
 var savedProjName = "";
 var savedOperator = "";
@@ -97,6 +98,7 @@ wss.on('connection', function connection(ws) {
         status: "Server connected.",
         //Kunal (12): information to send to client
         running: isRunning,
+        startdate: savedStartDate,
         starttime: savedStartTime,
         projectname: savedProjName,
         operatorname: savedOperator,
@@ -282,6 +284,7 @@ wss.on('connection', function connection(ws) {
                 ws.send(JSON.stringify(pongmsg));
                 break;
             case "startSave":
+                savedStartDate = msg.startDate;
                 savedStartTime = msg.startTime;
                 savedProjName = msg.projectName;
                 savedOperator = msg.operator;
@@ -324,15 +327,16 @@ wss.on('connection', function connection(ws) {
                 // Kunal (4): new case "save finish" that saves comments and finish time when the run 
                 // ends.  Needs to get sent WEG.
                 savedComments = msg.comments;  // Setting globals, should we?
-                //savedStartTime = msg.starttime;
+                savedStartDate = msg.startdate;
+                savedStartTime = msg.starttime;
                 savedFinishTime = msg.finishtime;
                 // Put the comments to notes_<ts>.txt here.
                 // Add project name, operator name, experiment name (or none).
                 console.log("In savefinish case:");
-                console.log(savedComments, savedStartTime, savedFinishTime, 
+                console.log(savedComments, savedStartDate, savedStartTime, savedFinishTime, 
                     savedProjName, savedOperator, savedExperimentName);
 
-                engine.putComments(savedComments, savedStartTime, savedFinishTime, 
+                engine.putComments(savedComments, savedStartDate, savedStartTime, savedFinishTime, 
                     savedProjName, savedOperator, savedExperimentName);
                 break;
             case "saveconfiguration":

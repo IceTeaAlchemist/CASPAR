@@ -140,9 +140,10 @@
           <textarea class = "btminp" id="comments" style="display:inline-flex; margin-top: 40px; float:left;"></textarea> <!--Changes-->
         <p class="inrtxt3" id="systemStatus" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> System Status:
           <br> <br> <span style= "font-weight: bold; font-size:110%;"> &ensp;Not Running </span></p> <!--Changes-->
-        <p class="inrtxt3" id="startTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Start Time:
+        <p class="inrtxt3" id="startDate" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Date:
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &ensp; Not Started </span></p> <!--Changes-->
-        <p class="inrtxt3" id="estFinTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Est. Finish Time:
+          <p class="inrtxt3" id="startTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Start Time:
+            <br> <br> <span style= "font-weight: bold; font-size:110%"> &ensp; Not Started </span></p> <!--Changes-->        <p class="inrtxt3" id="estFinTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Est. Finish Time:
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; &ensp; - </span></p> <!--Changes-->
         <p class="inrtxt3" id="finTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Finish Time:
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; - </span></p> <!--Changes-->
@@ -630,13 +631,16 @@
         pongRecieved = false;
       }
 
-      // Updates the UI when it connects, whether in the middle of an experiment or initially. Updated to use preexisting JSON--NAS 7/08/22
+      // Updates the UI when it connects, whether in the middle of an experiment or initially. Updated to use 
+      // preexisting JSON--NAS 7/08/22
       function onConnect(msg){
         if(msg.running == true){
           //Updates major values.
           dropdownID.value = msg.configname;
           dropdownIDRecipes.value = msg.recipename;
           //savedStartTime = msg.starttime;//??
+          document.getElementById("startDate").innerHTML =  "<br> Date: <br> <br> <span style=font-size:110%> &ensp;" +
+            msg.startdate.bold() + "</span>";
           document.getElementById("startTime").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
             msg.starttime.bold() + "</span>";
           document.getElementById("projName").value = msg.projectname;
@@ -844,6 +848,7 @@
       }// end stopStartConfirmation
 
     var timeStartDisplay; //Important to send
+    var timeStartDateDisplay;
     var defaultFileName; //Important to send
 
     // Start or stop the PCR depending on its current state.
@@ -858,6 +863,9 @@
         // Displays Start Time.
         var timeStarted = new Date(); // Initialize Start Time.
         timeStartDisplay = timeStarted.toLocaleTimeString();
+        timeStartDateDisplay = timeStarted.toLocaleDateString();
+        document.getElementById("startDate").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
+          timeStartDateDisplay.bold() + "</span>";
         document.getElementById("startTime").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
           timeStartDisplay.bold() + "</span>";
         document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + " " + timeStartDisplay;
@@ -1005,10 +1013,11 @@
       var msg = {
         id: "savefinish",
         comments: document.getElementById('comments').value,
-        starttime: 12.0,
+        startdate: savedStartDate,
+        starttime: savedStartTime,
         finishtime: timeFinishDisplay,
       };  // starttime not set here, known in the engine. weg
-      console.log("finishRun: ", msg);
+      console.log("finishRun:  ", msg);
       ws.send(JSON.stringify(msg));
     }
 
@@ -1241,8 +1250,32 @@ function myDownloadFunction(fullfilename) {
   console.log(justname);
 }
 
+// Create timestamp like computer folks, February 1, 1975 23:15:30, becomes 19750201_231530 .
+function makeTimeStamp(myDate)
+{
+  if ( myDate == null )
+  {
+    myDate = new Date();  // Use NOW as the time.
+  }
+// myDate = new Date('February 1, 1975 23:15:30');
+// console.log('In makeTimeStamp, myDate is...');
+// console.log(myDate);
+// Unlikely to be less than 1000 year, but just in case.
+var yy = myDate.getFullYear().toString().padStart(4,'0');  // numbers
+var mo = (myDate.getMonth()+1).toString().padStart(2,'0');
+// console.log(mo);
+var dd = myDate.getDate().toString().padStart(2,'0');
+// console.log(dd);
+var hh = myDate.getHours().toString().padStart(2,'0');
+var min = myDate.getMinutes().toString().padStart(2,'0');
+var ss = myDate.getSeconds().toString().padStart(2,'0');
+
+return (yy+mo+dd+'_'+hh+min+ss)
+}
+
+
 //Functions End
 
-  </script>
-</body>
+    </script>
+  </body>
 </html>
