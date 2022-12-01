@@ -140,7 +140,7 @@
           <textarea class = "btminp" id="comments" style="display:inline-flex; margin-top: 40px; float:left;"></textarea> <!--Changes-->
         <p class="inrtxt3" id="systemStatus" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> System Status:
           <br> <br> <span style= "font-weight: bold; font-size:110%;"> &ensp;Not Running </span></p> <!--Changes-->
-        <p class="inrtxt3" id="startDate" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Date:
+        <p class="inrtxt3" id="startDate" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Start Date:
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &ensp; Not Started </span></p> <!--Changes-->
           <p class="inrtxt3" id="startTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Start Time:
             <br> <br> <span style= "font-weight: bold; font-size:110%"> &ensp; Not Started </span></p> <!--Changes-->        <p class="inrtxt3" id="estFinTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Est. Finish Time:
@@ -212,7 +212,7 @@
           margin-bottom: 20px;"> Delete This <br> Configuration </button>
 
         <p class="inrtxt4" style="font-weight:bold; text-align: left; margin-left: 10px;">Device Info:</p>
-          <p class="inrtxt5" id="deviceInfo">&emsp;Model 1.0</p> <!--Hardcoded-->
+          <p class="inrtxt5" id="deviceInfo">&emsp;Model 1.0.2</p> <!--Hardcoded-->
         <p class="inrtxt4" style="font-weight:bold; text-align: left; margin-left: 10px;">Version Info:</p>
           <p class="inrtxt5" id="versionInfo">&emsp;Version 1.0</p>  <!--Hardcoded-->
       </div>
@@ -639,7 +639,7 @@
           dropdownID.value = msg.configname;
           dropdownIDRecipes.value = msg.recipename;
           //savedStartTime = msg.starttime;//??
-          document.getElementById("startDate").innerHTML =  "<br> Date: <br> <br> <span style=font-size:110%> &ensp;" +
+          document.getElementById("startDate").innerHTML =  "<br> Start Date: <br> <br> <span style=font-size:110%> &ensp;" +
             msg.startdate.bold() + "</span>";
           document.getElementById("startTime").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
             msg.starttime.bold() + "</span>";
@@ -864,12 +864,14 @@
         var timeStarted = new Date(); // Initialize Start Time.
         timeStartDisplay = timeStarted.toLocaleTimeString();
         timeStartDateDisplay = timeStarted.toLocaleDateString();
-        document.getElementById("startDate").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
+        document.getElementById("startDate").innerHTML =  "<br> Start Date: <br> <br> <span style=font-size:110%> &ensp;" +
           timeStartDateDisplay.bold() + "</span>";
         document.getElementById("startTime").innerHTML =  "<br> Start Time: <br> <br> <span style=font-size:110%> &ensp;" +
           timeStartDisplay.bold() + "</span>";
-        document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + " " + timeStartDisplay;
-        document.getElementById("finTime").innerHTML =  "<br> Finish Time: <br> <br> <span style=font-size:110%> &emsp; &emsp; -" + "</span>";
+        document.getElementById("esStart").innerHTML = "<span style = 'text-decoration: underline;'> Start Time:</span>" + 
+          " " + timeStartDisplay;
+        document.getElementById("finTime").innerHTML =  "<br> Finish Time: <br> <br> <span style=font-size:110%> &emsp; &emsp; -" +
+           "</span>";
         //This code alters the default file name.
         if ( String( document.getElementById("filename").value ).trim().length == 0 )  // If filename is null or blank or " ".
         {
@@ -931,6 +933,7 @@
           // Sends important data to server for storage (for safety reasons in case client leaves).
           let msg = {
             id: "startSave",
+            startDate: timeStartDateDisplay,
             startTime: timeStartDisplay,
             projectName: document.getElementById("projName").value,
             operator: document.getElementById("opName").value,
@@ -1013,8 +1016,8 @@
       var msg = {
         id: "savefinish",
         comments: document.getElementById('comments').value,
-        startdate: savedStartDate,
-        starttime: savedStartTime,
+        //startdate: savedStartDate,
+        //starttime: savedStartTime,
         finishtime: timeFinishDisplay,
       };  // starttime not set here, known in the engine. weg
       console.log("finishRun:  ", msg);

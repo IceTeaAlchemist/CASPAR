@@ -397,7 +397,7 @@ void doMakeDirs(string longdirname)
 void doWriteComments(string savedComments, string savedStartDate, string savedStartTime, string savedFinishTime,
    string savedProjName, string savedOperator, string savedExperimentName)
 {
-    cout << "Comments: " << endl << savedComments << endl << savedStartDate << "   " << savedStartTime << "   " << 
+    cout << "doWriteComments: Comments: " << endl << savedComments << endl << savedStartDate << "   " << savedStartTime << "   " << 
         savedFinishTime << endl;
     cout << savedProjName << endl << savedOperator << endl << savedExperimentName << endl;
 

@@ -327,8 +327,8 @@ wss.on('connection', function connection(ws) {
                 // Kunal (4): new case "save finish" that saves comments and finish time when the run 
                 // ends.  Needs to get sent WEG.
                 savedComments = msg.comments;  // Setting globals, should we?
-                savedStartDate = msg.startdate;
-                savedStartTime = msg.starttime;
+                //savedStartDate = msg.startdate;
+                //savedStartTime = msg.starttime;
                 savedFinishTime = msg.finishtime;
                 // Put the comments to notes_<ts>.txt here.
                 // Add project name, operator name, experiment name (or none).

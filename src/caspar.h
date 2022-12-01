@@ -127,7 +127,7 @@ void setupADC(void);
 void calibrategain(void);
 void closeFiles();
 void doMakeDirs(string longdirname);
-// In casparapi, void writeComments(string savedComments, string savedStartTime, string savedFinishTime);
+void writeComments(string savedComments, string savedStartTime, string savedFinishTime);
 void doWriteComments(string savedComments, string savedStartDate, string savedStartTime, string savedFinishTime,
    string savedProjName, string savedOperator, string savedExperimentName);
 void checkRenameQiagens(qiagen s1, qiagen s2, config devIni);  // Should this be in the class?
