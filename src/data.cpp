@@ -110,7 +110,8 @@ void retrieveSample()
 {
     if(recordflag == true)
     {
-    // Locking the thread here prevents it from interfering with global variables while they're being used by other portions of the program that lock the same thread.
+    // Locking the thread here prevents it from interfering with global variables while they're being used by other portions of the 
+    // program that lock the same thread.
     piLock(0);
     // Get the current time in milliseconds.
     auto millisecs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();

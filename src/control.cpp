@@ -133,10 +133,10 @@ long delaytocycleend(const double coeff[3], double thresh)
 }
 
 // Shifts the shift between heating and cooling. Takes the current mode as an argument, 
-// returns the new one.
+// returns the new one.  state = false is cooling, true is heating.
 bool modeshift(bool state)
 {
-    if(state == true)
+    if(state == true)  // Had been heating.
     {
         digitalWrite(HEATER_PIN, LOW);
         digitalWrite(FAN_PIN, HIGH);
@@ -167,13 +167,15 @@ bool modeshift(bool state)
         changeQiagen(LTP);
         piUnlock(0);
         delay(500);
-        return false;
+        return false;  // Return false, cooling state.
     }
-    else
+    else  // state = false, the cooling state.
     {
         digitalWrite(FAN_PIN,LOW);
         recordflag = false;
+      
         piLock(0);
+
         if(LTP[1] == 1)
         {
             if(LTP[2] == 3)
@@ -209,6 +211,7 @@ bool modeshift(bool state)
         // Turn the cycling LED back on.
         recordflag = true;
         // digitalWrite(BOX_FAN,HIGH);
+        cout << "modeshift: state was " << state << " just before digitalWrite(HEATER_PIN, HIGH) .";
         digitalWrite(HEATER_PIN, HIGH);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
         return true;
@@ -291,6 +294,7 @@ int cycle()
         {
             past_the_hump = false;
         }
+        piUnlock(0);
 
         // Check the heat or cool too long.  How to handle the clearing of data after first hump---save it somewhere.
         // Separately for cooling and heating, heattoolong and cooltoolong in caspar.h .
@@ -304,10 +308,6 @@ int cycle()
                 runtime_out << bstream.str();
 
                 state = modeshift(state);
-                // digitalWrite(HEATER_PIN,LOW);
-                // if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
-                // digitalWrite(FAN_PIN, HIGH);
-                // state = false;
                 dtrigger = false;
                 clearactivedata();
             }
@@ -322,11 +322,7 @@ int cycle()
                 cout << bstream.str();
                 runtime_out << bstream.str();
 
-                state = modeshift(state);
-                // digitalWrite(FAN_PIN,LOW);
-                // digitalWrite(HEATER_PIN, HIGH);
-                // if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
-                // state = true;
+                state = modeshift(state);  // modeshift has piLock() in it!  Make sure it is unlocked when this is executed.
                 dtrigger = false;
                 clearactivedata();
             }
@@ -348,7 +344,7 @@ int cycle()
             return 1;
         }
 
-        piUnlock(0);
+
 //        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1) // Other version, 20220915 weg.
         if (iter < ITER_MAX && abs(coeff[0]) > AMPL_MIN && coeff[1] > CTR_MIN)  
         {
@@ -472,6 +468,6 @@ void changeQiagen(vector<int> qiagenproperties)
         sens2.startMethod();
         sens2.LED_on(LED);
     }
-    cout << "Shifting to method " << qiagenproperties[1] << " on Qiagen " << qiagenproperties[0] << "." << endl;
-    cout << "Fitting qiagen is " << fittingqiagen << "." << endl;
+    cout << "changeQiagen: Shifting to method " << qiagenproperties[1] << " on Qiagen " << qiagenproperties[0] << "." << endl;
+    cout << "\tFitting qiagen is " << fittingqiagen << "." << endl;
 }
