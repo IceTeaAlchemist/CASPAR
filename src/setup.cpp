@@ -213,7 +213,7 @@ void setupADC(void)
 	D2.SetCompQueue(0);
     D2.SetMultiplex(1,3);
     // Setup the ADC for the temperature. See the ADC class for documentation.
-    TEMP.SetGain(1);
+    TEMP.SetGain(1);  // For range +/- 4.096V .  adafruit-4-chan PDF page 13.
 	TEMP.SetMode(0);
 	TEMP.SetSPS(5);
 	TEMP.SetCompPol(1);
