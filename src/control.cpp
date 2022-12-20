@@ -211,7 +211,6 @@ bool modeshift(bool state)
         // Turn the cycling LED back on.
         recordflag = true;
         // digitalWrite(BOX_FAN,HIGH);
-        cout << "modeshift: state was " << state << " just before digitalWrite(HEATER_PIN, HIGH) .";
         digitalWrite(HEATER_PIN, HIGH);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
         return true;
@@ -350,7 +349,8 @@ int cycle()
         {
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {
-                cout << progName << ": coeffs[0] etc, Amplitude " << coeff[0] << " Center " << coeff[1] << " Width " << coeff[2]  << "  Iteration " << iter << endl;
+                cout << progName << ": coeffs[0] etc, Amplitude " << coeff[0] << " Center " << coeff[1] << " Width " << coeff[2]  << 
+                "  Iteration " << iter << endl;
                 if(doublehump == false)
                 {
                     if(state == true)

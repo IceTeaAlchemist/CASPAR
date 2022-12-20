@@ -120,7 +120,10 @@ namespace caspar
         cout << "casparapi.cpp: initializePCR(): At the start of routine." << endl;
         setupPi();
         setupQiagen();
-        openFiles();
+        // if (dataDir != "./data/")// If DataDir not correctly defined from Start Run do not do this.  Maybe never do this. weg
+        // {
+        //     openFiles();
+        // }
         cout << "casparapi.cpp: initializePCR(): At the end of routine." << endl;
     }
 
@@ -221,16 +224,19 @@ namespace caspar
      * return[1]: Coefficient log
      * return[2]: PCR data storage
      * return[3]: Raw data storage
+     * return[4]: Notes storage
+     * return[5]: Temperatures
      */
     void readoutFilenames(const FunctionCallbackInfo<Value> &args)
     {
         Isolate *isolate = args.GetIsolate();
-        v8::Local<v8::Array> filehandoff = New<v8::Array>(5);
+        v8::Local<v8::Array> filehandoff = New<v8::Array>(6);
         Nan::Set(filehandoff, 0, New<v8::String>((runlogDir+runlog).c_str()).ToLocalChecked());
         Nan::Set(filehandoff, 1, New<v8::String>((dataDir+coeffstorage).c_str()).ToLocalChecked());
         Nan::Set(filehandoff, 2, New<v8::String>((dataDir+pcrstorage).c_str()).ToLocalChecked());
         Nan::Set(filehandoff, 3, New<v8::String>((dataDir+rawstorage).c_str()).ToLocalChecked());
         Nan::Set(filehandoff, 4, New<v8::String>((dataDir+notesstorage).c_str()).ToLocalChecked());
+        Nan::Set(filehandoff, 5, New<v8::String>((dataDir+temperstorage).c_str()).ToLocalChecked());
         args.GetReturnValue().Set(filehandoff);
     }
 
@@ -292,6 +298,7 @@ namespace caspar
      */
     void reopenFiles(const FunctionCallbackInfo<Value> &args)
     {
+        string progName = "reopenFiles";
         Isolate *isolate = args.GetIsolate();
         String::Utf8Value strName(isolate, args[0]);
         String::Utf8Value strProjName(isolate, args[1]);
@@ -310,11 +317,13 @@ namespace caspar
         coeffstorage = "coeff_" + ts + ".csv";  // If new directory structure, do not need to prepend ProjName_ to files (?). weg
         pcrstorage = "pcr_" + ts + ".csv";
         notesstorage = "notes_" + ts + ".txt";
+        temperstorage = "temper_" + ts + ".csv";
         rawstorage = "binaryoutput_" + ts + ".bin";
-        cout << "reopenFiles:  new directory dataDir " << dataDir << endl;
-        cout << "reopenFiles:  newfilename " << newfilename << " projname " << projname << " exptname " << exptname << endl;
-        cout << "reopenFiles:  coeffstorage " << coeffstorage << " pcrstorage " << pcrstorage << " rawstorage " << rawstorage;
-        cout << " notesstorage " << notesstorage << endl;
+        cout << progName << ":  new directory dataDir " << dataDir << endl;
+        cout << progName << ":  newfilename " << newfilename << " projname " << projname << " exptname " << exptname << endl;
+        cout << progName << ":  coeffstorage " << coeffstorage << " pcrstorage " << pcrstorage << endl;
+        cout << progName << ": rawstorage " << rawstorage << " notesstorage " << notesstorage << endl;
+        cout << progName << ": temperstorage " << temperstorage << endl;
         closeFiles();
         openFiles();
     }

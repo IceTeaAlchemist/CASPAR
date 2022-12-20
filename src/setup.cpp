@@ -95,6 +95,7 @@ fstream coeff_out;
 fstream pcr_out;
 fstream runtime_out;
 fstream notes_out;
+fstream temper_out;
 
 // Declare cycle number variable.
 int cycles = 0;
@@ -124,8 +125,9 @@ string ts = timestamp();
 // For Project and Experiment names (might be none), use the
 // directory ./data/ProjName/Expt/TimeStamp/<filename.csv> .
 string dataDir = "./data/";
-string coeffstorage = "coeff_" + ts + ".csv";
+string coeffstorage = "coeff_" + ts + ".csv";  // these are not really used with openFiles() in setup gone.
 string pcrstorage = "pcr_" + ts + ".csv";
+string temperstorage = "temper_" + ts + ".csv";
 string notesstorage = "notes_" + ts + ".txt";
 string rawstorage = "binaryoutput_" + ts + ".bin";
 string runlogDir = "./";
@@ -283,12 +285,14 @@ void openFiles()
 {
     string progName = "openFiles";
     ostringstream bstream;
+    // If dataDir is not properly defined then skip all of this.
+
     // Open coefficient and PCR storage files from provided strings. These names are generated 
     // from the timestamp the instrument was started or user input + timestamp.
-    cout << progName << ": before coeff_out.open(), setup.cpp line 234." << endl;
     coeff_out.open(dataDir + coeffstorage, std::ios_base::out);
     pcr_out.open(dataDir + pcrstorage, std::ios_base::out);
     notes_out.open(dataDir + notesstorage, std::ios_base::out);
+    temper_out.open(dataDir + temperstorage, std::ios_base::out);
     //Dump column headings into the PCR file. Commas are so Excel will see this as a CSV.
     pcr_out << "Time," << "FAM," << "HEX," << "Cy5," << endl;
     // Check that both fstreams are open, log any failures.
@@ -310,6 +314,12 @@ void openFiles()
         cout << bstream.str();
         runtime_out << bstream.str();
     }
+    if(!temper_out.is_open())
+    {
+        bstream << progName << ": **Failed to open " << dataDir + temperstorage << endl;
+        cout << bstream.str();
+        runtime_out << bstream.str();
+    }    
 
     // Try to open the binary output file, log if it fails.
     output = fopen( (dataDir+rawstorage).c_str(), "wb" );
@@ -329,6 +339,7 @@ void closeFiles()
     if ( coeff_out.is_open() ) coeff_out.close();
     if ( pcr_out.is_open() ) pcr_out.close();
     if ( notes_out.is_open() ) notes_out.close();
+    if ( temper_out.is_open() ) temper_out.close();
     if ( oneOpen ) fclose(output);  // Kludge, likely but not guaranteed that if coeff_out OR pcr_out are open so is output.
 }
 

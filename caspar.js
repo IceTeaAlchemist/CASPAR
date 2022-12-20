@@ -355,7 +355,7 @@ wss.on('connection', function connection(ws) {
                 break;
             case "sendemail":
                 // Retrieve filenames from engine, and send them to an email address.
-                var filenames = engine.getfiles();
+                var filenames = engine.getfiles();  // Matched to readoutfiles() in casparapi.cpp .
                 var mailOptions = {
                     from: 'caspar@casparvu.com',
                     to: 'kick767@gmail.com',
@@ -378,6 +378,10 @@ wss.on('connection', function connection(ws) {
                             filename: 'rawdata.bin',
                             path: filenames[3] // stream this file
                         },
+                        {
+                            filename: 'tempers.csv',
+                            path: filenames[5] // stream this file
+                        },
                     ]
                 };
                 // Send the email and log info.
@@ -394,7 +398,8 @@ wss.on('connection', function connection(ws) {
                 var msg = {
                     id: "downloadresponse",
                     notefile: filenames[4],
-                    pcrfile: filenames[2]
+                    pcrfile: filenames[2],
+                    tempsfile: filenames[5],
                 };
                 ws.send(JSON.stringify(msg));
                 console.log(msg);
