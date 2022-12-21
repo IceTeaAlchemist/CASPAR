@@ -37,6 +37,14 @@ const int pwm_high = 1024.0*pwm_high_ratio;
 const double pwm_low_ratio = stof( devicesIni.get_value("PWM", "LowRatio") );  //0.0;
 const int pwm_low = 1024.0*pwm_low_ratio;
 
+bool temper_enable = (devicesIni.get_value("Temperature", "Enable") == "true");
+int adc1gain = stoi(devicesIni.get_value("Temperature", "ADC1Gain") );
+int adc1mode = stoi(devicesIni.get_value("Temperature", "ADC1Mode") );
+int adc1sps = stoi(devicesIni.get_value("Temperature", "ADC1SPS") );
+int adc1comppol = stoi(devicesIni.get_value("Temperature", "ADC1CompPol") );
+int adc1compqueue = stoi(devicesIni.get_value("Temperature", "ADC1CompQueue") );
+vector<int> adc1multiplex = convertstr2vecint( devicesIni.get_value("Temperature", "ADC1Multiplex") );
+
 // Some GPIO extern values from the devices.ini file.
 int HEATER_PIN = stoi( devicesIni.get_value("GPIO", "HEATER_PIN") ); // Typ 7.
 int FAN_PIN = stoi( devicesIni.get_value("GPIO", "FAN_PIN") ); // Typ 4.
@@ -207,6 +215,8 @@ void setupQiagen(void)
  */
 void setupADC(void)
 {
+    string progName("setupADC");
+    cout << progName << ": before D2.SetGain(1);" << endl;
     // Setup the qiagen tapped ADC. See the class for documentation.
     D2.SetGain(1);
 	D2.SetMode(0);
@@ -214,13 +224,14 @@ void setupADC(void)
 	D2.SetCompPol(1);
 	D2.SetCompQueue(0);
     D2.SetMultiplex(1,3);
+    cout << progName << ": before TEMP.SetGain(adc1gain); with adc1gain = " << adc1gain << " ." << endl;
     // Setup the ADC for the temperature. See the ADC class for documentation.
-    TEMP.SetGain(1);  // For range +/- 4.096V .  adafruit-4-chan PDF page 13.
-	TEMP.SetMode(0);
-	TEMP.SetSPS(5);
-	TEMP.SetCompPol(1);
-	TEMP.SetCompQueue(0);
-    TEMP.SetMultiplex(0,-1);
+    TEMP.SetGain(adc1gain);  // For range +/- 4.096V .  adafruit-4-chan PDF page 13.
+	TEMP.SetMode(adc1mode);
+	TEMP.SetSPS(adc1sps);
+	TEMP.SetCompPol(adc1comppol);
+	TEMP.SetCompQueue(adc1compqueue);
+    TEMP.SetMultiplex(adc1multiplex[0], adc1multiplex[1]);
 }
 
 
@@ -453,4 +464,22 @@ myCheck = {false, false, false, false};
 //     }
 
 
+}
+
+// Needed for the config files with strings like vectors "{0, -1}" .
+// Returns the vector of ints {0, -1}, in this example.
+vector<int> convertstr2vecint(string mystring)
+{
+    stringstream mystream(mystring.substr(1, mystring.length()-2) );
+    vector<int> myvec;
+    //cout << "convertstr2vecint: before while loop" << endl;
+    while( mystream.good() )
+    {
+        string substr;
+        getline(mystream, substr, ',');
+        //cout << "convertstr2vecint: substr is " << substr << " and mystring is " << mystring << endl;
+        myvec.push_back( stoi(substr) );
+    }
+    //cout << "convertstr2vecint: after while loop" << endl;
+    return myvec;
 }

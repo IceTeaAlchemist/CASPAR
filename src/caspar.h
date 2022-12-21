@@ -7,7 +7,8 @@
 #include <vector>
 #include <string>
 #include <sys/stat.h> // For the mkdir() function in Linux.
-//#include <iostream> // For ostringstream for couts.
+#include <iostream> // For ostringstream for couts.
+#include <sstream>  // For stringstream ??
 
 // See the extern int's below for these. weg 20221110
 // #define DEVICE_ID 0x48
@@ -74,11 +75,20 @@ extern string runlog;
 extern int runerror;
 extern int temperrors;
 extern bool RTflag;
+//
 extern bool pwm_enable;
 extern const double pwm_high_ratio;
 extern const int pwm_high;
 extern const double pwm_low_ratio;
 extern const int pwm_low;
+extern bool temper_enable;
+extern int adc1gain;
+extern int adc1mode;
+extern int adc1sps;
+extern int adc1comppol;
+extern int adc1compqueue;
+extern vector<int> adc1multiplex;
+//
 extern int cyclecutoff;
 extern double heattoolong; // secs, 75 typically, too long? 20221027 weg
 extern double cooltoolong; // secs, 75 typically, in control.cpp .
@@ -160,7 +170,9 @@ void readPCR(void);
 string timestamp(void);
 void retrieveSample(void);
 
-
+// Needed for the config files with strings like vectors "{0, -1}" .
+// Returns the vector of ints {0, -1}, in this example.
+vector<int> convertstr2vecint(string);
 
 
 #endif
