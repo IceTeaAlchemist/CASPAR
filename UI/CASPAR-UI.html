@@ -93,7 +93,11 @@
     <button id="closeServer" style="float:right" onclick = "shutdownConfirmation()"> Shutdown Server </button>
     <button id="serverStatus" style="float:right;"
       onClick="document.location.reload(true)"> Server Status: <span style = "font-weight:bold; color: tomato;"> Not Connected </span> </button>
-  </div>
+    <button id="systemStatusTop" style="float:right;"
+      onClick="document.location.reload(true)"> System Status: <span style = "font-weight:bold; color: tomato;"> Not Running </span> </button>
+    <button id="startStopPCRTop" style="float:right; background-color: LimeGreen" onclick = "startStopConfirmation()" >
+      Start PCR</button> <!--Changes-->
+    </div>
 
   <div id="divider" style="width:100%; height:8px; margin: auto;"></div>
 
@@ -394,12 +398,16 @@
             {
               document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:LimeGreen;font-weight:bold;> &ensp;"
               + "In Progress" + "</span>";
+              document.getElementById("systemStatusTop").innerHTML = "System Status: <span style = 'color:LimeGreen;font-weight:bold;''>" 
+                + " In Progress </span>";
               document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> In Progress";
             }
             else if(isRunning == false)
             {
               document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;font-weight:bold;> &ensp;"
               + "Not Running" + "</span>";
+              document.getElementById("systemStatusTop").innerHTML = "System Status: <span style = 'color:tomato;font-weight:bold;''>" 
+                + " Not Running </span>";
               document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> Not Running";
             }
 
@@ -512,12 +520,16 @@
             {
               document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:LimeGreen;font-weight:bold;> &ensp;"
                 + "In Progress" + "</span>";
+              document.getElementById("systemStatusTop").innerHTML = "System Status: <span style = 'color:LimeGreen;font-weight:bold;''>" 
+                + "In Progress </span>";
               document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> In Progress";
             }
             if(isRunning == false)
             {
               document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;font-weight:bold;> &ensp;"
                 + "Not Running" + "</span>";
+              document.getElementById("systemStatusTop").innerHTML = "System Status: <span style = 'color:tomato;font-weight:bold;''>" 
+                + "Not Running </span>";
               document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> Not Running";
             }
 
@@ -544,6 +556,8 @@
             //PCR is now in progress. Show this.
             document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:LimeGreen;font-weight:bold;> &ensp;"
                 + "PCR In Progress" + "</span>";
+            document.getElementById("systemStatusTop").innerHTML = "System Status: <span style = 'color:LimeGreen;font-weight:bold;''>" 
+                + "PCR In Progress </span>";
             document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> PCR In Progress";
           break;
 
@@ -583,6 +597,8 @@
           case "RTStatus": //update status to show RT is on
             document.getElementById("systemStatus").innerHTML = "<br> System Status: <br> <br> <span style=font-size:110%;color:tomato;font-weight:bold;> &ensp;"
                 + "RT In Progress" + "</span>";
+            document.getElementById("systemStatusTop").innerHTML = "System Status: <span style = 'color:LimeGreen;font-weight:bold;''>" 
+                + "RT In Progress </span>";                
             document.getElementById("esStatus").innerHTML = "<span style = 'text-decoration: underline;'> Status:</span> RT In Progress";
             estFinishTime("0", "0"); // Start Calculating Estimated Finish Time
             break;
@@ -704,6 +720,8 @@
          //Changes start/stop button
           document.getElementById('startStopPCR').innerHTML = "Stop PCR";
           document.getElementById('startStopPCR').style.backgroundColor = 'Tomato';
+          document.getElementById('startStopPCRTop').innerHTML = "Stop PCR";
+          document.getElementById('startStopPCRTop').style.backgroundColor = 'Tomato';
           clientPressedStart = true;
           runFinished = false;
           }
@@ -825,6 +843,8 @@
                   // Changes Button and System Vars
                   document.getElementById('startStopPCR').innerHTML = "Stop PCR";
                   document.getElementById('startStopPCR').style.backgroundColor = 'Tomato';
+                  document.getElementById('startStopPCRTop').innerHTML = "Stop PCR";
+                  document.getElementById('startStopPCRTop').style.backgroundColor = 'Tomato';
                   clientPressedStart = true;
                   runFinished = false;
                   startStopPCR();
@@ -838,6 +858,8 @@
                 //Changes Button and System Vars
                 document.getElementById('startStopPCR').innerHTML = "Start PCR";
                 document.getElementById('startStopPCR').style.backgroundColor = 'LimeGreen';
+                document.getElementById('startStopPCRTop').innerHTML = "Start PCR";
+                document.getElementById('startStopPCRTop').style.backgroundColor = 'LimeGreen';
                 clientPressedStart = false;
                 runFinished = true;
                 startStopPCR();
@@ -1010,6 +1032,8 @@
         timeFinishDisplay;
       document.getElementById('startStopPCR').innerHTML = "Start PCR";
       document.getElementById('startStopPCR').style.backgroundColor = 'LimeGreen';
+      document.getElementById('startStopPCRTop').innerHTML = "Start PCR";
+      document.getElementById('startStopPCRTop').style.backgroundColor = 'LimeGreen';
       clientPressedStart = true;
       runFinished = true;
 
