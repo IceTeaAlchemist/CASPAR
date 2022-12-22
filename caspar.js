@@ -434,14 +434,14 @@ function killserver()
 
 function sendit()
 {
-    // Create a struct of thermal and fluoresence data and send them to the client(s).
+    // Create a struct of fluoresence and deriv data and send them to the client(s).
     var cyclingdata = engine.readdata();
     var datastruct = {
         id: "cycledata",
         fluor: cyclingdata[0],
-        temp: cyclingdata[1]
+        deriv: cyclingdata[1]
     };
-    wss.clients.forEach(function dataupdate(ws) {ws.send(JSON.stringify(datastruct));});
+    wss.clients.forEach( function dataupdate(ws) {ws.send(JSON.stringify(datastruct));} );
     
 }
 //////////////////////

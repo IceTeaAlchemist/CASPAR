@@ -142,6 +142,8 @@ namespace caspar
         RTflag = false;
     }
 
+
+    // Package the arrays for the fluor and deriv for the engine / caspar.js .  Called readdata() there.
     void readoutData(const FunctionCallbackInfo<Value> &args)
     {
         Isolate *isolate = args.GetIsolate();
@@ -176,8 +178,10 @@ namespace caspar
         double jsoutput;
         if (runflag == true && recordflag == true)
         {
-            float voltage = (TEMP.getreading() * 4.096) / 32767.0;
-            float temperature = (voltage - 1.25) / 0.005;
+            // float voltage = (TEMP.getreading() * 4.096) / 32767.0;
+            // float temperature = (voltage - 1.25) / 0.005;
+            float voltage = (TEMP.getreading() * temper_vmax) / temper_pow2effbits;
+            float temperature = (voltage - temper_calibVoffset) / temper_calibSlope;
             jsoutput = temperature;
         }
         else

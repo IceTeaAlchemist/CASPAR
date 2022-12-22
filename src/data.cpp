@@ -158,7 +158,7 @@ void retrieveSample()
     fwrite(ptr, sizeof(reading), 1, output);
     piUnlock(0);
     }
-    else
+    else  // recordflag is false.
     {
         // do nothing
     }

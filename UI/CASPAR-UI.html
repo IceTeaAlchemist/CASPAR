@@ -564,7 +564,7 @@
           case "cycledata":
             x = new Date();  // Get current time
             y = msg.fluor; // Get fluorescence.
-            temp = msg.temp; // Get temperature.
+            deriv = msg.deriv; // Get temperature.
           //Move the window if needed:
             if (x.getTime() >= dateWinMax) {
               dateWinMin += taxisIncrement;
@@ -573,7 +573,7 @@
             }
           //Update the data, then graph it.
             if(y > -100)
-              {data.push([x,y,temp]);
+              {data.push([x,y,deriv]);
                cyc.updateOptions( { 'file': data } );}
           break;
 

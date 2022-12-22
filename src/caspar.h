@@ -88,6 +88,10 @@ extern int adc1sps;
 extern int adc1comppol;
 extern int adc1compqueue;
 extern vector<int> adc1multiplex;
+extern float temper_vmax;
+extern float temper_pow2effbits;
+extern float temper_calibVoffset;
+extern float temper_calibSlope; 
 //
 extern int cyclecutoff;
 extern double heattoolong; // secs, 75 typically, too long? 20221027 weg

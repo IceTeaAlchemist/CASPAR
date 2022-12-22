@@ -60,7 +60,7 @@ ws.onmessage = function(event){
             case "cycledata":
                   x = new Date();  // Get current time 
                   y = msg.fluor; // Get fluoresence.
-                  temp = msg.temp; // Get temperature.
+                  temp = msg.deriv; // Get derivatives.
 
                   //Move the window if needed: 
                   if ( x.getTime() >= date_win_max) {

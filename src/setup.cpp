@@ -44,6 +44,10 @@ int adc1sps = stoi(devicesIni.get_value("Temperature", "ADC1SPS") );
 int adc1comppol = stoi(devicesIni.get_value("Temperature", "ADC1CompPol") );
 int adc1compqueue = stoi(devicesIni.get_value("Temperature", "ADC1CompQueue") );
 vector<int> adc1multiplex = convertstr2vecint( devicesIni.get_value("Temperature", "ADC1Multiplex") );
+float temper_vmax = stof( devicesIni.get_value("Temperature", "Vmax") );
+float temper_pow2effbits = stof( devicesIni.get_value("Temperature", "Pow2EffBits") );
+float temper_calibVoffset = stof( devicesIni.get_value("Temperature", "CalibVoffset") );
+float temper_calibSlope = stof( devicesIni.get_value("Temperature", "CalibSlope") );
 
 // Some GPIO extern values from the devices.ini file.
 int HEATER_PIN = stoi( devicesIni.get_value("GPIO", "HEATER_PIN") ); // Typ 7.
