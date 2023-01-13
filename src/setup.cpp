@@ -114,8 +114,8 @@ int cycles = 0;
 int cyclecutoff = 40;
 
 // Set qiagen properties for fitting-- format is {QIAGEN, METHOD}
-vector<int> LTP = {1,3};
-vector<int> HTP = {1,3};
+vector<int> LTP = convertstr2vecint( devicesIni.get_value("MISC", "LTP") );
+vector<int> HTP = convertstr2vecint( devicesIni.get_value("MISC", "HTP") );
 int fittingqiagen;
 
 // Declare the file operator and a few check variables for the thread.
