@@ -397,9 +397,12 @@ wss.on('connection', function connection(ws) {
                 var filenames = engine.getfiles();
                 var msg = {
                     id: "downloadresponse",
-                    notefile: filenames[4],
+                    runlogfile: filenames[0],
+                    coeffsfile: filenames[1],
                     pcrfile: filenames[2],
-                    tempsfile: filenames[5],
+                    rawfile: filenames[3],
+                    notesfile: filenames[4],
+                    tempersfile: filenames[5],
                 };
                 ws.send(JSON.stringify(msg));
                 console.log(msg);

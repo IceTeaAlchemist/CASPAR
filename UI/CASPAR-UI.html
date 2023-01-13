@@ -579,14 +579,26 @@
 
           case "downloadresponse":
             console.log(msg);
-            var notefilename = "/home/pi/Documents/githubs/CASPAR" + msg.notefile.substring(1);
+            var basename = "/var/www/html"; // "/home/pi/Documents/githubs/CASPAR"
+            var basenameRunlog = "/var/www/html/CASPAR"; // For the runtimelog.txt file.
             // Indeed notefile is like "./data/laser_heating/none/20221008_163754/notes_20221008_163754.txt"
             // so drop the "." with substring().
-            var pcrfilename = "/home/pi/Documents/githubs/CASPAR" + msg.pcrfile.substring(1);
+            var runlogname = basenameRunlog + msg.runlogfile.substring(1); // In other directory, different basename!
+            var coeffsname = basename + msg.coeffsfile.substring(1);
+            var pcrfilename = basename + msg.pcrfile.substring(1);
+            var rawname = basename + msg.rawfile.substring(1);
+            var notefilename =  basename + msg.notesfile.substring(1);
+            var tempersname = basename + msg.tempersfile.substring(1);
+
             //window.open(notefilename);
             //window.open(pcrfilename);
+            // Testing with all, likely users want very few.
+            myDownloadFunction(runlogname);
+            myDownloadFunction(coeffsname);
             myDownloadFunction(pcrfilename);
+            myDownloadFunction(rawname);
             myDownloadFunction(notefilename);
+            myDownloadFunction(tempersname);
             break;
 
           case "runcomplete":
@@ -1255,25 +1267,29 @@
 // Nick is aware of this method and it is not general but should work for our use case for now.  weg 20221008
 function myDownloadFunction(fullfilename) {
   // Check existence first, might re-use this hidden element for many files.
+  // This is the "double not trick", first ! turns it into logic and negates, next ! brings it back as boolean correct logic.
   var hElemExists = !!document.getElementById('a');  
-  // This is the "double not trick", first ! turns it into logic and negates, next ! brings it back as boolean.
   var hiddenElement = (hElemExists? document.getElementById('a') : document.createElement('a') );
-  // hiddenElement.setAttribute('download', justname);
   // fullfilename like  
   //   /home/pi/Documents/githubs/CASPAR/data/laser_heating/none/20221008_150018/pcr_20221008_150018.csv
-  // 'data:application/octet-stream'
-  hiddenElement.href =  'file://'+fullfilename; //'ftp://'+fullfilename;  // No FTP server. 
+  // 'data:application/octet-stream'   'data:attachment/text,'
+
+  // Love the 'file://'+ .  So just /var/www/html/data... Or https://localhost/data/...
+  hiddenElement.href = fullfilename; 
+
   hiddenElement.target = '_blank';
   //hiddenElement.style.display = 'none';  // Used to hide regular elements.
-  var strarray = fullfilename.split("/");
-  var justname = strarray[strarray.length-1];
+
   //hiddenElement.set_header("Content-Type", "application/octet-stream");  // Bad syntax.
   //hiddenElement.setAttribute("Content-Type", "application/octet-stream")
+  var strarray = fullfilename.split("/");
+  var justname = strarray[strarray.length-1];
+  //hiddenElement.setAttribute('download', justname);  // The value to 'download' becomes the new filename!!  
   hiddenElement.download = justname;
   hiddenElement.click();
 
   console.log('myDownloadFunction: href then just file name:');
-  console.log('file://'+fullfilename);
+  console.log(fullfilename);
   console.log(justname);
 }
 
