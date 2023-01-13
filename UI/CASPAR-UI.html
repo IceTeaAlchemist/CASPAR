@@ -92,9 +92,11 @@
     <button id="help" style="float:right" onclick="help()"> Help </button>
     <button id="closeServer" style="float:right" onclick = "shutdownConfirmation()"> Shutdown Server </button>
     <button id="serverStatus" style="float:right;"
-      onClick="document.location.reload(true)"> Server Status: <span style = "font-weight:bold; color: tomato;"> Not Connected </span> </button>
+      onClick="document.location.reload(true)"> Server Status: <span style = "font-weight:bold; color: tomato;"> 
+        Not Connected </span> </button>
     <button id="systemStatusTop" style="float:right;"
-      onClick="document.location.reload(true)"> System Status: <span style = "font-weight:bold; color: tomato;"> Not Running </span> </button>
+      onClick="document.location.reload(true)"> System Status: <span style = "font-weight:bold; color: tomato;"> 
+        Not Running </span> </button>
     <button id="startStopPCRTop" style="float:right; background-color: LimeGreen" onclick = "startStopConfirmation()" >
       Start PCR</button> <!--Changes-->
     </div>
@@ -641,7 +643,7 @@
           ws.send(JSON.stringify(msg));
           verifyPong = setTimeout(verifyThePong, 15000);
         }
-       catch (error){ // if it doesn't work, the client prolly doesnt have internet. Catch the error.
+       catch (error){ // if it doesn't work, the client probably doesnt have internet. Catch the error.
           document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'font-weight:bold; color: tomato;'> Not Connected </span>"; // updates server status
           clearInterval(sendPing);
         }

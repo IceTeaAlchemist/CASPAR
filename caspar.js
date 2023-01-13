@@ -85,12 +85,13 @@ wss.on('connection', function connection(ws) {
     }
     // fs.readdir() is the Async version and has a callback, the Sync version returns a list of files.
     recipefiles = fs.readdirSync('./configs/recipes/', 'utf8');
-    // Put default.ini first.  https://stackoverflow.com/questions/23921683/javascript-move-an-item-of-an-array-to-the-front 
-    recipefiles = recipefiles.filter( function(item){ return item !== "default.ini"; } );  // Return all the elements not equal to default.ini .
-    // recipefiles = recipefiles.filter( item => item !== 'default.ini' );
+    // Put default.ini first.  
+    // https://stackoverflow.com/questions/23921683/javascript-move-an-item-of-an-array-to-the-front 
+    // Return all the elements not equal to default.ini .
+    recipefiles = recipefiles.filter( function(item){ return item !== "default.ini"; } );  
     recipefiles.unshift( 'default.ini' );
-    console.log('recipes recipefiles:');
-    console.log(recipefiles);
+    // console.log('recipes recipefiles:');  // Do not bother to print the recipe filenames, it is long-ish.
+    // console.log(recipefiles);
 
     // Send a message to the client to confirm connection.
     var connect = {
@@ -130,7 +131,8 @@ wss.on('connection', function connection(ws) {
         var msg = JSON.parse(data);
         // Switch off the ID blank of the message.
         switch(msg.id){
-            //Kunal (20): new case "config request" that gets a request to load a configuration and then reads the file to load it
+            //Kunal (20): new case "config request" that gets a request to load a configuration and then reads 
+            // the file to load it
             case "configrequest":
                 console.log(msg);
                 if(lastRequest != msg.config){ //ensures we dont load it if we just loaded it
@@ -138,15 +140,17 @@ wss.on('connection', function connection(ws) {
                     var requestdata = [];
                     let alldata = fs.readFileSync('./configs/configs.txt', 'utf8'); //read file
                     var dataarray = alldata.toString().split("\n");
-                    for (i = 0; i<dataarray.length; i++) { // Loop over the lines in the long configs.txt file.
-                        console.log(dataarray[i]);
-                        if (dataarray[i].includes("cname: " + msg.config)){  // Find the line for the config you asked for.
+                    // Loop over the lines in the long configs.txt file.
+                    for (i = 0; i<dataarray.length; i++) { 
+                        //console.log(dataarray[i]);  // Avoid too much printing.
+                        // Find the line for the config you asked for.
+                        if (dataarray[i].includes("cname: " + msg.config)){  
                             let j = i+1;
                             while(j < dataarray.length)
                             {
                                 if(dataarray[j].includes("cname: ") == false)  // Have not hit the next config list.
                                 {
-                                    console.log(dataarray[j]);
+                                    //console.log(dataarray[j]);  // Avoid too much printing.
                                     requestdata.push( dataarray[j].substring( dataarray[j].indexOf(":")+1 ).trim() );  
                                     // .trim() seems not to work.
                                 } 
@@ -156,11 +160,11 @@ wss.on('connection', function connection(ws) {
                                 }
                                 j++;
                             }
- //                           requestdata = dataarray[i+1] + ":;:;:" + dataarray[i+2] + ":;:;:" + dataarray[i+3]; //sends all necessary data in one string with a separator
+                            // requestdata = dataarray[i+1] + ":;:;:" + dataarray[i+2] + ":;:;:" + dataarray[i+3]; //sends all necessary data in one string with a separator
                         }
                     }
 
-                    console.log(requestdata);
+                    // console.log(requestdata);  // These are getting long-ish.
 
                     var configloader = {
                         id: "loadconfig",
