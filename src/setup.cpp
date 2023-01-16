@@ -36,6 +36,9 @@ const double pwm_high_ratio = stof( devicesIni.get_value("PWM", "HighRatio") ); 
 const int pwm_high = 1024.0*pwm_high_ratio;
 const double pwm_low_ratio = stof( devicesIni.get_value("PWM", "LowRatio") );  //0.0;
 const int pwm_low = 1024.0*pwm_low_ratio;
+const float pwm_clock = stof( devicesIni.get_value("PWM", "Clock") );  //19.53;
+const int pwm_range = stoi( devicesIni.get_value("PWM", "Range") );  //1024;
+const int pwm_mode = stoi( devicesIni.get_value("PWM", "Mode") );  //0;
 
 bool temper_enable = (devicesIni.get_value("Temperature", "Enable") == "true");
 int adc1gain = stoi(devicesIni.get_value("Temperature", "ADC1Gain") );
@@ -161,11 +164,11 @@ void setupPi(void)
     // cout << progName << ": Info, pwm_enable is " << pwm_enable << endl;
     if (pwm_enable){
         pinMode(PWM_PIN, PWM_OUTPUT);
-        pwmSetMode(PWM_MODE_MS);
-        pwmSetClock(19.53); // See wiringPi.h, takes an int.   
+        pwmSetMode(pwm_mode);   //(PWM_MODE_MS);
+        pwmSetClock(pwm_clock);   //(19.53); // See wiringPi.h, takes an int.   
         // Clock should be 19.2e6 divided by the desired Hz (1000) and then the Range (1024), 
         // usually like 19.2 Mhz / 1024 / 1000 = 19 (an int).
-        pwmSetRange(1024);
+        pwmSetRange(pwm_range);   //(1024);
         // Set up the interrupt for sample reading. Note that these CANNOT be turned off once started,
         // so wrapping them in a boolean with a flag is a good idea.
         // wiringPiISR(3,INT_EDGE_RISING,sampletriggered);
