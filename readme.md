@@ -84,4 +84,17 @@ sudo systemctl restart dnsmasq<br>
 sudo systemctl restart hostapd<br>
 <br>
 
+To have the Download Files button...download files, created several links and an .htaccess file.  The links are:<br>
+/var/www/html/data   ->  CASPAR/data<br>
+/var/www/html/CASPAR ->  CASPAR<br>
+These are in the runSetup.sh script next to the other links.<br>
+The .htaccess is pretty simple and it exists in CASPAR and in CASPAR/data<br>
+```HTML
+<FilesMatch "\.(pdf|html|mp3|zip|bin|txt)$">
+     ForceType application/octet-stream
+     Header set Content-Disposition attachment
+</FilesMatch>
+```
+
+
 This contains the current, weekly updated version of the CASPAR device code until someone makes me change the name.

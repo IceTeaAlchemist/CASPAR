@@ -1,0 +1,4 @@
+<FilesMatch "\.(pdf|html|mp3|zip|bin|txt)$">
+     ForceType application/octet-stream
+     Header set Content-Disposition attachment
+</FilesMatch>

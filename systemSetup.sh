@@ -22,7 +22,7 @@ domod () {
 ######################
 MYHOSTNAME=rpi5
 CURHOSTNAME=`hostname`
-NETWORK=CASPAR02
+NETWORK=CASPAR01
 PASSWORD=thefriendlyghostinthemachine
 ######################
 

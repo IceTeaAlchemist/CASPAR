@@ -1275,9 +1275,12 @@ function myDownloadFunction(fullfilename) {
   // fullfilename like  
   //   /home/pi/Documents/githubs/CASPAR/data/laser_heating/none/20221008_150018/pcr_20221008_150018.csv
   // 'data:application/octet-stream'   'data:attachment/text,'
+  // Actually looks like
+  // /var/www/html/data/laser_heating/none/20230119_145925/coeff_20230119_145925.csv  
+  // 012345678901234567890
 
   // Love the 'file://'+ .  So just /var/www/html/data... Or https://localhost/data/...
-  hiddenElement.href = fullfilename; 
+  hiddenElement.href = 'http://192.168.0.10/'+fullfilename.substring(14); 
 
   hiddenElement.target = '_blank';
   //hiddenElement.style.display = 'none';  // Used to hide regular elements.
@@ -1290,8 +1293,9 @@ function myDownloadFunction(fullfilename) {
   hiddenElement.download = justname;
   hiddenElement.click();
 
-  console.log('myDownloadFunction: href then just file name:');
+  console.log('myDownloadFunction: fullfilename, href then just file name:');
   console.log(fullfilename);
+  console.log(hiddenElement.href);
   console.log(justname);
 }
 
