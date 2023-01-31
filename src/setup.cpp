@@ -89,6 +89,7 @@ double FluorCalibLDNA = stod( devicesIni.get_value("MISC", "FluorCalibLDNA") ); 
 // Was in control.cpp L14.
 double heattoolong = stod( devicesIni.get_value("MISC", "heattoolong") );  // secs, 75 typically, too long? 20221027 weg
 double cooltoolong = stod( devicesIni.get_value("MISC", "cooltoolong") );  // secs, 75 typically
+int allowed_temp_errors = stoi( devicesIni.get_value("MISC", "allowed_temp_errors") );  // 3-ish
 
 // Declare vectors for tracking the thermal/fluor correspondence.
 vector<double> tempkey;
@@ -96,6 +97,7 @@ vector<double> fluorkey;
 
 // Declare all the vectors for storing data by the interrupt thread
 vector<reading> data;
+vector<error> errorArray;
 vector<double> x;
 vector<double> y;
 vector<double> xderivs;

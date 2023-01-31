@@ -24,14 +24,22 @@
 
 const double max_vals[3] = {500, 60, 10};
 const double min_vals[3] = {-500, -60, -10};
-const int iter_thresh = 24;
-const int allowed_temp_errors = 3;
+// const int iter_thresh = 24;
+// const int allowed_temp_errors = 3;
 
 //Declare reading struct.
 struct reading
 {
     long timestamp;
     double voltage;
+};
+
+//Declare error class (or struct?).
+class error
+{
+    int itime;
+    string stime;
+    string message;
 };
 
 // Global variable declarations. External variables are set in setup.cpp.
@@ -42,6 +50,7 @@ extern adc TEMP;
 extern qiagen sens1;
 extern qiagen sens2;
 extern vector<reading> data;
+extern vector<error> errorArray;  // Above, class with members itime, stime, message .
 extern vector<double> tempkey;
 extern vector<double> fluorkey;
 extern vector<double> x;
@@ -99,6 +108,7 @@ extern float temper_calibSlope;
 extern int cyclecutoff;
 extern double heattoolong; // secs, 75 typically, too long? 20221027 weg
 extern double cooltoolong; // secs, 75 typically, in control.cpp .
+extern int allowed_temp_errors; // 3-ish
 extern vector<int> LTP;
 extern vector<int> HTP;
 extern int fittingqiagen;
