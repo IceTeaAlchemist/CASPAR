@@ -56,25 +56,25 @@ namespace caspar
             data.clear();
             setupADC();
             runflag = true;
-            sens1.LED_off(1);
-            sens1.LED_off(2);
-            sens2.LED_off(1);
-            sens2.LED_off(2);
+            sens1->LED_off(1);
+            sens1->LED_off(2);
+            sens2->LED_off(1);
+            sens2->LED_off(2);
             if(LTP[0] == 1)
             {
-                sens1.calibrateGain(FluorCalibPremelt,LTP[1]);
+                sens1->calibrateGain(FluorCalibPremelt,LTP[1]);
             }
             else
             {
-                sens2.calibrateGain(FluorCalibPremelt,LTP[1]);
+                sens2->calibrateGain(FluorCalibPremelt,LTP[1]);
             }
             if(HTP[0] == 1)
             {
-                sens1.calibrateGain(FluorCalibPremelt,HTP[1]);
+                sens1->calibrateGain(FluorCalibPremelt,HTP[1]);
             }
             else
             {
-                sens2.calibrateGain(FluorCalibPremelt,HTP[1]);
+                sens2->calibrateGain(FluorCalibPremelt,HTP[1]);
             }
             changeQiagen(HTP);
             piThreadCreate(sampler);
@@ -91,14 +91,14 @@ namespace caspar
             delay(100);
             // After the RT step if there is one.
             // This is an AsyncWorker/thread, so check runflag just in case someone else changed it to false.
-            sens1.LED_off(1);
-            sens1.LED_off(2);
-            sens2.LED_off(1);
-            sens2.LED_off(2);
-            if (runflag) sens1.calibrateGain(FluorCalib, 1); // E1D1 470ex 520em, FAM
-            if (runflag) sens2.calibrateGain(FluorCalib, 1); // E1D1 520ex 570em, HEX
-            if (runflag) sens2.calibrateGain(FluorCalib, 3); // E2D2 625ex 680em, CY5
-            if (runflag) sens1.calibrateGain(FluorCalibLDNA, 3); // LDNA, i.e.Tex Red, the "back qiagen". E2D2 590ex 640em
+            sens1->LED_off(1);
+            sens1->LED_off(2);
+            sens2->LED_off(1);
+            sens2->LED_off(2);
+            if (runflag) sens1->calibrateGain(FluorCalib, 1); // E1D1 470ex 520em, FAM
+            if (runflag) sens2->calibrateGain(FluorCalib, 1); // E1D1 520ex 570em, HEX
+            if (runflag) sens2->calibrateGain(FluorCalib, 3); // E2D2 625ex 680em, CY5
+            if (runflag) sens1->calibrateGain(FluorCalibLDNA, 3); // LDNA, i.e.Tex Red, the "back qiagen". E2D2 590ex 640em
             changeQiagen(HTP);
             recordflag = true;
             delay(100);
@@ -178,9 +178,9 @@ namespace caspar
         double jsoutput;
         if (runflag == true && recordflag == true)
         {
-            // float voltage = (TEMP.getreading() * 4.096) / 32767.0;
+            // float voltage = (TEMP->getreading() * 4.096) / 32767.0;
             // float temperature = (voltage - 1.25) / 0.005;
-            float voltage = (TEMP.getreading() * temper_vmax) / temper_pow2effbits;
+            float voltage = (TEMP->getreading() * temper_vmax) / temper_pow2effbits;
             float temperature = (voltage - temper_calibVoffset) / temper_calibSlope;
             jsoutput = temperature;
         }
@@ -252,12 +252,12 @@ namespace caspar
         recordflag = false;
         digitalWrite(HEATER_PIN, LOW);
         digitalWrite(FAN_PIN, LOW);
-        cout << "stopRun:  pwm_enable is " << pwm_enable << endl;
+        //cout << "stopRun:  pwm_enable is " << pwm_enable << endl;
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
-        sens1.LED_off(1);
-        sens1.LED_off(2);
-        sens2.LED_off(1);
-        sens2.LED_off(2);
+        sens1->LED_off(1);
+        sens1->LED_off(2);
+        sens2->LED_off(1);
+        sens2->LED_off(2);
 
 
 
@@ -345,6 +345,26 @@ namespace caspar
         // This function is a placeholder for later.
     }
 
+    // setRecipeFilename - Should take as input the recipe directory,
+    // and the selected recipe filename.  Possibility that the recipe file
+    // does not exist if an old config called for it, i.e. it was not selected
+    // by the dropdown.
+    void setRecipeFilename(const FunctionCallbackInfo<Value> &args)
+    {
+        // savedComments, savedStartDate, savedStartTime, savedFinishTime, savedProjName, savedOperator, savedExperimentName
+        Isolate *isolate = args.GetIsolate();
+        String::Utf8Value strRecDir(isolate, args[0]);
+        String::Utf8Value strSelectedRecipeFilename(isolate, args[1]);
+
+        //string selectedRecipeFilename(*strSelectedRecipeFilename);
+        recipeDir = string(*strRecDir);
+        recipeFile = string(*strSelectedRecipeFilename);
+        cout << "setRecipeFilename: using recipe filename " << recipeFile << " ," << endl;
+        cout << "\twith recipe directory " << recipeDir << endl;
+        cout << "\tRunning doRecipeConfig()." << endl;
+        doRecipeConfig(recipeDir + recipeFile);  // Be sure to check for nonexistent recipeFile.
+    }
+
     NAN_METHOD(Ignition)
     {
         Callback *callback = new Callback(info[0].As<Function>());
@@ -363,12 +383,15 @@ namespace caspar
         NODE_SET_METHOD(exports, "getfiles", readoutFilenames);
         NODE_SET_METHOD(exports, "boxfanoff", turnOffBoxFan);
         NODE_SET_METHOD(exports, "setCutoff", setCutoff);
+        NODE_SET_METHOD(exports, "RECONoff", RToff);  // WEG, not used yet, will map to RECONoff, RECONon eventually.
+        NODE_SET_METHOD(exports, "RECONon", RTon);    // ditto
         NODE_SET_METHOD(exports, "RToff", RToff);
         NODE_SET_METHOD(exports, "RTon", RTon);
-        NODE_SET_METHOD(exports, "putComments", writeComments); 
+        NODE_SET_METHOD(exports, "putComments", writeComments);
+        NODE_SET_METHOD(exports, "setRecipeFilename", setRecipeFilename);  // Set the last pulled up recipe filename.  
         // WEG, make these functions, putComments in caspar.js and writeComments in casparapi.cpp  or setup.cpp ??
     }
 
-    NODE_MODULE(casparengine, Initialize)
+    NODE_MODULE(casparengine, Initialize)  // The main deal here.
 
 }// end namespace caspar

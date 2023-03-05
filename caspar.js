@@ -1,6 +1,8 @@
 /*
-caspar.js -
-
+caspar.js - This is "the engine."
+Start with the command
+sudo node caspar.js |tee -a data/serverlog/casparRun.txt
+or similar.  See the scripts in the icons folder.
 */
 
 // Import the C++ addon as well as websocket and mail handler libraries.
@@ -23,7 +25,7 @@ var serverforip = httpserver.createServer();
 
 // Initialize the websocket server. Port doesn't matter as long as it matches on the website, 
 // 7071 is usually unoccupied.
-serverforip.listen(7071,hostname, () => {
+serverforip.listen(7071, hostname, () => {
     console.log(`Server running at http://${hostname}:7071`)
 });
 const wss = new WebSocket.Server({ server: serverforip });
@@ -60,6 +62,12 @@ var savedHEX = "";
 var savedRT = "";
 var savedCycles = 0;
 
+// Need this global for the duplicate in the onConnect event.
+var configstrings = [];
+var configDir = './configs/';
+var recipefiles = [];
+var recipeDir = './configs/recipes/';
+
 // Vectors for storing PCR data server side. 
 var timestamprecord = [];
 var FAMrecord = [];
@@ -71,11 +79,10 @@ var cy5record = [];
 wss.on('connection', function connection(ws) {
 
     //Kunal (10): Reading configuration file and then sending that data to the client
-    var configstrings = [];
-    var recipefiles = [];
 
-    let currentdata = fs.readFileSync('./configs/configs.txt', 'utf8');
+    let currentdata = fs.readFileSync(configDir+'configs.txt', 'utf8');
     let array = currentdata.toString().split("\n");
+    configstrings = []; // Clear any global values, re-reading file.
 
     for (var i = 0; i<array.length; i++) {
         if (array[i].includes("cname: ")){
@@ -83,15 +90,16 @@ wss.on('connection', function connection(ws) {
             //Sends all names for a single cname in one string with a seperator
         }
     }
-    // fs.readdir() is the Async version and has a callback, the Sync version returns a list of files.
-    recipefiles = fs.readdirSync('./configs/recipes/', 'utf8');
-    // Put default.ini first.  
-    // https://stackoverflow.com/questions/23921683/javascript-move-an-item-of-an-array-to-the-front 
-    // Return all the elements not equal to default.ini .
-    recipefiles = recipefiles.filter( function(item){ return item !== "default.ini"; } );  
-    recipefiles.unshift( 'default.ini' );
+        // fs.readdir() is the Async version and has a callback, the Sync version returns a list of files.
+        //BG recipefiles = fs.readdirSync('./configs/recipes/', 'utf8');
+        // Put default.ini first.  
+        // https://stackoverflow.com/questions/23921683/javascript-move-an-item-of-an-array-to-the-front 
+        // Return all the elements not equal to default.ini .
+        //BG recipefiles = recipefiles.filter( function(item){ return item !== "default.ini"; } );  
+        //BG recipefiles.unshift( 'default.ini' );
     // console.log('recipes recipefiles:');  // Do not bother to print the recipe filenames, it is long-ish.
     // console.log(recipefiles);
+    recipefiles = readRecipeFiles(recipeDir);
 
     // Send a message to the client to confirm connection.
     var connect = {
@@ -131,18 +139,23 @@ wss.on('connection', function connection(ws) {
         var msg = JSON.parse(data);
         // Switch off the ID blank of the message.
         switch(msg.id){
+            //////////////////////////////////////////////
             //Kunal (20): new case "config request" that gets a request to load a configuration and then reads 
             // the file to load it
             case "configrequest":
                 console.log(msg);
-                if(lastRequest != msg.config){ //ensures we dont load it if we just loaded it
+                //if(lastRequest != msg.config){ //ensures we dont load it if we just loaded it
+                if (true)  // Load it every time it is selected.
+                {
                     // var requestdata = "";
                     var requestdata = [];
+                    var tmpSelRecipeFilename;
                     let alldata = fs.readFileSync('./configs/configs.txt', 'utf8'); //read file
                     var dataarray = alldata.toString().split("\n");
+                    console.log("caspar.js: case configrequest: dataarray is " + dataarray);
                     // Loop over the lines in the long configs.txt file.
                     for (i = 0; i<dataarray.length; i++) { 
-                        //console.log(dataarray[i]);  // Avoid too much printing.
+                        //console.log(dataarray[i]);
                         // Find the line for the config you asked for.
                         if (dataarray[i].includes("cname: " + msg.config)){  
                             let j = i+1;
@@ -153,6 +166,10 @@ wss.on('connection', function connection(ws) {
                                     //console.log(dataarray[j]);  // Avoid too much printing.
                                     requestdata.push( dataarray[j].substring( dataarray[j].indexOf(":")+1 ).trim() );  
                                     // .trim() seems not to work.
+                                    if (dataarray[j].includes("rname: ") == true)
+                                    {
+                                        tmpSelRecipeFilename = dataarray[j].split(':')[1].trim();  // Two element array with recipe the second element.
+                                    }
                                 } 
                                 else  // Hit the next cname: xxx line.
                                 {
@@ -173,34 +190,50 @@ wss.on('connection', function connection(ws) {
                     console.log(configloader);
                     ws.send(JSON.stringify(configloader)); // data sent back to client
                 }
-               // else{}
+                // else{}
                 lastRequest = msg.config;
+                //  Check that recipe name was found.
+                if ( tmpSelRecipeFilename === "undefined" )
+                { 
+                    selRecipeFilename = "default.ini";
+                } else
+                {
+                    selRecipeFilename = tmpSelRecipeFilename;
+                } 
+                engine.setRecipeFilename(recipeDir, selRecipeFilename);  // Recipe file existence checked in casparapi.cpp .
                 break;
-//////////////////////////////////////////////
-//  Below patterned on the above configrequest, fills the dropdown with the recipe file names.
-//
+            //////////////////////////////////////////////
+            //  Below patterned on the above configrequest, fills the dropdown with the recipe file names.
+            //
             case "reciperequest":
                 console.log(msg);
-                if(lastRecipeRequest != msg.recipe){ // Ensures we dont load it if we just loaded it.
-                    var recipefiles = [];
-                    // Read the *.ini files that are the recipes.  Use the Sync read.
-                    recipefiles = fs.readdirSync('./configs/recipes/', 'utf8');
-                } else {  // Do nothing, same file selected.
-                    break;
-                } 
-                console.log("caspar.js: case reciperequest: recipefiles:");
-                console.log(recipefiles);
+                // if(lastRecipeRequest != msg.recipe) // Ensures we dont load it if we just loaded it.
+                if ( true )   // Always repopulate the list.
+                {
+                    recipefiles = readRecipeFiles(recipeDir);
 
-                var recipeloader = {
-                    id: "loadrecipes",
-                    data: recipefiles,
-                };
-                console.log(recipeloader);
-                ws.send(JSON.stringify(recipeloader)); // data sent back to client
+                    console.log("caspar.js: case reciperequest: recipefiles:");
+                    console.log(recipefiles);
+    
+                    var recipeloader = {
+                        id: "loadrecipe",
+                        data: recipefiles,
+                    };
+                    console.log(recipeloader);
+                    ws.send(JSON.stringify(recipeloader)); // List of recipes sent back to client.
+
+ 
+                }//else {  // Do nothing, same file selected.
 
                 lastRecipeRequest = msg.recipe;
+
+                var selRecipeFilename = lastRecipeRequest; //  'default.ini';
+                console.log("caspar.js: case reciperequest: Calling engine.setRecipeFilename() on filename " + 
+                    selRecipeFilename + " directory " + recipeDir );
+                engine.setRecipeFilename(recipeDir, selRecipeFilename);
+
                 break;
-/////////////////////////////////////////////////                    
+            /////////////////////////////////////////////////                    
             case "start/stop":
 		        savedDefEm = msg.email;
                 if(savedRT === "true")
@@ -217,6 +250,11 @@ wss.on('connection', function connection(ws) {
                     // Start the PCR cycling if it's not.
                     engine.setCutoff(parseInt(msg.cutoffcycles));
                     savedCycles = parseInt(msg.cutoffcycles);
+                    var selRecipeFilename = 'default.ini';
+                    console.log("caspar.js: case start/stop: Calling engine.setRecipeFilename() on filename " + 
+                    selRecipeFilename + " directory " + recipeDir );
+                    console.log("\t msg.recipefilename is " + msg.recipefilename);
+                    engine.setRecipeFilename(recipeDir, selRecipeFilename);
                     engine.start(function (err, errorvalue)
                     {
                         console.log(errorvalue);
@@ -254,7 +292,9 @@ wss.on('connection', function connection(ws) {
                     });
                     isRunning = true;
                     ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
-                    console.log('Ignition started.');
+                    console.log("=".repeat(32));
+                    console.log("===  casparapi.js: ws.on(message): case \"start/stop\":  Ignition started.");
+                    console.log("=".repeat(32));
                     // Start the periodic cycling data send and PCR data check.
                     FAMrecord = [];
                     HEXrecord = [];
@@ -281,12 +321,14 @@ wss.on('connection', function connection(ws) {
                     console.log('Cycling shutdown.');
                 }
                 break;
+            /////////////////////////////////////////////////  
             case "ping":
                 var pongmsg = {
                     id:"pong",
                 };
                 ws.send(JSON.stringify(pongmsg));
                 break;
+            /////////////////////////////////////////////////  
             case "startSave":
                 savedStartDate = msg.startDate;
                 savedStartTime = msg.startTime;
@@ -306,6 +348,7 @@ wss.on('connection', function connection(ws) {
                 savedHEX = msg.hex;
                 savedRT = msg.rt;
                 break;
+            /////////////////////////////////////////////////  
             case "filename":
                 // Change the filename.
                 if(isRunning === false)
@@ -327,6 +370,7 @@ wss.on('connection', function connection(ws) {
                     ws.send(JSON.stringify({id: "filestatus", status: "Currently running PCR. Filename rejected."}));
                 }
                 break;
+            /////////////////////////////////////////////////    
             case "savefinish":
                 // Kunal (4): new case "save finish" that saves comments and finish time when the run 
                 // ends.  Needs to get sent WEG.
@@ -343,6 +387,7 @@ wss.on('connection', function connection(ws) {
                 engine.putComments(savedComments, savedStartDate, savedStartTime, savedFinishTime, 
                     savedProjName, savedOperator, savedExperimentName);
                 break;
+            /////////////////////////////////////////////////
             case "saveconfiguration":
                 // Kunal (9): new case "saveconfiguration" saves the new configuration the client 
                 // wants in the configs document.
@@ -357,6 +402,7 @@ wss.on('connection', function connection(ws) {
                     }
                 });
                 break;
+            /////////////////////////////////////////////////
             case "sendemail":
                 // Retrieve filenames from engine, and send them to an email address.
                 var filenames = engine.getfiles();  // Matched to readoutfiles() in casparapi.cpp .
@@ -397,6 +443,7 @@ wss.on('connection', function connection(ws) {
                     }
                 });
                 break;
+            /////////////////////////////////////////////////
             case "downloadDataRequest":
                 var filenames = engine.getfiles();
                 var msg = {
@@ -411,6 +458,7 @@ wss.on('connection', function connection(ws) {
                 ws.send(JSON.stringify(msg));
                 console.log(msg);
                 break;
+            /////////////////////////////////////////////////
             case "shutdown": 
                 // Turn off the engine if it's running.
                 clearInterval(DataIntervId);
@@ -451,8 +499,6 @@ function sendit()
     wss.clients.forEach( function dataupdate(ws) {ws.send(JSON.stringify(datastruct));} );
     
 }
-//////////////////////
-//
 //////////////////////
 function sendPCR()
 {
@@ -498,5 +544,19 @@ var transporter = nodemailer.createTransport({
     pass: 'thefriendlyghostinthemachine'
   }
 });
+
+// Read the folder for recipes and grab only the *.ini files,
+// and move default.ini to the first element.
+function readRecipeFiles(recDir)
+{
+    var fileExt = '.ini';  // Files should have .ini extension.  List only those.
+    var trecipefiles;  // Temporary for the file list.
+    trecipefiles = fs.readdirSync(recDir, 'utf8');
+    trecipefiles = trecipefiles.filter( function(item)
+        { return ( item !== 'default.ini' && item.includes(fileExt) ); } );
+    trecipefiles.unshift( 'default.ini' );
+    // Add a check to return only *.ini files. weg
+    return trecipefiles;
+}
 
 

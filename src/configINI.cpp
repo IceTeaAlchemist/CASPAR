@@ -55,6 +55,11 @@ config::config(istream& strm) {
     parse(strm);
 }
 
+// default constructor, weg, 20230203
+config::config() {
+
+}
+
 const config::sections config::get_sections() const {
     return sections_;
 }

@@ -16,6 +16,7 @@ class adc
 	public:
 		adc(int addr);
 		adc(int addr, int ht, int lt);
+		adc();  // Default constructor.
 		
 		void StartConversion();
 		void SetMultiplex(int up, int down);

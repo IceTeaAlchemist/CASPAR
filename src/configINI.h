@@ -30,6 +30,8 @@ public:
     // no copying allowed
     config(const config&) = delete;
     config& operator = (const config&) = delete;
+    // default constructure, weg, 20230203
+    config();
 
     // return a copy of whole structure
     const sections get_sections() const;

@@ -33,8 +33,8 @@ domod sudo systemctl start ssh
 domod sudo raspi-config nonint do_i2c 0
 
 
-echo "***Using hostname ${myhostname}"
-domod sudo hostnamectl set-hostname ${myhostname}
+echo "***Using hostname ${MYHOSTNAME}"
+domod sudo hostnamectl set-hostname ${MYHOSTNAME}
 # Above fixes /etc/hostname but not /etc/hosts, below fixes that one.
 domod sudo sed -i "s/127.0.1.1.*$CURHOSTNAME/127.0.1.1\t$MYHOSTNAME/g" /etc/hosts
 
