@@ -29,6 +29,8 @@ class qiagen
 		string assemble(unsigned int reg, char rw, vector<unsigned int> command);
 	public:
 		qiagen(string serial);
+		qiagen();
+		
 		string listen();
 		void LED_on(int LED);
 		void LED_off(int LED);

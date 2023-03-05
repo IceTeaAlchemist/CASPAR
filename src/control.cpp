@@ -146,22 +146,22 @@ bool modeshift(bool state)
         {
             if(HTP[1] == 3)
             {
-                sens1.LED_off(2);
+                sens1->LED_off(2);
             }
             else
             {
-                sens1.LED_off(1);
+                sens1->LED_off(1);
             }
         }
         else
         {
             if(HTP[1] == 3)
             {
-                sens2.LED_off(2);
+                sens2->LED_off(2);
             }
             else
             {
-                sens2.LED_off(1);
+                sens2->LED_off(1);
             }
         }
         changeQiagen(LTP);
@@ -180,30 +180,30 @@ bool modeshift(bool state)
         {
             if(LTP[2] == 3)
             {
-                sens1.LED_off(2);
+                sens1->LED_off(2);
             }
             else
             {
-                sens1.LED_off(1);
+                sens1->LED_off(1);
             }
         }
         else
         {
             if(LTP[2] == 3)
             {
-                sens2.LED_off(2);
+                sens2->LED_off(2);
             }
             else
             {
-                sens2.LED_off(1);
+                sens2->LED_off(1);
             }
         }
-        sens1.LED_off(1);
-        sens2.LED_off(1);
-        sens1.LED_off(2);
-        sens2.LED_off(2);
-        sens1.stopMethod();
-        sens2.stopMethod();
+        sens1->LED_off(1);
+        sens2->LED_off(1);
+        sens1->LED_off(2);
+        sens2->LED_off(2);
+        sens1->stopMethod();
+        sens2->stopMethod();
         readPCR();
         changeQiagen(HTP);
         piUnlock(0);
@@ -338,8 +338,8 @@ int cycle()
             if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
             piUnlock(0);
             delay(100);
-            sens1.stopMethod();
-            sens1.LED_off(2);
+            sens1->stopMethod();
+            sens1->LED_off(2);
             return 1;
         }
 
@@ -436,12 +436,13 @@ int cycle()
     cout << progName << ":  pwm_enable is " << pwm_enable << endl;
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     digitalWrite(FAN_PIN, LOW);
-    sens1.LED_off(2);
+    sens1->LED_off(2);
     return 0;
 }// end cycle
 
 void changeQiagen(vector<int> qiagenproperties)
 {
+    string progName = "changeQiagen";
     int LED;
     if(qiagenproperties[1] == 3)
     {
@@ -451,23 +452,31 @@ void changeQiagen(vector<int> qiagenproperties)
     {
         LED = 1;
     }
-    sens1.stopMethod();
-    sens2.stopMethod();
+    sens1->stopMethod();
+    sens2->stopMethod();
     fittingqiagen = qiagenproperties[0];
     if(qiagenproperties[0] == 1)
     {
-        sens1.setMethod(qiagenproperties[1]);
-        sens1.writeqiagen(0, {255,255});
-        sens1.startMethod();
-        sens1.LED_on(LED);
+        sens1->setMethod(qiagenproperties[1]);
+        sens1->writeqiagen(0, {255,255});
+        sens1->startMethod();
+        sens1->LED_on(LED);
     }
     else
     {
-        sens2.setMethod(qiagenproperties[1]);
-        sens2.writeqiagen(0, {255,255});
-        sens2.startMethod();
-        sens2.LED_on(LED);
+        sens2->setMethod(qiagenproperties[1]);
+        sens2->writeqiagen(0, {255,255});
+        sens2->startMethod();
+        sens2->LED_on(LED);
     }
-    cout << "changeQiagen: Shifting to method " << qiagenproperties[1] << " on Qiagen " << qiagenproperties[0] << "." << endl;
+    cout << progName << ": Shifting to method " << qiagenproperties[1] << " on Qiagen " << qiagenproperties[0] << "." << endl;
+    cout << "\tBoard is ";
+    if (qiagenproperties[0] == 1)
+    {   
+        cout << sens1->getBoardID() << endl;
+    } else
+    {
+        cout << sens2->getBoardID() << endl;
+    }
     cout << "\tFitting qiagen is " << fittingqiagen << "." << endl;
 }

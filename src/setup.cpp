@@ -8,155 +8,22 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+// Experimenting with below, weg 20230202
+#include "setup.h"
 
-/*
- * These declarations are all for the externally linked variables found in caspar.h 
- * and used throughout the code. Please try to keep those declarations IN setup.cpp 
- * for consistency.
- */
 
-// Read the config file with sections [Qiagen] and [ADC], etc.
-config devicesIni("configs/devices.ini");
-config recipeDef("configs/recipes/default.ini");
-
-// Set up the qiagens on relevant USB ports.
-qiagen sens1( devicesIni.get_value("Qiagen", "Q1SerialPort") );  // "/dev/ttyUSB0"
-qiagen sens2( devicesIni.get_value("Qiagen", "Q2SerialPort") );  // "/dev/ttyUSB1"
-// Check that it matches devices.ini file for Q1 and Q2.  Adjust which is Q1 (front one) and which Q2 (back one).
-// put in control.cpp??  checkRenameQiagens(sens1, sens2, devicesIni);
-
-// Set up the ADCs to use interrupts as well as declare them.
-int DEVICE_ID = stoul(devicesIni.get_value("ADC", "ADC0DevID"));
-int TEMP_ID = stoul(devicesIni.get_value("ADC", "ADC1DevID")); 
-adc D2( DEVICE_ID, 0x8000, 0x7FFF);  // Was define DEVICE_ID, 0x48 .
-adc TEMP( TEMP_ID, 0x8000, 0x7FFF);  // Was define TEMP_ID, 0x49 .
-
-bool pwm_enable = (devicesIni.get_value("PWM", "Enable") == "true"); // Turn off PWM avoid sudo node caspar.js .
-const double pwm_high_ratio = stof( devicesIni.get_value("PWM", "HighRatio") ); //0.85;
-const int pwm_high = 1024.0*pwm_high_ratio;
-const double pwm_low_ratio = stof( devicesIni.get_value("PWM", "LowRatio") );  //0.0;
-const int pwm_low = 1024.0*pwm_low_ratio;
-const float pwm_clock = stof( devicesIni.get_value("PWM", "Clock") );  //19.53;
-const int pwm_range = stoi( devicesIni.get_value("PWM", "Range") );  //1024;
-const int pwm_mode = stoi( devicesIni.get_value("PWM", "Mode") );  //0;
-
-bool temper_enable = (devicesIni.get_value("Temperature", "Enable") == "true");
-int adc1gain = stoi(devicesIni.get_value("Temperature", "ADC1Gain") );
-int adc1mode = stoi(devicesIni.get_value("Temperature", "ADC1Mode") );
-int adc1sps = stoi(devicesIni.get_value("Temperature", "ADC1SPS") );
-int adc1comppol = stoi(devicesIni.get_value("Temperature", "ADC1CompPol") );
-int adc1compqueue = stoi(devicesIni.get_value("Temperature", "ADC1CompQueue") );
-vector<int> adc1multiplex = convertstr2vecint( devicesIni.get_value("Temperature", "ADC1Multiplex") );
-float temper_vmax = stof( devicesIni.get_value("Temperature", "Vmax") );
-float temper_pow2effbits = stof( devicesIni.get_value("Temperature", "Pow2EffBits") );
-float temper_calibVoffset = stof( devicesIni.get_value("Temperature", "CalibVoffset") );
-float temper_calibSlope = stof( devicesIni.get_value("Temperature", "CalibSlope") );
-
-// Some GPIO extern values from the devices.ini file.
-int HEATER_PIN = stoi( devicesIni.get_value("GPIO", "HEATER_PIN") ); // Typ 7.
-int FAN_PIN = stoi( devicesIni.get_value("GPIO", "FAN_PIN") ); // Typ 4.
-int BOX_FAN = stoi( devicesIni.get_value("GPIO", "BOX_FAN") ); // Typ 5.
-int PWM_PIN = stoi( devicesIni.get_value("GPIO", "PWM_PIN") ); // Typ 23.
-int ALERT_PIN = stoi( devicesIni.get_value("GPIO", "ALERT_PIN") ); // Typ 23.
-
-// Miscellaneous Fit and RT values.  Some of these should be in Assay Recipes too.
-int SMOOTHING = stoi( devicesIni.get_value("MISC", "SMOOTHING") );  // 25
-int CONVERGENCE_THRESHOLD = stoi( devicesIni.get_value("MISC", "CONVERGENCE_THRESHOLD") );  // 1
-int RT_LENGTH = stoi( devicesIni.get_value("MISC", "RT_LENGTH") );  // 600
-int RT_TEMP = stoi( devicesIni.get_value("MISC", "RT_TEMP") );  // 60
-int RT_WAITTOTEMP = stoi( devicesIni.get_value("MISC", "RT_WAITTOTEMP") );  // 55
-int RECON_LENGTH = stoi( devicesIni.get_value("MISC", "RECON_LENGTH") );  // 600
-int RECON_TEMP = stoi( devicesIni.get_value("MISC", "RECON_TEMP") );  // 55
-int RECON_WAITTOTEMP = stoi( devicesIni.get_value("MISC", "RECON_WAITTOTEMP") );  // 55
-// int CALIBRATION_MIN = stoi( devicesIni.get_value("MISC", "CALIBRATION_MIN") );  // 150
-// Some fitting params in control.cpp L345-ish.
-int ITER_MAX = stoi( devicesIni.get_value("MISC", "ITER_MAX") ); // 24
-double AMPL_MIN = stod( devicesIni.get_value("MISC", "AMPL_MIN") ); // 10
-double CTR_MIN = stod( devicesIni.get_value("MISC", "CTR_MIN") ); // 2
-int ITER_MAX_PREMELT = stoi( devicesIni.get_value("MISC", "ITER_MAX_PREMELT") );
-double AMPL_MIN_PREMELT = stod( devicesIni.get_value("MISC", "AMPL_MIN_PREMELT") );
-double CTR_MIN_PREMELT = stod( devicesIni.get_value("MISC", "CTR_MIN_PREMELT") );
-// Thresholds for switching, see control.cpp Lxxx.  Lower case variable names show up a lot in code.
-double THRESH = stod( devicesIni.get_value("MISC", "THRESH") ); // 0.05
-double THRESHCOOL = stod( devicesIni.get_value("MISC", "THRESHCOOL") ); // 0.135
-double DTHRESHHEAT = stod( devicesIni.get_value("MISC", "DTHRESHHEAT") );  // 0.25
-double DTHRESHCOOL = stod( devicesIni.get_value("MISC", "DTHRESHCOOL") );
-// casparapi L65-102
-double FluorCalibPremelt = stod( devicesIni.get_value("MISC", "FluorCalibPremelt") );  // 150
-double FluorCalib = stod( devicesIni.get_value("MISC", "FluorCalib") ); // 300
-double FluorCalibLDNA = stod( devicesIni.get_value("MISC", "FluorCalibLDNA") ); // 200
-
-// Was in control.cpp L14.
-double heattoolong = stod( devicesIni.get_value("MISC", "heattoolong") );  // secs, 75 typically, too long? 20221027 weg
-double cooltoolong = stod( devicesIni.get_value("MISC", "cooltoolong") );  // secs, 75 typically
-int allowed_temp_errors = stoi( devicesIni.get_value("MISC", "allowed_temp_errors") );  // 3-ish
-
-// Declare vectors for tracking the thermal/fluor correspondence.
-vector<double> tempkey;
-vector<double> fluorkey;
-
-// Declare all the vectors for storing data by the interrupt thread
-vector<reading> data;
-vector<error> errorArray;
-vector<double> x;
-vector<double> y;
-vector<double> xderivs;
-vector<double> derivs;
-
-// Declare deques for the moving average filter. SMOOTHING is defined in caspar.h.
-deque<double> yaverage(SMOOTHING,0);
-deque<double> derivaverage(SMOOTHING,0);
-
-// Declare fstream objects globally.
-fstream coeff_out;
-fstream pcr_out;
-fstream runtime_out;
-fstream notes_out;
-fstream temper_out;
-
-// Declare cycle number variable.
-int cycles = 0;
-int cyclecutoff = 40;
-
-// Set qiagen properties for fitting-- format is {QIAGEN, METHOD}
-vector<int> LTP = convertstr2vecint( devicesIni.get_value("MISC", "LTP") );
-vector<int> HTP = convertstr2vecint( devicesIni.get_value("MISC", "HTP") );
-int fittingqiagen;
-
-// Declare the file operator and a few check variables for the thread.
-FILE *output;
-int datapoints = 0;
-double run_start = 0;
-
-// Set up flags for threads.
-bool RTdone = false;
-bool recordflag = false;
-int runerror;
-int temperrors;
-bool RTflag = false;
-
-// Get initialization time, format YYYYMMDD_HHMMSS .
-string ts = timestamp();
-
-// Declare initial file names for saving the data. 
-// For Project and Experiment names (might be none), use the
-// directory ./data/ProjName/Expt/TimeStamp/<filename.csv> .
-string dataDir = "./data/";
-string coeffstorage = "coeff_" + ts + ".csv";  // these are not really used with openFiles() in setup gone.
-string pcrstorage = "pcr_" + ts + ".csv";
-string temperstorage = "temper_" + ts + ".csv";
-string notesstorage = "notes_" + ts + ".txt";
-string rawstorage = "binaryoutput_" + ts + ".bin";
-string runlogDir = "./";
-string runlog = "runtimelog.txt";
 
 /* Sets up the Pi's GPIO pins and initiates wiringPi's library for GPIO communications.
  */
 void setupPi(void)
 {
     string progName = "setupPi";
+    // Read the defaults for the devices.ini/Hardware and for the default.ini/Recipe.
+    doHardwareConfig();
+    doRecipeConfig();
+
     // Print out the hardware config/ini file.
-    // cout << devicesIni.print_file() << endl;
+    // cout << devicesIni->print_file() << endl;
     wiringPiSetup();
     // Set pins for Alert, heating and cooling.
 	pinMode(ALERT_PIN,INPUT);
@@ -193,31 +60,31 @@ void setupQiagen(void)
 {
     // Set Qiagen 1 sample protocol--Maximum samples with minimum delay between them. This is so we can use 
     // it for cycling.
-    sens1.writeqiagen(0, {255,255});  // Cycles to read, 65535.
-    sens1.writeqiagen(1, {00,00});   // Cycle time 0s.
-    sens1.writeqiagen(32,{01,244});   // ADC Sampling 500 Hz.
-    sens1.writeqiagen(5,{01,00});   // Average 1 sample, no average.
+    sens1->writeqiagen(0, {255,255});  // Cycles to read, 65535.
+    sens1->writeqiagen(1, {00,00});   // Cycle time 0s.
+    sens1->writeqiagen(32,{01,244});   // ADC Sampling 500 Hz.
+    sens1->writeqiagen(5,{01,00});   // Average 1 sample, no average.
     // Set Qiagen 2 sample protocol-- 200 samples with minimum delay between them.
-    sens2.writeqiagen(0, {00,200});  // Cycles to read, 200.
-    sens2.writeqiagen(1, {00,00});   // Cycle time 0s.
+    sens2->writeqiagen(0, {00,200});  // Cycles to read, 200.
+    sens2->writeqiagen(1, {00,00});   // Cycle time 0s.
     // Note: The number of samples is basically irrelevant, just make sure it's more than 3 (Hz of 
     // sample rate) * delay after the LED turns on in readPCR().
 
     // Set the LED power for the PCR wavelengths. Cycling sensing (sens1 LED 2) is set by the calibrator.
-    sens1.LED_current(1,50);
-    sens2.LED_current(2,120);
-    sens2.LED_current(1,40);
+    sens1->LED_current(1,50);
+    sens2->LED_current(2,120);
+    sens2->LED_current(1,40);
 
     // Make sure all the LEDs besides the cycling one are off.
-    sens2.LED_off(2);
-    sens2.LED_off(1);
-    sens1.LED_off(1);
+    sens2->LED_off(2);
+    sens2->LED_off(1);
+    sens1->LED_off(1);
 
     // Set mode (beginning sampling routine after the LEDs are turned on) and method (which detector will be read).
-    sens1.setMode(0);
-	sens1.setMethod(3);
-    sens2.setMode(0);
-    sens2.setMethod(1);
+    sens1->setMode(0);
+	sens1->setMethod(3);
+    sens2->setMode(0);
+    sens2->setMethod(1);
 }
 
 /* Sets the ADC to run using the interrupt pin as well as the samples per second and mode. D2 is the Qiagen detector, TEMP is the temperature detector.
@@ -225,22 +92,22 @@ void setupQiagen(void)
 void setupADC(void)
 {
     string progName("setupADC");
-    cout << progName << ": before D2.SetGain(1);" << endl;
+    cout << progName << ": before D2->SetGain(1);" << endl;
     // Setup the qiagen tapped ADC. See the class for documentation.
-    D2.SetGain(1);
-	D2.SetMode(0);
-	D2.SetSPS(5);
-	D2.SetCompPol(1);
-	D2.SetCompQueue(0);
-    D2.SetMultiplex(1,3);
-    cout << progName << ": before TEMP.SetGain(adc1gain); with adc1gain = " << adc1gain << " ." << endl;
+    D2->SetGain(1);
+	D2->SetMode(0);
+	D2->SetSPS(5);
+	D2->SetCompPol(1);
+	D2->SetCompQueue(0);
+    D2->SetMultiplex(1,3);
+    cout << progName << ": before TEMP->SetGain(adc1gain); with adc1gain = " << adc1gain << " ." << endl;
     // Setup the ADC for the temperature. See the ADC class for documentation.
-    TEMP.SetGain(adc1gain);  // For range +/- 4.096V .  adafruit-4-chan PDF page 13.
-	TEMP.SetMode(adc1mode);
-	TEMP.SetSPS(adc1sps);
-	TEMP.SetCompPol(adc1comppol);
-	TEMP.SetCompQueue(adc1compqueue);
-    TEMP.SetMultiplex(adc1multiplex[0], adc1multiplex[1]);
+    TEMP->SetGain(adc1gain);  // For range +/- 4.096V .  adafruit-4-chan PDF page 13.
+	TEMP->SetMode(adc1mode);
+	TEMP->SetSPS(adc1sps);
+	TEMP->SetCompPol(adc1comppol);
+	TEMP->SetCompQueue(adc1compqueue);
+    TEMP->SetMultiplex(adc1multiplex[0], adc1multiplex[1]);
 }
 
 
@@ -251,14 +118,14 @@ void setupADC(void)
 // {
 //     string progName = "calibrategain";
 //     ostringstream bstream;
-//     sens1.LED_off(1);
-//     sens1.LED_off(2);
-//     sens1.setMethod(3); // Hard coded!  e2d2 here, so LED 2.
-//     sens1.writeqiagen(0, {255,255});
+//     sens1->LED_off(1);
+//     sens1->LED_off(2);
+//     sens1->setMethod(3); // Hard coded!  e2d2 here, so LED 2.
+//     sens1->writeqiagen(0, {255,255});
 //     // Start at our minimum gain for this qiagen.
 //     // int basegain = 80;
-//     int gainmin = sens1.getLED_min(2);
-//     int gainmax = sens1.getLED_max(2);
+//     int gainmin = sens1->getLED_min(2);
+//     int gainmax = sens1->getLED_max(2);
 //     int basegain = gainmin;  // Was 80.
 //     double readinval;
 //     // Log to console and file that we're entering calibration.
@@ -279,18 +146,18 @@ void setupADC(void)
 //         // Log to console what gain is being tested.
 //         cout << progName << ": Testing at gain of: " << basegain << "." << endl;
 //         // Turn the LED, adjust the current, and turn it back on.
-//         sens1.LED_off(2);
-//         sens1.LED_current(2,basegain);
-//         sens1.LED_on(2);
-//         sens1.startMethod();
+//         sens1->LED_off(2);
+//         sens1->LED_current(2,basegain);
+//         sens1->LED_on(2);
+//         sens1->startMethod();
 //         delay(400);
 //         // Measure what gain we receive.
-//         readinval = sens1.measure();
+//         readinval = sens1->measure();
 //         // Log what reading we receive to console.
 //         cout << progName << ": Reading: " << readinval << endl;
 //         // Increase the gain.
 //         basegain += 10;
-//         sens1.stopMethod();
+//         sens1->stopMethod();
 //     } while (readinval < CALIBRATION_MIN && runflag == true); // Continue while we haven't reached our 
 //     // requested minimum calibration fluoresence. This is defined in the header.
 // }
@@ -445,35 +312,7 @@ void doWriteComments(string savedComments, string savedStartDate, string savedSt
     notes_out << "##################################################" << endl;
 }
 
-// Put some parts or all of this in the Qiagen class when it reads the BoardID and the BoardSerialNumber
-// IF it knows its number, that is.
-// checkRenameQiagens(&sens1, &sens2, devicesIni);
-/* Copmares the actual Qiagens with the devices.ini file and renames them, assigns a reference.
-*/
-void checkRenameQiagens(qiagen s1, qiagen s2, config devIni)
-{
-string Q1BoardID = devIni.get_value("Qiagen", "Q1BoardID");  // The expected board IDs.
-string Q2BoardID = devIni.get_value("Qiagen", "Q2BoardID");
-string Sens1BoardID = s1.getBoardID();  // The actual board IDs.
-string Sens2BoardID = s2.getBoardID();
-string Q1BoardSerialNumber = devIni.get_value("Qiagen", "Q1BoardSerialNumber");
-string Q2BoardSerialNumber = devIni.get_value("Qiagen", "Q2BoardSerialNumber");
-string Sens1BoardSerialNumber = s1.getBoardSerialNumber();
-string Sens2BoardSerialNumber = s2.getBoardSerialNumber();
 
-array<bool,4> myCheck;  // Check equality with BoardID and then Serial Number.
-myCheck = {false, false, false, false};
-//      S1ID=Q1ID S1S/N=Q1S/N etc S2 Q2
-
-// Check Q1.
-// if ( Sens1BoardID == Q1BoardID ) 
-// {
-//     myCheck[0] = true;
-//     if ( Sens1BoardSerialNumber == Q1BoardSerialNumber )
-//     }
-
-
-}
 
 // Needed for the config files with strings like vectors "{0, -1}" .
 // Returns the vector of ints {0, -1}, in this example.
@@ -492,3 +331,294 @@ vector<int> convertstr2vecint(string mystring)
     //cout << "convertstr2vecint: after while loop" << endl;
     return myvec;
 }
+
+// doHardwareConfig - reads an INI file for the unchanging hardware configuration of the system.
+// 20230202 weg, started
+void doHardwareConfig(string filename /*= "configs/devices.ini" */)
+{
+    ostringstream bstream;  // For complicated printouts.
+    string progName = "doHardwareConfig";
+
+    /*
+    * These declarations are all for the externally linked variables found in caspar.h 
+    * and used throughout the code. Please try to keep those declarations IN setup.cpp 
+    * for consistency.
+    */
+
+    // Read the config file with sections [Qiagen] and [ADC], etc.
+    // Read the defaults for the devices.ini/Hardware and for the default.ini/Recipe.
+    delete devicesIni;
+    // What to do if filename does not exist?  Abort?
+    // if ( ! fileExists(filename) )  // The filename does NOT exist.
+    // {
+    //     filename = "./configs/recipe/default.ini";
+    //     bstream << progName << ": the requested recipe does not exist, " << filename << " ." << endl;
+    //     bstream << "\t Setting it to default.ini ." << endl;
+    //     cout << bstream.str();
+    //     // runtimeout ?? does it exist on the first call?
+    // }    
+    devicesIni = new config(filename);//"configs/devices.ini");
+
+    BoxName = devicesIni->get_value("Box", "BoxName");
+    bstream << progName << ": Reading file " << filename << " ." << endl;
+    bstream << "\t For box " << BoxName << " ." << endl;
+    cout << bstream.str();
+
+    // Set up the qiagens on relevant USB ports.
+    delete sens1;
+    delete sens2;
+    sens1 = new qiagen( devicesIni->get_value("Qiagen", "Q1SerialPort") );  // "/dev/ttyUSB0"
+    sens2 = new qiagen( devicesIni->get_value("Qiagen", "Q2SerialPort") );  // "/dev/ttyUSB1"
+    // Check that it matches devices.ini file for Q1 and Q2.  Adjust which is Q1 (front one) and which Q2 (back one).
+    cout << progName << ": Before checkRenameQiagens, sens1 " << sens1 << " sens2 " << sens2 << endl;   
+    checkRenameQiagens(sens1, sens2, devicesIni);
+    cout << progName << ": After swap, sens1 " << sens1 << " sens2 " << sens2 << endl;    
+    // Above calls by reference, have to de-pointer the pointers.
+    // Double check that sens1 is Q1, OPPOSITE or Nick's definition.
+
+
+    // Set up the ADCs to use interrupts as well as declare them.
+    DEVICE_ID = stoul(devicesIni->get_value("ADC", "ADC0DevID"));
+    TEMP_ID = stoul(devicesIni->get_value("ADC", "ADC1DevID")); 
+    delete D2;
+    delete TEMP;
+    D2 = new adc( DEVICE_ID, 0x8000, 0x7FFF);  // Was define DEVICE_ID, 0x48 . // Already declared default constructor.
+    TEMP = new adc( TEMP_ID, 0x8000, 0x7FFF);  // Was define TEMP_ID, 0x49 .
+
+    temper_enable = (devicesIni->get_value("Temperature", "Enable") == "true");
+    adc1gain = stoi(devicesIni->get_value("Temperature", "ADC1Gain") );
+    adc1mode = stoi(devicesIni->get_value("Temperature", "ADC1Mode") );
+    adc1sps = stoi(devicesIni->get_value("Temperature", "ADC1SPS") );
+    adc1comppol = stoi(devicesIni->get_value("Temperature", "ADC1CompPol") );
+    adc1compqueue = stoi(devicesIni->get_value("Temperature", "ADC1CompQueue") );
+    adc1multiplex = convertstr2vecint( devicesIni->get_value("Temperature", "ADC1Multiplex") );
+    temper_vmax = stof( devicesIni->get_value("Temperature", "Vmax") );
+    temper_pow2effbits = stof( devicesIni->get_value("Temperature", "Pow2EffBits") );
+    temper_calibVoffset = stof( devicesIni->get_value("Temperature", "CalibVoffset") );
+    temper_calibSlope = stof( devicesIni->get_value("Temperature", "CalibSlope") );
+
+    // PWM stuff is repeated in the recipe files too.
+    pwm_enable = (devicesIni->get_value("PWM", "Enable") == "true"); // Turn off PWM avoid sudo node caspar.js .
+    pwm_high_ratio = stof( devicesIni->get_value("PWM", "HighRatio") ); //0.85;
+    pwm_high = 1024.0*pwm_high_ratio;
+    pwm_low_ratio = stof( devicesIni->get_value("PWM", "LowRatio") );  //0.0;
+    pwm_low = 1024.0*pwm_low_ratio;
+    pwm_clock = stof( devicesIni->get_value("PWM", "Clock") );  //19.53;
+    pwm_range = stoi( devicesIni->get_value("PWM", "Range") );  //1024;
+    pwm_mode = stoi( devicesIni->get_value("PWM", "Mode") );  //0;
+
+
+    // Some GPIO extern values from the devices.ini file.
+    HEATER_PIN = stoi( devicesIni->get_value("GPIO", "HEATER_PIN") ); // Typ 7.
+    FAN_PIN = stoi( devicesIni->get_value("GPIO", "FAN_PIN") ); // Typ 4.
+    BOX_FAN = stoi( devicesIni->get_value("GPIO", "BOX_FAN") ); // Typ 5.
+    PWM_PIN = stoi( devicesIni->get_value("GPIO", "PWM_PIN") ); // Typ 23.
+    ALERT_PIN = stoi( devicesIni->get_value("GPIO", "ALERT_PIN") ); // Typ 23.
+
+}// end doHardwareConfig
+
+// doRecipeConfig - Reads the INI file for the setup to almost every except hardware, so the cycle count, the
+// channels to use on the Qiagens and for what, amplitude settings on the derivative check on the LDNA cycling, etc.
+// Should be called at the start of every run, when Start is pressed.
+// 20230202 weg, started
+// 20230305 weg, Do a check for existence of the recipe (called for configs.txt it might no), use default.ini if not.
+void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
+{
+    ostringstream bstream;  // For complicated printouts.
+    string progName = "doRecipeConfig";
+
+    /*
+    * These declarations are all for the externally linked variables found in caspar.h 
+    * and used throughout the code. Please try to keep those declarations IN setup.cpp 
+    * for consistency.
+    */
+
+    // Read the config file with sections like [Qiagen] and [ADC], etc.
+    delete recipeIni;
+    if ( ! fileExists(filename) )  // File does NOT exist.
+    {
+        filename = "./configs/recipe/default.ini";
+        bstream << progName << ": the requested recipe does not exist, " << filename << " ." << endl;
+        bstream << "\t Setting it to default.ini ." << endl;
+        cout << bstream.str();
+        // runtimeout ?? does it exist on the first call?
+    }
+    recipeIni = new config(filename); //"configs/recipes/default.ini");
+    
+    recipeVersion = recipeIni->get_value("Description", "RecipeVersion");
+    recipeDate = recipeIni->get_value("Description", "Date");
+    recipeDescShort = recipeIni->get_value("Description", "Short");
+    recipeDescLong = recipeIni->get_value("Description", "Long");
+
+    bstream << progName << ": Reading recipe named " << filename << " ." << endl;
+    bstream << "\t dated " << recipeDate << " and with short description " << endl;
+    bstream << "\t" << recipeDescShort << endl;
+    cout << bstream.str();
+
+    // Laser control is in the recipes file.
+    pwm_enable = (recipeIni->get_value("PWM", "Enable") == "true"); // Turn off PWM avoid sudo node caspar.js .
+    pwm_high_ratio = stof( recipeIni->get_value("PWM", "HighRatio") ); //0.85;
+    pwm_high = 1024.0*pwm_high_ratio;
+    pwm_low_ratio = stof( recipeIni->get_value("PWM", "LowRatio") );  //0.0;
+    pwm_low = 1024.0*pwm_low_ratio;
+    pwm_clock = stof( recipeIni->get_value("PWM", "Clock") );  //19.53;
+    pwm_range = stoi( recipeIni->get_value("PWM", "Range") );  //1024;
+    pwm_mode = stoi( recipeIni->get_value("PWM", "Mode") );  //0;
+
+    // Miscellaneous Fit and RT values.  Some of these should be in Assay Recipes too.
+    SMOOTHING = stoi( recipeIni->get_value("Fitting", "SMOOTHING") );  // 25
+    CONVERGENCE_THRESHOLD = stoi( recipeIni->get_value("Fitting", "CONVERGENCE_THRESHOLD") );  // 1
+    
+    RT_Enable = (recipeIni->get_value("RT", "RTEnable")=="true");
+    RT_LENGTH = stoi( recipeIni->get_value("RT", "RT_LENGTH") );  // 600
+    RT_TEMP = stoi( recipeIni->get_value("RT", "RT_TEMP") );  // 60
+    RT_WAITTOTEMP = stoi( recipeIni->get_value("RT", "RT_WAITTOTEMP") );  // 55
+    
+    RECON_Enable = (recipeIni->get_value("Recon", "ReconEnable")=="true");
+    RECON_LENGTH = stoi( recipeIni->get_value("Recon", "RECON_LENGTH") );  // 600
+    RECON_TEMP = stoi( recipeIni->get_value("Recon", "RECON_TEMP") );  // 55
+    RECON_WAITTOTEMP = stoi( recipeIni->get_value("Recon", "RECON_WAITTOTEMP") );  // 55
+    // int CALIBRATION_MIN = stoi( devicesIni->get_value("MISC", "CALIBRATION_MIN") );  // 150
+
+    // Some fitting params in control.cpp L345-ish.
+    ITER_MAX = stoi( recipeIni->get_value("Cycling", "ITER_MAX") ); // 24
+    AMPL_MIN = stod( recipeIni->get_value("Cycling", "AMPL_MIN") ); // 10
+    CTR_MIN = stod( recipeIni->get_value("Cycling", "CTR_MIN") ); // 2
+    ITER_MAX_PREMELT = stoi( recipeIni->get_value("Recon", "ITER_MAX_PREMELT") );
+    AMPL_MIN_PREMELT = stod( recipeIni->get_value("Recon", "AMPL_MIN_PREMELT") );
+    CTR_MIN_PREMELT = stod( recipeIni->get_value("Recon", "CTR_MIN_PREMELT") );
+    // The Channels used.  Set qiagen properties for fitting-- format is {QIAGEN, METHOD}
+    LTP = convertstr2vecint( recipeIni->get_value("Cycling", "LTP") );
+    HTP = convertstr2vecint( recipeIni->get_value("Cycling", "HTP") );
+    //int fittingqiagen;
+ 
+    // Thresholds for switching, see control.cpp Lxxx.  Lower case variable names show up a lot in code.
+    THRESH = stod( recipeIni->get_value("Cycling", "THRESH") ); // 0.05
+    THRESHCOOL = stod( recipeIni->get_value("Cycling", "THRESHCOOL") ); // 0.135
+    DTHRESHHEAT = stod( recipeIni->get_value("Cycling", "DTHRESHHEAT") );  // 0.25
+    DTHRESHCOOL = stod( recipeIni->get_value("Cycling", "DTHRESHCOOL") );
+    FluorCalib = stod( recipeIni->get_value("Cycling", "FluorCalib") ); // 300
+    FluorCalibLDNA = stod( recipeIni->get_value("Cycling", "FluorCalibLDNA") ); // 200
+    // casparapi L65-102
+    FluorCalibPremelt = stod( recipeIni->get_value("RT", "FluorCalibPremelt") );  // 150
+
+    // Was in control.cpp L14.
+    heattoolong = stod( recipeIni->get_value("Errors", "heattoolong") );  // secs, 75 typically, too long? 20221027 weg
+    cooltoolong = stod( recipeIni->get_value("Errors", "cooltoolong") );  // secs, 75 typically
+    allowed_temp_errors = stoi( recipeIni->get_value("Errors", "allowed_temp_errors") );  // 3-ish
+
+    // Declare cycle number variable.
+    cycles = 0;
+    //cyclecutoff = 40;
+    
+    cyclecutoff = stoi( recipeIni->get_value("Cycling", "cyclesMax") );
+
+    // Declare the file operator and a few check variables for the thread.
+    //FILE *output;
+    datapoints = 0;
+    run_start = 0;
+
+    // Set up flags for threads.
+    RTdone = false;
+    recordflag = false;
+    runerror;
+    temperrors;
+    RTflag = false;
+
+    // Get initialization time, format YYYYMMDD_HHMMSS .
+    string ts = timestamp();
+
+    // Declare initial file names for saving the data. 
+    // For Project and Experiment names (might be none), use the
+    // directory ./data/ProjName/Expt/TimeStamp/<filename.csv> .
+    dataDir = "./data/";
+    coeffstorage = "coeff_" + ts + ".csv";  // these are not really used with openFiles() in setup gone.
+    pcrstorage = "pcr_" + ts + ".csv";
+    temperstorage = "temper_" + ts + ".csv";
+    notesstorage = "notes_" + ts + ".txt";
+    rawstorage = "binaryoutput_" + ts + ".bin";
+    runlogDir = "./";
+    runlog = "runtimelog.txt";
+
+    
+}// end doRecipeConfig
+
+// Put some parts or all of this in the Qiagen class when it reads the BoardID and the BoardSerialNumber
+// IF it knows its number, that is.
+// checkRenameQiagens(&sens1, &sens2, devicesIni);
+// Compares the actual Qiagens with the devices.ini file and renames them, assigns a reference.
+
+// Usually called with aa as sens1 and assigned to Q1SerialPort, but ports can
+// change if plugged and unplugged.  Also changing the definition of Q1 and Q2
+// from Nick's.
+// Found that I need refrences in the below and de-pointer the qiagens
+// coming in.
+
+void checkRenameQiagens(qiagen*& s1, qiagen*& s2, config* devIni)
+{
+    ostringstream bstream;
+    string progName = "checkRenameQiagens";
+
+    string s1BoardID, s1SerialNo, s2BoardID, s2SerialNo; 
+    string Q1BoardID, Q1SerialNo, Q2BoardID, Q2SerialNo;
+    // Read from the hardware config, devices.ini .
+    Q1BoardID = devIni->get_value("Qiagen", "Q1BoardID");
+    Q1SerialNo = devIni->get_value("Qiagen", "Q1SerialNo");
+    Q2BoardID = devIni->get_value("Qiagen", "Q2BoardID");
+    Q2SerialNo = devIni->get_value("Qiagen", "Q2SerialNo");
+    // Grab the actual value filled in when the Qiagens were instantiated.
+    s1BoardID = s1->getBoardID().substr(0,14);  // ESML10-MB-3021??   ? = junk chars
+    s1SerialNo = s1->getBoardSerialNumber().substr(0,4);  // 0016????
+    s2BoardID = s2->getBoardID().substr(0,14);
+    s2SerialNo = s2->getBoardSerialNumber().substr(0,4); 
+    // Because of the junk characters read from the qiagens only check the
+    // first 14 chars on BoardID, and 4 chars on SerialNo.
+    bstream << progName << ":Q1BoardID (config) s1BoardID (Qiagen)" << endl;
+    bstream << "\t" << Q1BoardID << endl;
+    bstream << "\t" << s1BoardID << endl;
+    bstream << "\t" << "Q1SerailNo s1SerialNo" << endl;
+    bstream << "\t" << Q1SerialNo << endl;
+    bstream << "\t" << s1SerialNo << endl;
+    bstream << "\t" << "Q2BoardID s2BoardID" << endl;
+    bstream << "\t" << Q2BoardID << endl;
+    bstream << "\t" << s2BoardID << endl;
+    bstream << "\t" << "Q2SerialNo s2SerialNo" << endl;
+    bstream << "\t" << Q2SerialNo << endl;
+    bstream << "\t" << s2SerialNo << endl;
+    cout << bstream.str();
+
+    if ( s1BoardID == Q1BoardID && s2BoardID == Q2BoardID && 
+        s1SerialNo == Q1SerialNo && s2SerialNo == Q2SerialNo )
+        {
+            cout << progName << ": Qiagens are not swapped, keeping them as they are." << endl;
+            return;  // Everything is okay.
+        }
+    else if ( s1BoardID == Q2BoardID && s1SerialNo == Q2SerialNo &&
+        s2BoardID == Q1BoardID && s2SerialNo == Q1SerialNo ) 
+        {
+            bstream << progName << ": Qiagens not matching hardware config order." << endl;
+            bstream << "\tLooks like first one matches Q2 and second Q1." << endl;
+            bstream << "\tSwapping pointers." << endl;
+            cout << bstream.str();
+
+            cout << progName << ": Before swap, s1 " << s1 << " s2 " << s2 << endl;
+            std::swap(s1, s2);  // Likely the USB ports were swapped.
+            cout << progName << ": After swap, s1 " << s1 << " s2 " << s2 << endl;
+
+            return;
+        }
+
+    // Some other problem.
+    bstream << endl << string(40,'=') << endl;
+    bstream << progName << ": Qiagens not matching hardware config." << endl;
+    bstream << "\t Check the devices.ini-><correct file> in configs folder and restart." << endl;
+    bstream << "\t Not changing anything, running swapped or wrong or whatever." << endl;
+    bstream << string(40,'=') << endl << endl;
+    cout << bstream.str();
+
+    return;
+
+}// end checkRenameQiagens
+
+
+

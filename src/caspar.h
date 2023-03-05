@@ -1,5 +1,6 @@
 #ifndef CASPARMAIN
 #define CASPARMAIN
+
 #include "ADC.h"
 #include "qiagen.h"
 #include "configINI.h"
@@ -9,6 +10,13 @@
 #include <sys/stat.h> // For the mkdir() function in Linux.
 #include <iostream> // For ostringstream for couts.
 #include <sstream>  // For stringstream ??
+#include <fstream>  // For ifstream below ??
+//c++17 #include <filesystem> // For file existence like filesystem::exists("path_to_my_file/my_filename")
+// From https://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exists-using-standard-c-c11-14-17-c 
+inline bool fileExists(const std::string& name) {
+    ifstream f(name.c_str(), std::ifstream::in);
+    return f.good();
+}
 
 // See the extern int's below for these. weg 20221110
 // #define DEVICE_ID 0x48
@@ -45,10 +53,10 @@ class error
 // Global variable declarations. External variables are set in setup.cpp.
 // This should include devices.ini hardware type configurations and the assay recipes.
 // Take care not to collide with local variables.
-extern adc D2;
-extern adc TEMP;
-extern qiagen sens1;
-extern qiagen sens2;
+extern adc *D2;
+extern adc *TEMP;
+extern qiagen *sens1;
+extern qiagen *sens2;
 extern vector<reading> data;
 extern vector<error> errorArray;  // Above, class with members itime, stime, message .
 extern vector<double> tempkey;
@@ -86,13 +94,13 @@ extern int temperrors;
 extern bool RTflag;
 //
 extern bool pwm_enable;
-extern const double pwm_high_ratio;
-extern const int pwm_high;
-extern const double pwm_low_ratio;
-extern const int pwm_low;
-extern const float pwm_clock;
-extern const int pwm_range;
-extern const int pwm_mode;
+extern double pwm_high_ratio;
+extern int pwm_high;
+extern double pwm_low_ratio;
+extern int pwm_low;
+extern float pwm_clock;
+extern int pwm_range;
+extern int pwm_mode;
 extern bool temper_enable;
 extern int adc1gain;
 extern int adc1mode;
@@ -112,8 +120,13 @@ extern int allowed_temp_errors; // 3-ish
 extern vector<int> LTP;
 extern vector<int> HTP;
 extern int fittingqiagen;
-extern config devicesIni;  // devices.ini file via config reading, hardware in the box.
-extern config recipeDef;   // xxxx.ini file via config reading, recipes for each assay.
+extern config *devicesIni;  // devices.ini file via config reading, hardware in the box.
+extern config *recipeIni;   // xxxx.ini file via config reading, recipes for each assay.
+extern string BoxName;
+extern string recipeVersion;
+extern string recipeDate;
+extern string recipeDescShort;
+extern string recipeDescLong;
 extern int DEVICE_ID;  // Used in only one place, but for consistency will to this.  Typ 0x48.
 extern int TEMP_ID;    // Typ 0x49.
 extern int HEATER_PIN; // These are used a lot of places. Typ 7.
@@ -123,9 +136,11 @@ extern int PWM_PIN; // Typ 23.
 extern int ALERT_PIN;  // Typ 3.
 extern int SMOOTHING;  // 25
 extern int CONVERGENCE_THRESHOLD;  // 1
+extern bool RT_Enable;
 extern int RT_LENGTH;  // 600
 extern int RT_TEMP;
 extern int RT_WAITTOTEMP;
+extern bool RECON_Enable;
 extern int RECON_LENGTH; // 600 
 extern int RECON_TEMP;
 extern int RECON_WAITTOTEMP;
@@ -145,9 +160,14 @@ extern double DTHRESHCOOL; // 0.8  # Other version has 0.8, ditto weg.
 extern double FluorCalibPremelt; // 150
 extern double FluorCalib; // 300
 extern double FluorCalibLDNA; // 200
+//
+extern string devicesFile;
+extern string devicesDir;
+extern string recipeFile;
+extern string recipeDir;
 
 // setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
-
+// There is a setup.h now, moves these there...if non-extern's.  WEG
 void setupPi(void);
 void setupQiagen(void);
 void openFiles(void);
@@ -158,7 +178,8 @@ void doMakeDirs(string longdirname);
 void writeComments(string savedComments, string savedStartTime, string savedFinishTime);
 void doWriteComments(string savedComments, string savedStartDate, string savedStartTime, string savedFinishTime,
    string savedProjName, string savedOperator, string savedExperimentName);
-void checkRenameQiagens(qiagen s1, qiagen s2, config devIni);  // Should this be in the class?
+extern void doHardwareConfig(string filename = "configs/devices.ini");  // Defaults only in header files?? weg
+extern void doRecipeConfig(string filename = "configs/recipes/default.ini");
 
 // heat.cpp function definitions. These handle generation of fluoresence based heat curves and temperature-based control.
 

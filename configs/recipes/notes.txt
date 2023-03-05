@@ -1,0 +1,27 @@
+20230303 weg
+
+   This folder contains the "recipes" for any kind of PCR assay, also on
+laser settings.  The need to have the format for the "config" files
+and code handling those.  So you should have sections in square
+brackets, and under each section keyword = value pairs.  The config
+library seems to read everything as strings, so there are a variety
+of converting functions like
+
+stoi()  - to integer;
+stol()  - to long integer;
+stod()  - to double;
+stof()  - to float;
+stoul()  - to unsigned long integer;
+
+and for booleans use the comparison (astring=="true"), yields "true" or "false";
+and for curly braces of integers, the home brew convertstr2vecint(),
+used currently for setting the HTP and LTP channels. 
+
+String to other stuff can be found in string.h.
+
+Folder must contain a default.ini that is always loaded first and is
+also at the top of the list of recipes.
+
+
+
+

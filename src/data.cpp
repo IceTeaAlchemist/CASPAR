@@ -62,14 +62,15 @@ void sampletriggered(void)
 {
     if(recordflag == true) // If we're supposed to be recording right now. This exists to allow this thread to be turned off.
     {
-    // Locking the thread here prevents it from interfering with global variables while they're being used by other portions of the program that lock the same thread.
+    // Locking the thread here prevents it from interfering with global variables while they're being used by other portions of 
+    // the program that lock the same thread.
     piLock(0);
     // Get the current time in milliseconds.
     auto millisecs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     // Declare a reading object and put our timestamp and fluoresence inside, then push it into our data vector.
     reading now;
     now.timestamp = millisecs;
-    now.voltage = D2.getreading();
+    now.voltage = D2->getreading();
     data.push_back(now);
     // If it's our first entry this fitting, set the starting time for our fit to our current reading.
     if(x.size() == 0)
@@ -80,7 +81,7 @@ void sampletriggered(void)
     // Push our start-adjusted x into our value queue.
     x.push_back((now.timestamp - run_start)/1000.0);
     // Get the current fluoresence reading from the struct and convert it to mV.
-    double ycurrent =(now.voltage/32768.0)*4096.0;
+    double ycurrent =(now.voltage/32768.0)*4096.0; // FIX THIS!!!  HARDCODED.
     if(yaverage.size() >= SMOOTHING) // If our moving average filter is full:
     { 
         yaverage.pop_front(); // Remove the oldest value.
@@ -121,11 +122,11 @@ void retrieveSample()
 
     if(fittingqiagen == 1)
     {
-        now.voltage = sens1.measure();
+        now.voltage = sens1->measure();
     }
     else
     {
-        now.voltage = sens2.measure();
+        now.voltage = sens2->measure();
     }
     data.push_back(now);
     // If it's our first entry this fitting, set the starting time for our fit to our current reading.
@@ -203,35 +204,35 @@ void readPCR()
     pcrValues.push_back(millisecs);
     
     // Take our first detector value. Each of these follows the same format, so I'll only comment the first.
-    sens1.LED_on(1); // Turn the relevant LED on.
-    sens1.setMethod(1); // Set our method to the relevant one.
-    sens1.startMethod(); // Start our LED sampling.
+    sens1->LED_on(1); // Turn the relevant LED on.
+    sens1->setMethod(1); // Set our method to the relevant one.
+    sens1->startMethod(); // Start our LED sampling.
     delay(500); // Wait for a sample to be taken--this needs to be OVER 333 ms at least.
-    double PCRread = sens1.measure(); //Get the measurement from the qiagen.
-    sens1.stopMethod(); // Stop sampling.
+    double PCRread = sens1->measure(); //Get the measurement from the qiagen.
+    sens1->stopMethod(); // Stop sampling.
     pcr_out << PCRread << ","; // Dump the PCR value to the file and follow it with a comma for csv processing.
     pcrValues.push_back(PCRread); // Push the PCR value onto the result array.
-    sens1.LED_off(1); // Turn the LED off.
+    sens1->LED_off(1); // Turn the LED off.
 
-    sens2.LED_on(1);
-    sens2.setMethod(1);
-    sens2.startMethod();
+    sens2->LED_on(1);
+    sens2->setMethod(1);
+    sens2->startMethod();
     delay(500);
-    PCRread = sens2.measure();
-    sens2.stopMethod();
+    PCRread = sens2->measure();
+    sens2->stopMethod();
     pcr_out << PCRread << ",";
     pcrValues.push_back(PCRread);
-    sens2.LED_off(1); 
+    sens2->LED_off(1); 
 
-    sens2.LED_on(2);
-    sens2.setMethod(3);
-    sens2.startMethod();
+    sens2->LED_on(2);
+    sens2->setMethod(3);
+    sens2->startMethod();
     delay(500);
-    PCRread = sens2.measure();
-    sens2.stopMethod();
+    PCRread = sens2->measure();
+    sens2->stopMethod();
     pcr_out << PCRread;
     pcrValues.push_back(PCRread);
-    sens2.LED_off(2); 
+    sens2->LED_off(2); 
 
     pcr_out << endl; // Send a new line to the file to get ready for the next cycle.
     pcrReady = true; // Say that our PCR readings are ready for output to the gui.

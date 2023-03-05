@@ -49,6 +49,12 @@ adc::adc(int addr, int ht, int lt)
 	adcsetup();
 }
 
+// Default constructor, weg, 20230202
+adc::adc()
+{
+
+}
+
 void adc::adcsetup()
 {
 	pihandle = wiringPiI2CSetup(address);

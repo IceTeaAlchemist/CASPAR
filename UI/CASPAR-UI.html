@@ -106,6 +106,11 @@
   <div id="tab1c" class="tabcontent"> <!--First tab content-->
     <div class="container1">
       <div class="div1-1"  style = "text-align:center;">
+        <p class="inrtxt2">Configuration:</p>
+          <div id = "dropdown" style="width:93%; margin:0 auto; margin-bottom: 30px;"> <!--Value Changes-->
+            <select id = "configDropdown" class="custom-select" style="text-align:left;" onclick = "loadDataRequest()"> <!--Options Change-->
+            </select>
+          </div>        
         <p class="inrtxt2">Project Name:</p>
           <input class = "inrinp" type="text" id="projName"> <!--Changes-->
           <!-- Below is redundant with the pull down further down, maybe.-->
@@ -116,11 +121,7 @@
           <input class = "inrinp" type="text" id="opName"> <!--Changes-->
         <p class="inrtxt2">Experiment Name:</p>
           <input class = "inrinp" type="text" id="expName"> <!--Changes-->
-        <p class="inrtxt2">Configuration:</p>
-          <div id = "dropdown" style="width:93%; margin:0 auto; margin-bottom: 30px;"> <!--Value Changes-->
-            <select id = "configDropdown" class="custom-select" style="text-align:left;" onclick = "loadDataRequest()"> <!--Options Change-->
-            </select>
-          </div>
+
         <p style="visibility:visible" class="inrtxt2">Recipe:</p>
           <div id = "dropdown2" style="visibility:visible; width:93%; margin:0 auto; margin-bottom: 30px;"> <!--Value Changes-->
             <select id = "recipeDropdown" class="custom-select", style="text-align:left;" onclick = "loadRecipeRequest()"> <!--Options Change-->
@@ -137,6 +138,9 @@
           <p class="inrtxt" id="currentCycle" style="font-weight:bold; font-size:120%; margin-bottom:40px;"> 0 </p> <!--Changes-->
         <p class="inrtxt">Total Cycles:</p>
           <input class = "inrinp" style = "width: 15%; text-align: center; font-size:120%; font-weight:bold;" type="text" id="totCycles"> <!--Changes-->
+        <p class="inrtxt">Reconstitution/Premelt:</p>
+          <input type="checkbox" id="Recon" disabled="disabled" style=
+          "display: inline; width: 23px; height:23px; border-width: 1px; margin-right: 4px; margin-bottom: 30px; opacity: 0.6"> <!--Check Mark Changes-->
         <p class="inrtxt">Reverse Transcription:</p>
           <input type="checkbox" id="RTMain" style="display: inline; width: 23px; height:23px; border-width: 1px; margin-right: 4px; margin-bottom: 30px;"> <!--Check Mark Changes-->
       </div>
@@ -148,8 +152,9 @@
           <br> <br> <span style= "font-weight: bold; font-size:110%;"> &ensp;Not Running </span></p> <!--Changes-->
         <p class="inrtxt3" id="startDate" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Start Date:
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &ensp; Not Started </span></p> <!--Changes-->
-          <p class="inrtxt3" id="startTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Start Time:
-            <br> <br> <span style= "font-weight: bold; font-size:110%"> &ensp; Not Started </span></p> <!--Changes-->        <p class="inrtxt3" id="estFinTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Est. Finish Time:
+        <p class="inrtxt3" id="startTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Start Time:
+            <br> <br> <span style= "font-weight: bold; font-size:110%"> &ensp; Not Started </span></p> <!--Changes-->        
+        <p class="inrtxt3" id="estFinTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Est. Finish Time:
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; &ensp; - </span></p> <!--Changes-->
         <p class="inrtxt3" id="finTime" style="display:inline; float:left; font-size:110%; margin-left:55px;"> <br> Finish Time:
           <br> <br> <span style= "font-weight: bold; font-size:110%"> &emsp; &emsp; - </span></p> <!--Changes-->
@@ -172,6 +177,7 @@
           <p class="inrtxt7" id="esExp" style="font-size:105%;"> <span style = "text-decoration: underline;"> Experiment Name:</span> - <br> </p>  <!--Changes-->
           <p class="inrtxt7" id="esOpName" style="font-size:105%;"> <span style = "text-decoration: underline;"> Operator Name:</span> - <br> </p>  <!--Changes-->
           <p class="inrtxt7" id="esTotalCycles" style="font-size:105%;"> <span style = "text-decoration: underline;"> Total Cycles:</span> - <br> </p>  <!--Changes-->
+          <p class="inrtxt7" id="esRecon" style="font-size:105%;"> <span style = "text-decoration: underline;"> Recon/Premelt:</span> - <br> </p>  <!--Changes-->
           <p class="inrtxt7" id="esRT" style="font-size:105%;"> <span style = "text-decoration: underline;"> Reverse Transcription:</span> - <br> </p>  <!--Changes-->
           <p class="inrtxt7" id="esStart" style="font-size:105%;"> <span style = "text-decoration: underline;"> Start Time:</span> - <br>  </p>  <!--Changes-->
           <p class="inrtxt7" id="esEstFin" style="font-size:105%;"> <span style = "text-decoration: underline;"> Est. Finish Time:</span> - <br> </p>  <!--Changes-->
@@ -213,6 +219,7 @@
           <p class = 'inrtxt7' id="ciFAM"> <span style = "text-decoration: underline;"> FAM:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciCY5"> <span style = "text-decoration: underline;"> CY5:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciHEX"> <span style = "text-decoration: underline;"> HEX:</span> <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="ciRecon"> <span style = "text-decoration: underline;"> Reconstitution/Premelt On?:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciRT"> <span style = "text-decoration: underline;"> Reverse Transcription On?:</span> <br> </p> <!--Changes-->
         <button class="inrbtn2" id="123" onclick="deleteConfigSafety()" style= "display: inline; float: right; margin-right: 70px; margin-top: -50px;
           margin-bottom: 20px;"> Delete This <br> Configuration </button>
@@ -286,8 +293,7 @@
     // https://stackoverflow.com/questions/287903/how-can-i-guarantee-that-my-enums-definition-doesnt-change-in-javascript
     // Use the below in the dataarray[<num>] by dataarray[configEnum.opName] etc.
     // COPY to caspar.js !!
-    const configEnum = {"opName":0, "email":1, "projName":2, "recName":3, "FAM":4, "CY5":5, "HEX":6, "RTcheckbox":7, "totCycles":8}; 
-    //"FAM":3, "CY5":4, "HEX":5, "RTcheckbox":6, "totCycles":7};
+    const configEnum = {"opName":0, "email":1, "projName":2, "recName":3, "FAM":4, "CY5":5, "HEX":6, "reconCheckbox":7, "RTCheckbox":8, "totCycles":9}; 
     Object.freeze(configEnum);
 
 
@@ -370,6 +376,7 @@
     var sendfam; //to send
     var sendcy5; //to send
     var sendhex; //to send
+    var sendrecon; // to send
     var sendrt; //to send
     var sendtotcycles; //to send
 
@@ -393,7 +400,7 @@
             //Logs if the system is running and changes the website
             isRunning = msg.running;
             console.log(msg.status);
-              document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
+            document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
 
             //Changes the System Status based on the isRunning variable
             if (isRunning == true)
@@ -414,7 +421,7 @@
             }
 
             // This code extracts all the configuration names and puts it in the dropdown on the first 
-            // page -- Replaced with JSON, NAS 7/07
+            // page, using JSON.
             var count = msg.configs.length;
             namearray = msg.configs;
             let select = document.getElementById('configDropdown');
@@ -428,7 +435,7 @@
 
             // This code extracts all the recipe names and puts it in the dropdown on the first page.
             // Copying config dropdown, maybe, weg 20220918.
-            console.log("UI: msg.recipefiles ", msg.recipenames);
+            console.log("UI: case connect: msg.recipefiles ", msg.recipenames);
             var count = msg.recipenames.length;
             namearray = msg.recipenames;
             select = document.getElementById('recipeDropdown');
@@ -462,14 +469,36 @@
             console.log(msg);
             var dataarray = msg.data; //graps all data and puts it in an array
             //Updates info on first and second tabs
-            document.getElementById("projName").value = dataarray[configEnum.projName];  //dataarray[2];
+            //document.getElementById("projName").value = dataarray[configEnum.projName];  //dataarray[2];
+            DOMUpdate("projName", "value", dataarray[configEnum.projName]);
             document.getElementById("recName").value = dataarray[configEnum.recName];
             document.getElementById("opName").value = dataarray[configEnum.opName];
             document.getElementById("email").value = dataarray[configEnum.email];
             document.getElementById("totCycles").value = (dataarray[configEnum.totCycles]).trim();
 
-            //Updates the checkbox on the first tab
-            if(dataarray[configEnum.RTcheckbox].trim() == "true" || dataarray[configEnum.RTcheckbox].trim() == "ON"){
+            //Updates the recon checkbox on the first tab
+            if(dataarray[configEnum.reconCheckbox].trim() == "true" || dataarray[configEnum.reconCheckbox].trim() == "ON")
+            {
+              document.getElementById("Recon").checked = true;
+            }
+            else
+            {
+              document.getElementById("Recon").checked = false;
+            }
+            //Updates info on third tab
+            let dispRecon = ""; // sets what to display for RT
+            if (dataarray[configEnum.RTCheckbox].trim() == "true")
+            {
+              dispRecon = "ON";
+            }
+            else
+            {
+              dispRecon = "OFF";
+            }
+
+            //Updates the RT checkbox on the first tab
+            if(dataarray[configEnum.RTCheckbox].trim() == "true" || dataarray[configEnum.RTCheckbox].trim() == "ON")
+            {
               document.getElementById("RTMain").checked = true;
             }
             else
@@ -478,7 +507,7 @@
             }
             //Updates info on third tab
             let dispRT = ""; // sets what to display for RT
-            if (dataarray[configEnum.RTcheckbox].trim() == "true")
+            if (dataarray[configEnum.RTCheckbox].trim() == "true")
             {
               dispRT = "ON";
             }
@@ -499,6 +528,8 @@
               " " + dataarray[configEnum.CY5];
             document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + 
               " " + dataarray[configEnum.HEX];
+            document.getElementById('ciRecon').innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" 
+              + " " + dispRecon;
             document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" 
               + " " + dispRT;
             document.getElementById('citotalCycles').innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" 
@@ -510,9 +541,15 @@
             sendfam = dataarray[configEnum.FAM];
             sendcy5 = dataarray[configEnum.CY5];
             sendhex = dataarray[configEnum.HEX];
-            sendrt = dataarray[configEnum.RTcheckbox];
+            sendrecon = dataarray[configEnum.reconCheckbox];
+            sendrt = dataarray[configEnum.RTCheckbox];
             sendtotcycles = dataarray[configEnum.totCycles];
             document.getElementById('serverStatus').innerHTML = "Server Status: <span style = 'color:LimeGreen;font-weight:bold;''> Connected </span>";
+          
+          break;
+
+          case "loadrecipe":
+              // May not be needed here?!
           break;
 
           case "isRunning":
@@ -729,7 +766,7 @@
           document.getElementById("dropdown2").style.pointerEvents = "none";
           document.getElementById("dropdown2").style.opacity = "0.6";
           document.getElementById('filename').disabled = true;
-          document.getElementById('totCycles').disabled = true;
+          document.getElementById('totCycles').disabled = false; // Was true, changed WEG.
           document.getElementById('RTMain').disabled = true;
          //Changes start/stop button
           document.getElementById('startStopPCR').innerHTML = "Stop PCR";
@@ -745,8 +782,9 @@
        // This function sends the server a request to view and eventually display the information 
        // for a certain configuration thats clicked
        function loadDataRequest(){
-        if (lastRequest != dropdownID.options[dropdownID.selectedIndex].text)
-                //update names and send the request
+        //if (lastRequest != dropdownID.options[dropdownID.selectedIndex].text)
+        //update names and send the request
+        if ( true )  //  Reload all the time, even if same.
         {
          document.getElementById("ciconfig").innerHTML = "<span style = 'text-decoration: underline;'> Configuration Name:</span>" 
                   + " " + dropdownID.options[dropdownID.selectedIndex].text;  // Handles field on Tab 3.
@@ -759,15 +797,15 @@
         lastRequest = dropdownID.options[dropdownID.selectedIndex].text;
        }// end loadDataRequest
 
-       // Patterned off loadDataRequiest above.
+       // Patterned off loadDataRequest above.
        var lastRecipeRequest = " "; // Ensures that a request isnt sent multiple times of the same thing
-       // This function sends the server a request to view and eventually display the information 
-       // for a certain recipe that's clicked.
+       // This function sends the server a request to find all the *.ini files in the recipe directory,
+       // AND also runs the setup for the selected recipe!
        function loadRecipeRequest(){
-        if (lastRecipeRequest != dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text)
-                //update names and send the request
+        //if (lastRecipeRequest != dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text)
+        if (true)  // Update names and send the request. Always do this.  
         {
-         document.getElementById("cirecipes").innerHTML = "<span style = 'text-decoration: underline;'> Recipe Name:</span>" 
+         document.getElementById("cirecipe").innerHTML = "<span style = 'text-decoration: underline;'> Recipe Name:</span>" 
                   + " " + dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text;
          var msg = {
            id: "reciperequest",
@@ -822,7 +860,7 @@
          if(conditionsForStart()) { //function only runs if true;
             if(String(document.getElementById('startStopPCR').innerHTML) == "Start PCR"){
               var displayFileName1;
-              var timeStarted1 = new Date();
+              var timeStarted1 = new Date(); // Moved to C++ maybe.
               //Sets the default file name to display if there is no file name entered or if old and new file names match
               if (String(document.getElementById("filename").value).trim().length == 0 || oldFileName == newFileName) 
               {
@@ -863,7 +901,7 @@
                   runFinished = false;
                   startStopPCR();
                 }
-                else {}
+                
             }
             else
             {
@@ -926,8 +964,10 @@
         document.getElementById('expName').disabled = true;
         document.getElementById('dropdown').style.pointerEvents = 'none';
         document.getElementById('dropdown').style.opacity = '0.6';
+        document.getElementById('dropdown2').style.pointerEvents = 'none';
+        document.getElementById('dropdown2').style.opacity = '0.6';
         document.getElementById('filename').disabled = true;
-        document.getElementById('totCycles').disabled = true;
+        document.getElementById('totCycles').disabled = false;  // Was true, but will allow to change during cycling.
         document.getElementById('RTMain').disabled = true;
         //Code to reset graph related things
         data = [];
@@ -998,6 +1038,8 @@
         document.getElementById('expName').disabled = false;
         document.getElementById("dropdown").style.pointerEvents = "auto";
         document.getElementById("dropdown").style.opacity = "1";
+        document.getElementById("dropdown2").style.pointerEvents = "auto";
+        document.getElementById("dropdown2").style.opacity = "1";
         document.getElementById('filename').disabled = false;
         document.getElementById('totCycles').disabled = false;
         document.getElementById('RTMain').disabled = false;
@@ -1014,13 +1056,25 @@
       {
         emailvaluetosend = "caspar@casparvu.com"
       }
+      // Need to check that a selection was made.
+      var tmpRecipeFilenameSel = dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex];
+      var tmpRecipeFilename;
+      if (tmpRecipeFilenameSel)
+      {
+        tmpRecipeFilename = tmpRecipeFilenameSel.text;
+      } else
+      {
+        tmpRecipeFilename = dropdownIDRecipes.options[0].text
+      }
+      console.log("UI: startStopPCR: tmpRecipeFilename is " + tmpRecipeFilename);
       var msg = {
         id: "start/stop",
         email: emailvaluetosend,
-        cutoffcycles: document.getElementById("totCycles").value
+        cutoffcycles: document.getElementById("totCycles").value,
+        selRecipefilename: tmpRecipeFilename,
       };
       ws.send(JSON.stringify(msg)); //sends message
-    }
+    }// end of function startStopPCR() 
 
     var timeFinishDisplay; //Important to send
 
@@ -1033,6 +1087,8 @@
       document.getElementById('expName').disabled = false;
       document.getElementById("dropdown").style.pointerEvents = "auto";
       document.getElementById("dropdown").style.opacity = "1";
+      document.getElementById("dropdown2").style.pointerEvents = "auto";
+      document.getElementById("dropdown2").style.opacity = "1";
 
       document.getElementById('filename').disabled = false;
       document.getElementById('totCycles').disabled = false;
@@ -1320,6 +1376,34 @@ var min = myDate.getMinutes().toString().padStart(2,'0');
 var ss = myDate.getSeconds().toString().padStart(2,'0');
 
 return (yy+mo+dd+'_'+hh+min+ss)
+}
+
+function updateTotCycles(myTotCycles)
+{
+  // Tab 1
+  document.getElementById("totCycles").value = (myTotCycles).trim();
+  // Tab 2
+  document.getElementById("esTotalCycles").innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " "  + myTotCycles;
+  // Tab 3
+  document.getElementById('citotalCycles').innerHTML = "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " " + myTotCycles;
+
+}
+
+
+// Some geneal and short(?) functions to update filed on the HTML web page.
+
+//document.getElementById("projName").value = dataarray[configEnum.projName];  //dataarray[2];
+//            DOMUpdate("projName", value, dataarray[configEnum.projName]);
+
+function DOMUpdate(myId, myValueEtc, myData)
+{
+  if ( myValueEtc == "value")
+  {
+    document.getElementById(myId).value = myData;
+  } else if ( myValueEtc == undefined)
+  {
+    // Do noting for now. weg 20230305
+  }
 }
 
 

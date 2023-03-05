@@ -6,7 +6,8 @@ rname: default.ini
 fam: one
 cy5: two
 hex: three
-rtval:false
+recon: false
+rtval: false
 cycles: 3
 
 cname: laser heating
@@ -17,7 +18,8 @@ rname: default.ini
 fam: one
 cy5: two
 hex: three
-rtval:false
+recon: false
+rtval: false
 cycles: 40
 
 cname: zTestOne
@@ -28,7 +30,8 @@ rname: default.ini
 fam: one
 cy5: two
 hex: three
-rtval:false
+recon: false
+rtval: false
 cycles: 45
 
 cname: zTestTwo
@@ -39,7 +42,8 @@ rname: default.ini
 fam: one
 cy5: two
 hex: three
-rtval:false
+recon: false
+rtval: false
 cycles: 50
 
 cname: New Nanorods
@@ -50,8 +54,9 @@ rname: default.ini
 fam: NAOne
 cy5: NATwo
 hex: S Midas
-rtval:false
-cycles:50
+recon: false
+rtval: false
+cycles: 50
  
 cname: evaporation
 oname: Nick
@@ -61,7 +66,8 @@ rname: default.ini
 fam: NAOne
 cy5: NATwo
 hex: S Midas
-rtval:false
+recon: false
+rtval: false
 cycles:40
 
 cname: Temps
@@ -72,8 +78,9 @@ rname: default.ini
 fam:  One
 cy5: Two
 hex: Three
-rtval:false
-cycles:50
+recon: false
+rtval: false
+cycles: 50
  
 cname: Swine Testing
 oname: Nick
@@ -83,8 +90,9 @@ rname: default.ini
 fam: FMD
 cy5: RNAseP
 hex: SVA
-rtval:true
-cycles:50
+recon: true
+rtval: true
+cycles: 50
  
 cname: PWM Laser AuNRs
 oname:  Rosana
@@ -93,8 +101,9 @@ pname:  PWM
 rname: default.ini
 fam: Nothing 1
 cy5: Nothing 2
-hex:  S. Mitis
-rtval:false
+hex: S. Mitis
+recon: false
+rtval: false
 cycles: 50
  
 cname: Longitudinal Study
@@ -105,18 +114,21 @@ rname: default.ini
 fam: FMD
 cy5: RNAseP
 hex: SVA
-rtval:true
-cycles:40
+recon: true
+rtval: true
+cycles: 40
  
 cname: jus testing
 oname: bill e.g.
 ename: bill.gabella@somewhere.com
 pname: stuff
+rname: default.ini
 fam: one
 cy5: three
 hex: four
-rtval:true
-cycles:55
+recon: true
+rtval: true
+cycles: 55
  
 cname: HTP LTP
 oname: Nick
@@ -126,5 +138,6 @@ rname: banana
 fam: Nothing
 cy5: Nothing
 hex: Nothing
-rtval:false
-cycles:20
+recon: false
+rtval: false
+cycles: 20
