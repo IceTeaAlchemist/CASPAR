@@ -1392,17 +1392,25 @@ function updateTotCycles(myTotCycles)
 
 // Some geneal and short(?) functions to update filed on the HTML web page.
 
-//document.getElementById("projName").value = dataarray[configEnum.projName];  //dataarray[2];
-//            DOMUpdate("projName", value, dataarray[configEnum.projName]);
+//document.getElementById("projName").value = dataarray[configEnum.projName];
+//    e.g.    DOMUpdate("projName", "value", dataarray[configEnum.projName]);
+// myValueEtc of "value", "innerHTML", 
 
 function DOMUpdate(myId, myValueEtc, myData)
 {
   if ( myValueEtc == "value")
   {
     document.getElementById(myId).value = myData;
-  } else if ( myValueEtc == undefined)
+  } 
+  else if ( myValueEtc == "innerHTML")
   {
-    // Do noting for now. weg 20230305
+    document.getElementById(myId).innerHTML = myData; 
+    // myData like
+    // "<span style = 'text-decoration: underline;'> Total Cycles:</span>" + " " + myTotCycles 
+  } 
+  else if ( myValueEtc == undefined)
+  {
+    // Do nothing for now. weg 20230305
   }
 }
 
