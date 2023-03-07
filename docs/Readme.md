@@ -62,7 +62,7 @@ void Initialize(Local<Object> exports)
         // WEG, make these functions, putComments in caspar.js and writeComments in casparapi.cpp  or setup.cpp ??
     }
 ```
-and those mappings are setup by<br>
+and those mappings are setup by casparapi.cpp (L395)<br>
 ```C++
     NODE_MODULE(casparengine, Initialize)  // The main deal here.
 ```
