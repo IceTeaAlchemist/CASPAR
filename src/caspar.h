@@ -167,15 +167,15 @@ extern string recipeFile;
 extern string recipeDir;
 
 // setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
-// There is a setup.h now, moves these there...if non-extern's.  WEG
+// There is a setup.h now, move these there...if non-extern's.  WEG
 void setupPi(void);
 void setupQiagen(void);
 void openFiles(void);
 void setupADC(void);
-void calibrategain(void);
+// Using Qiagen function now.  void calibrategain(void);
 void closeFiles();
 void doMakeDirs(string longdirname);
-void writeComments(string savedComments, string savedStartTime, string savedFinishTime);
+// The NAN NODES do not need declaration in header??  void writeComments(string savedComments, string savedStartTime, string savedFinishTime);
 void doWriteComments(string savedComments, string savedStartDate, string savedStartTime, string savedFinishTime,
    string savedProjName, string savedOperator, string savedExperimentName);
 extern void doHardwareConfig(string filename = "configs/devices.ini");  // Defaults only in header files?? weg

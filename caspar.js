@@ -250,7 +250,9 @@ wss.on('connection', function connection(ws) {
                     // Start the PCR cycling if it's not.
                     engine.setCutoff(parseInt(msg.cutoffcycles));
                     savedCycles = parseInt(msg.cutoffcycles);
-                    var selRecipeFilename = 'default.ini';
+                    console.log("case: start/stop: savedCycles is " + savedCycles);
+                    // var selRecipeFilename; // = 'default.ini';   // weg ???
+                    selRecipeFilename = msg.selRecipeFilename;
                     console.log("caspar.js: case start/stop: Calling engine.setRecipeFilename() on filename " + 
                     selRecipeFilename + " directory " + recipeDir );
                     console.log("\t msg.recipefilename is " + msg.recipefilename);
@@ -275,14 +277,16 @@ wss.on('connection', function connection(ws) {
                             ws.send(JSON.stringify(errorreport));
                         }
                         ws.send(JSON.stringify({id: "runcomplete"}));
-                        var mailOptions = {
+                        var mailOptions = 
+                        {
                             from: 'caspar@casparvu.com',
                             to: savedDefEm,
                             subject: 'CASPAR run finished.',
                             text: 'Sample finished.',
                         };
                         // Send the email and log info.
-                        transporter.sendMail(mailOptions, function(error, info){
+                        transporter.sendMail(mailOptions, function(error, info)
+                        {
                             if (error) {
                                 console.log(error);
                             } else {
@@ -457,6 +461,11 @@ wss.on('connection', function connection(ws) {
                 };
                 ws.send(JSON.stringify(msg));
                 console.log(msg);
+                break;
+            /////////////////////////////////////////////////
+            case "setTotCycles":
+                engine.setTotCycles(msg.totCycles);
+                savedCycles = msg.totCycles;  // Used in the onconnect case.
                 break;
             /////////////////////////////////////////////////
             case "shutdown": 

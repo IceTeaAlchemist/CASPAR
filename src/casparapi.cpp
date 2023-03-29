@@ -4,7 +4,7 @@ to the Node needs to be in namespace caspar below.
 
 
 */
-#include <node.h>  // /usr/include/node  Add to C/Cpp Edit Configurations for file c_cpp_properties.json.
+#include <node.h>  // /usr/include/node  Add to C/Cpp Edit Configurations for file c_cpp_properties.json.  Ctl-Sh-P type C/C++ select JSON configs.
 #include <unistd.h>
 #include "caspar.h"
 #include <wiringPi.h>
@@ -337,7 +337,15 @@ namespace caspar
         Isolate* isolate = args.GetIsolate();
         int cyclefromserver = args[0].As<Number>()->Value();
         cyclecutoff = cyclefromserver;
-        cout << "setCutoff: Cycles set: " << cyclecutoff << endl;
+        cout << "setCutoff: Total cycles set: " << cyclecutoff << endl;
+    }
+
+    void setTotCycles(const FunctionCallbackInfo<Value>& args)
+    {
+        Isolate* isolate = args.GetIsolate();
+        int cyclefromserver = args[0].As<Number>()->Value();
+        cyclecutoff = cyclefromserver;
+        cout << "setTotCycles: Total cycles set: " << cyclecutoff << endl;
     }
 
     void checkInit(const FunctionCallbackInfo<Value> &args)
@@ -383,6 +391,7 @@ namespace caspar
         NODE_SET_METHOD(exports, "getfiles", readoutFilenames);
         NODE_SET_METHOD(exports, "boxfanoff", turnOffBoxFan);
         NODE_SET_METHOD(exports, "setCutoff", setCutoff);
+        NODE_SET_METHOD(exports, "setTotCycles", setTotCycles);
         NODE_SET_METHOD(exports, "RECONoff", RToff);  // WEG, not used yet, will map to RECONoff, RECONon eventually.
         NODE_SET_METHOD(exports, "RECONon", RTon);    // ditto
         NODE_SET_METHOD(exports, "RToff", RToff);

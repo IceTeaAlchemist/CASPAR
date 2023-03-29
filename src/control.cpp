@@ -253,6 +253,7 @@ int cycle()
     coeffprev[1] = 0;
     coeffprev[2] = 0;
     int cutoff = cyclecutoff;
+    cout << "control.cpp: cycle(): cutoff (and cyclecutoff) are " << cutoff << " ." << endl;
     long triggertime; // 20220822 weg, from int to long
     bool past_the_hump;
     temperrors = 0;

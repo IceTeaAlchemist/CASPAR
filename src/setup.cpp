@@ -11,8 +11,6 @@
 // Experimenting with below, weg 20230202
 #include "setup.h"
 
-
-
 /* Sets up the Pi's GPIO pins and initiates wiringPi's library for GPIO communications.
  */
 void setupPi(void)
@@ -26,18 +24,19 @@ void setupPi(void)
     // cout << devicesIni->print_file() << endl;
     wiringPiSetup();
     // Set pins for Alert, heating and cooling.
-	pinMode(ALERT_PIN,INPUT);
+    pinMode(ALERT_PIN, INPUT);
     pinMode(HEATER_PIN, OUTPUT);
     pinMode(FAN_PIN, OUTPUT);
     pinMode(BOX_FAN, OUTPUT);
     // cout << progName << ": Info, pwm_enable is " << pwm_enable << endl;
-    if (pwm_enable){
+    if (pwm_enable)
+    {
         pinMode(PWM_PIN, PWM_OUTPUT);
         pwmSetMode(pwm_mode);   //(PWM_MODE_MS);
-        pwmSetClock(pwm_clock);   //(19.53); // See wiringPi.h, takes an int.   
-        // Clock should be 19.2e6 divided by the desired Hz (1000) and then the Range (1024), 
+        pwmSetClock(pwm_clock); //(19.53); // See wiringPi.h, takes an int.
+        // Clock should be 19.2e6 divided by the desired Hz (1000) and then the Range (1024),
         // usually like 19.2 Mhz / 1024 / 1000 = 19 (an int).
-        pwmSetRange(pwm_range);   //(1024);
+        pwmSetRange(pwm_range); //(1024);
         // Set up the interrupt for sample reading. Note that these CANNOT be turned off once started,
         // so wrapping them in a boolean with a flag is a good idea.
         // wiringPiISR(3,INT_EDGE_RISING,sampletriggered);
@@ -49,31 +48,31 @@ void setupPi(void)
     digitalWrite(BOX_FAN, HIGH);
     digitalWrite(HEATER_PIN, LOW);
     // Open the runtime log file for appending and print the initialization time to it.
-    runtime_out.open(runlogDir+runlog, std::ios_base::app | std::ios_base::in);
+    runtime_out.open(runlogDir + runlog, std::ios_base::app | std::ios_base::in);
     runtime_out << progName << ":  PCR Session initialized at " << timestamp() << endl;
 }
 
-/* Sets up the Qiagen using default settings. Note that the qiagen itself is initialized externally. In 
+/* Sets up the Qiagen using default settings. Note that the qiagen itself is initialized externally. In
    the future this function will factor UI/recipe details.
  */
 void setupQiagen(void)
 {
-    // Set Qiagen 1 sample protocol--Maximum samples with minimum delay between them. This is so we can use 
+    // Set Qiagen 1 sample protocol--Maximum samples with minimum delay between them. This is so we can use
     // it for cycling.
-    sens1->writeqiagen(0, {255,255});  // Cycles to read, 65535.
-    sens1->writeqiagen(1, {00,00});   // Cycle time 0s.
-    sens1->writeqiagen(32,{01,244});   // ADC Sampling 500 Hz.
-    sens1->writeqiagen(5,{01,00});   // Average 1 sample, no average.
+    sens1->writeqiagen(0, {255, 255}); // Cycles to read, 65535.
+    sens1->writeqiagen(1, {00, 00});   // Cycle time 0s.
+    sens1->writeqiagen(32, {01, 244}); // ADC Sampling 500 Hz.
+    sens1->writeqiagen(5, {01, 00});   // Average 1 sample, no average.
     // Set Qiagen 2 sample protocol-- 200 samples with minimum delay between them.
-    sens2->writeqiagen(0, {00,200});  // Cycles to read, 200.
-    sens2->writeqiagen(1, {00,00});   // Cycle time 0s.
-    // Note: The number of samples is basically irrelevant, just make sure it's more than 3 (Hz of 
+    sens2->writeqiagen(0, {00, 200}); // Cycles to read, 200.
+    sens2->writeqiagen(1, {00, 00});  // Cycle time 0s.
+    // Note: The number of samples is basically irrelevant, just make sure it's more than 3 (Hz of
     // sample rate) * delay after the LED turns on in readPCR().
 
     // Set the LED power for the PCR wavelengths. Cycling sensing (sens1 LED 2) is set by the calibrator.
-    sens1->LED_current(1,50);
-    sens2->LED_current(2,120);
-    sens2->LED_current(1,40);
+    sens1->LED_current(1, 50);
+    sens2->LED_current(2, 120);
+    sens2->LED_current(1, 40);
 
     // Make sure all the LEDs besides the cycling one are off.
     sens2->LED_off(2);
@@ -82,7 +81,7 @@ void setupQiagen(void)
 
     // Set mode (beginning sampling routine after the LEDs are turned on) and method (which detector will be read).
     sens1->setMode(0);
-	sens1->setMethod(3);
+    sens1->setMethod(3);
     sens2->setMode(0);
     sens2->setMethod(1);
 }
@@ -95,21 +94,20 @@ void setupADC(void)
     cout << progName << ": before D2->SetGain(1);" << endl;
     // Setup the qiagen tapped ADC. See the class for documentation.
     D2->SetGain(1);
-	D2->SetMode(0);
-	D2->SetSPS(5);
-	D2->SetCompPol(1);
-	D2->SetCompQueue(0);
-    D2->SetMultiplex(1,3);
+    D2->SetMode(0);
+    D2->SetSPS(5);
+    D2->SetCompPol(1);
+    D2->SetCompQueue(0);
+    D2->SetMultiplex(1, 3);
     cout << progName << ": before TEMP->SetGain(adc1gain); with adc1gain = " << adc1gain << " ." << endl;
     // Setup the ADC for the temperature. See the ADC class for documentation.
-    TEMP->SetGain(adc1gain);  // For range +/- 4.096V .  adafruit-4-chan PDF page 13.
-	TEMP->SetMode(adc1mode);
-	TEMP->SetSPS(adc1sps);
-	TEMP->SetCompPol(adc1comppol);
-	TEMP->SetCompQueue(adc1compqueue);
+    TEMP->SetGain(adc1gain); // For range +/- 4.096V .  adafruit-4-chan PDF page 13.
+    TEMP->SetMode(adc1mode);
+    TEMP->SetSPS(adc1sps);
+    TEMP->SetCompPol(adc1comppol);
+    TEMP->SetCompQueue(adc1compqueue);
     TEMP->SetMultiplex(adc1multiplex[0], adc1multiplex[1]);
 }
-
 
 /* Runs the calibration algorithm for the L-DNA. CALIBRATION_MIN can be set in devices.ini .
  */
@@ -129,7 +127,7 @@ void setupADC(void)
 //     int basegain = gainmin;  // Was 80.
 //     double readinval;
 //     // Log to console and file that we're entering calibration.
-//     bstream << progName << ": Calibrating gain." << endl; 
+//     bstream << progName << ": Calibrating gain." << endl;
 //     cout << bstream.str();
 //     runtime_out << bstream.str();
 //     do
@@ -158,13 +156,11 @@ void setupADC(void)
 //         // Increase the gain.
 //         basegain += 10;
 //         sens1->stopMethod();
-//     } while (readinval < CALIBRATION_MIN && runflag == true); // Continue while we haven't reached our 
+//     } while (readinval < CALIBRATION_MIN && runflag == true); // Continue while we haven't reached our
 //     // requested minimum calibration fluoresence. This is defined in the header.
 // }
 
-
-
-/* Opens files for fit information, raw binary data, PCR, and Notes. These will need to be able 
+/* Opens files for fit information, raw binary data, PCR, and Notes. These will need to be able
    to rewrite the headings influenced by recipe.
    Modified to follow directory structure  ./data/<projname>/<exptname>/ .  20221002 weg
  */
@@ -174,70 +170,78 @@ void openFiles()
     ostringstream bstream;
     // If dataDir is not properly defined then skip all of this.
 
-    // Open coefficient and PCR storage files from provided strings. These names are generated 
+    // Open coefficient and PCR storage files from provided strings. These names are generated
     // from the timestamp the instrument was started or user input + timestamp.
     coeff_out.open(dataDir + coeffstorage, std::ios_base::out);
     pcr_out.open(dataDir + pcrstorage, std::ios_base::out);
     notes_out.open(dataDir + notesstorage, std::ios_base::out);
     temper_out.open(dataDir + temperstorage, std::ios_base::out);
-    //Dump column headings into the PCR file. Commas are so Excel will see this as a CSV.
-    pcr_out << "Time," << "FAM," << "HEX," << "Cy5," << endl;
+    // Dump column headings into the PCR file. Commas are so Excel will see this as a CSV.
+    pcr_out << "Time,"
+            << "FAM,"
+            << "HEX,"
+            << "Cy5," << endl;
     // Check that both fstreams are open, log any failures.
-    if(!coeff_out.is_open())
+    if (!coeff_out.is_open())
     {
         bstream << progName << ": **Failed to open " << dataDir + coeffstorage << endl;
         cout << bstream.str();
         runtime_out << bstream.str();
     }
-    if(!pcr_out.is_open())
+    if (!pcr_out.is_open())
     {
         bstream << progName << ": **Failed to open " << dataDir + pcrstorage << endl;
         cout << bstream.str();
         runtime_out << bstream.str();
     }
-    if(!notes_out.is_open())
+    if (!notes_out.is_open())
     {
         bstream << progName << ": **Failed to open " << dataDir + notesstorage << endl;
         cout << bstream.str();
         runtime_out << bstream.str();
     }
-    if(!temper_out.is_open())
+    if (!temper_out.is_open())
     {
         bstream << progName << ": **Failed to open " << dataDir + temperstorage << endl;
         cout << bstream.str();
         runtime_out << bstream.str();
-    }    
+    }
 
     // Try to open the binary output file, log if it fails.
-    output = fopen( (dataDir+rawstorage).c_str(), "wb" );
-	if(output == NULL)
-	{
-        bstream << progName << ": **Failed to open " << dataDir+rawstorage << endl;
-		cout << bstream.str();
+    output = fopen((dataDir + rawstorage).c_str(), "wb");
+    if (output == NULL)
+    {
+        bstream << progName << ": **Failed to open " << dataDir + rawstorage << endl;
+        cout << bstream.str();
         runtime_out << bstream.str();
-	} 
+    }
 }
 
 /* Closes all cycling output files.
-*/
+ */
 void closeFiles()
 {
-    bool oneOpen = ( coeff_out.is_open() ) || ( pcr_out.is_open() );
-    if ( coeff_out.is_open() ) coeff_out.close();
-    if ( pcr_out.is_open() ) pcr_out.close();
-    if ( notes_out.is_open() ) notes_out.close();
-    if ( temper_out.is_open() ) temper_out.close();
-    if ( oneOpen ) fclose(output);  // Kludge, likely but not guaranteed that if coeff_out OR pcr_out are open so is output.
+    bool oneOpen = (coeff_out.is_open()) || (pcr_out.is_open());
+    if (coeff_out.is_open())
+        coeff_out.close();
+    if (pcr_out.is_open())
+        pcr_out.close();
+    if (notes_out.is_open())
+        notes_out.close();
+    if (temper_out.is_open())
+        temper_out.close();
+    if (oneOpen)
+        fclose(output); // Kludge, likely but not guaranteed that if coeff_out OR pcr_out are open so is output.
 }
 
 // Must include <sys/stat.h> for the mkdir() function.  Requires a dir name and permissions, usually 0777.
 // For subdirs, the function below splits string at Linux / (slashes), and cascades the directory creation.
 // Likely the top ones, the first ones already exist, maybe the whole thing.
-// Expect longdirname like ./data/myproject/myexperiment/timestamp/  , ignore last /. 
+// Expect longdirname like ./data/myproject/myexperiment/timestamp/  , ignore last /.
 void doMakeDirs(string longdirname)
 {
     string progName = "doMakeDirs";
-    vector <string> subdirs;
+    vector<string> subdirs;
     string delim = "/";
     string subdir, therest;
     int dlen = delim.length();
@@ -246,11 +250,12 @@ void doMakeDirs(string longdirname)
     // Split the longdirname into subdirectories.
     therest = longdirname;
     int pos = 0;
-    while (pos < longdirname.length()-1 ) // Iteratively search for delimiter.
+    while (pos < longdirname.length() - 1) // Iteratively search for delimiter.
     {
         pos = therest.find(delim);
-        if ( pos > 0 ) subdirs.push_back( therest.substr(0,pos) );
-        therest = therest.substr(pos+dlen);  // Set to the string AFTER the delimiter.
+        if (pos > 0)
+            subdirs.push_back(therest.substr(0, pos));
+        therest = therest.substr(pos + dlen); // Set to the string AFTER the delimiter.
     }
 
     // Printouts just for debugging.
@@ -266,69 +271,74 @@ void doMakeDirs(string longdirname)
 
     // Do the mkdir()'s.
     mode_t perm = 0777;
-    string prev = "";  // Previous directory in the hierarchy, top to bottom subdirectory.
+    string prev = ""; // Previous directory in the hierarchy, top to bottom subdirectory.
     int rc, rctot;
-    for (string iter: subdirs)
+    for (string iter : subdirs)
     {
-        if (iter==".") continue;  // Skip the . of ./.
-        if (prev == "")  // First time through, top directory only.
+        if (iter == ".")
+            continue;   // Skip the . of ./.
+        if (prev == "") // First time through, top directory only.
         {
-        rc = mkdir( iter.c_str(), perm);  // Many of these may already exist.  That is fine.
-        // rc = 0 success, rc = -1 if already exists or a problem.
-        prev = iter;
-        } else  // Already made the top directory, these are all subdirs.
-        {
-        rc = mkdir( (prev+"/"+iter).c_str(), perm);
-        prev = prev + "/" + iter;
+            rc = mkdir(iter.c_str(), perm); // Many of these may already exist.  That is fine.
+            // rc = 0 success, rc = -1 if already exists or a problem.
+            prev = iter;
         }
-        if ( rc == -1 )
+        else // Already made the top directory, these are all subdirs.
+        {
+            rc = mkdir((prev + "/" + iter).c_str(), perm);
+            prev = prev + "/" + iter;
+        }
+        if (rc == -1)
         {
             cout << progName << ": Either directory already exists or a problem creating it, like bad path." << endl;
             cout << progName << ": rc " << rc << " iter " << iter << " prev " << prev << endl;
             rctot = -1;
         }
         // All permissions look like 755 and not 777, careful playing with perms easy to make it not allow subdirectories.
-    }      
+    }
     // return rctot;  // Do not need return code, the upper code will not fix any of this.
 }
 
 void doWriteComments(string savedComments, string savedStartDate, string savedStartTime, string savedFinishTime,
-   string savedProjName, string savedOperator, string savedExperimentName)
+                     string savedProjName, string savedOperator, string savedExperimentName)
 {
-    cout << "doWriteComments: Comments: " << endl << savedComments << endl << savedStartDate << "   " << savedStartTime << "   " << 
-        savedFinishTime << endl;
-    cout << savedProjName << endl << savedOperator << endl << savedExperimentName << endl;
+    cout << "doWriteComments: Comments: " << endl
+         << savedComments << endl
+         << savedStartDate << "   " << savedStartTime << "   " << savedFinishTime << endl;
+    cout << savedProjName << endl
+         << savedOperator << endl
+         << savedExperimentName << endl;
 
     string useExperimentName;
-    useExperimentName = (savedExperimentName == "" ? "none": savedExperimentName);
+    useExperimentName = (savedExperimentName == "" ? "none" : savedExperimentName);
 
     notes_out << "##################################################" << endl;
-    notes_out << "Comments: " << endl << savedComments << endl;
-    notes_out << "Start Date: " << savedStartDate << "   " << "Start Time: " << savedStartTime << "   " << 
-        "Finish Time: " << savedFinishTime << endl;
+    notes_out << "Comments: " << endl
+              << savedComments << endl;
+    notes_out << "Start Date: " << savedStartDate << "   "
+              << "Start Time: " << savedStartTime << "   "
+              << "Finish Time: " << savedFinishTime << endl;
     notes_out << "Project Name: " << savedProjName << endl;
     notes_out << "Operator Name: " << savedOperator << endl;
     notes_out << "Experiment Name (if given): " << useExperimentName << endl;
     notes_out << "##################################################" << endl;
 }
 
-
-
 // Needed for the config files with strings like vectors "{0, -1}" .
 // Returns the vector of ints {0, -1}, in this example.
 vector<int> convertstr2vecint(string mystring)
 {
-    stringstream mystream(mystring.substr(1, mystring.length()-2) );
+    stringstream mystream(mystring.substr(1, mystring.length() - 2));
     vector<int> myvec;
-    //cout << "convertstr2vecint: before while loop" << endl;
-    while( mystream.good() )
+    // cout << "convertstr2vecint: before while loop" << endl;
+    while (mystream.good())
     {
         string substr;
         getline(mystream, substr, ',');
-        //cout << "convertstr2vecint: substr is " << substr << " and mystring is " << mystring << endl;
-        myvec.push_back( stoi(substr) );
+        // cout << "convertstr2vecint: substr is " << substr << " and mystring is " << mystring << endl;
+        myvec.push_back(stoi(substr));
     }
-    //cout << "convertstr2vecint: after while loop" << endl;
+    // cout << "convertstr2vecint: after while loop" << endl;
     return myvec;
 }
 
@@ -336,14 +346,14 @@ vector<int> convertstr2vecint(string mystring)
 // 20230202 weg, started
 void doHardwareConfig(string filename /*= "configs/devices.ini" */)
 {
-    ostringstream bstream;  // For complicated printouts.
+    ostringstream bstream; // For complicated printouts.
     string progName = "doHardwareConfig";
 
     /*
-    * These declarations are all for the externally linked variables found in caspar.h 
-    * and used throughout the code. Please try to keep those declarations IN setup.cpp 
-    * for consistency.
-    */
+     * These declarations are all for the externally linked variables found in caspar.h
+     * and used throughout the code. Please try to keep those declarations IN setup.cpp
+     * for consistency.
+     */
 
     // Read the config file with sections [Qiagen] and [ADC], etc.
     // Read the defaults for the devices.ini/Hardware and for the default.ini/Recipe.
@@ -356,8 +366,8 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
     //     bstream << "\t Setting it to default.ini ." << endl;
     //     cout << bstream.str();
     //     // runtimeout ?? does it exist on the first call?
-    // }    
-    devicesIni = new config(filename);//"configs/devices.ini");
+    // }
+    devicesIni = new config(filename); //"configs/devices.ini");
 
     BoxName = devicesIni->get_value("Box", "BoxName");
     bstream << progName << ": Reading file " << filename << " ." << endl;
@@ -367,55 +377,53 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
     // Set up the qiagens on relevant USB ports.
     delete sens1;
     delete sens2;
-    sens1 = new qiagen( devicesIni->get_value("Qiagen", "Q1SerialPort") );  // "/dev/ttyUSB0"
-    sens2 = new qiagen( devicesIni->get_value("Qiagen", "Q2SerialPort") );  // "/dev/ttyUSB1"
+    sens1 = new qiagen(devicesIni->get_value("Qiagen", "Q1SerialPort")); // "/dev/ttyUSB0"
+    sens2 = new qiagen(devicesIni->get_value("Qiagen", "Q2SerialPort")); // "/dev/ttyUSB1"
     // Check that it matches devices.ini file for Q1 and Q2.  Adjust which is Q1 (front one) and which Q2 (back one).
-    cout << progName << ": Before checkRenameQiagens, sens1 " << sens1 << " sens2 " << sens2 << endl;   
+    cout << progName << ": Before checkRenameQiagens, sens1 " << sens1 << " sens2 " << sens2 << endl;
     checkRenameQiagens(sens1, sens2, devicesIni);
-    cout << progName << ": After swap, sens1 " << sens1 << " sens2 " << sens2 << endl;    
+    cout << progName << ": After swap, sens1 " << sens1 << " sens2 " << sens2 << endl;
     // Above calls by reference, have to de-pointer the pointers.
     // Double check that sens1 is Q1, OPPOSITE or Nick's definition.
 
-
     // Set up the ADCs to use interrupts as well as declare them.
     DEVICE_ID = stoul(devicesIni->get_value("ADC", "ADC0DevID"));
-    TEMP_ID = stoul(devicesIni->get_value("ADC", "ADC1DevID")); 
+    TEMP_ID = stoul(devicesIni->get_value("ADC", "ADC1DevID"));
     delete D2;
     delete TEMP;
-    D2 = new adc( DEVICE_ID, 0x8000, 0x7FFF);  // Was define DEVICE_ID, 0x48 . // Already declared default constructor.
-    TEMP = new adc( TEMP_ID, 0x8000, 0x7FFF);  // Was define TEMP_ID, 0x49 .
+    D2 = new adc(DEVICE_ID, 0x8000, 0x7FFF); // Was define DEVICE_ID, 0x48 . // Already declared default constructor.
+    TEMP = new adc(TEMP_ID, 0x8000, 0x7FFF); // Was define TEMP_ID, 0x49 .
 
     temper_enable = (devicesIni->get_value("Temperature", "Enable") == "true");
-    adc1gain = stoi(devicesIni->get_value("Temperature", "ADC1Gain") );
-    adc1mode = stoi(devicesIni->get_value("Temperature", "ADC1Mode") );
-    adc1sps = stoi(devicesIni->get_value("Temperature", "ADC1SPS") );
-    adc1comppol = stoi(devicesIni->get_value("Temperature", "ADC1CompPol") );
-    adc1compqueue = stoi(devicesIni->get_value("Temperature", "ADC1CompQueue") );
-    adc1multiplex = convertstr2vecint( devicesIni->get_value("Temperature", "ADC1Multiplex") );
-    temper_vmax = stof( devicesIni->get_value("Temperature", "Vmax") );
-    temper_pow2effbits = stof( devicesIni->get_value("Temperature", "Pow2EffBits") );
-    temper_calibVoffset = stof( devicesIni->get_value("Temperature", "CalibVoffset") );
-    temper_calibSlope = stof( devicesIni->get_value("Temperature", "CalibSlope") );
+    adc1gain = stoi(devicesIni->get_value("Temperature", "ADC1Gain"));
+    adc1mode = stoi(devicesIni->get_value("Temperature", "ADC1Mode"));
+    adc1sps = stoi(devicesIni->get_value("Temperature", "ADC1SPS"));
+    adc1comppol = stoi(devicesIni->get_value("Temperature", "ADC1CompPol"));
+    adc1compqueue = stoi(devicesIni->get_value("Temperature", "ADC1CompQueue"));
+    adc1multiplex = convertstr2vecint(devicesIni->get_value("Temperature", "ADC1Multiplex"));
+    temper_vmax = stof(devicesIni->get_value("Temperature", "Vmax"));
+    temper_pow2effbits = stof(devicesIni->get_value("Temperature", "Pow2EffBits"));
+    temper_calibVoffset = stof(devicesIni->get_value("Temperature", "CalibVoffset"));
+    temper_calibSlope = stof(devicesIni->get_value("Temperature", "CalibSlope"));
 
     // PWM stuff is repeated in the recipe files too.
-    pwm_enable = (devicesIni->get_value("PWM", "Enable") == "true"); // Turn off PWM avoid sudo node caspar.js .
-    pwm_high_ratio = stof( devicesIni->get_value("PWM", "HighRatio") ); //0.85;
-    pwm_high = 1024.0*pwm_high_ratio;
-    pwm_low_ratio = stof( devicesIni->get_value("PWM", "LowRatio") );  //0.0;
-    pwm_low = 1024.0*pwm_low_ratio;
-    pwm_clock = stof( devicesIni->get_value("PWM", "Clock") );  //19.53;
-    pwm_range = stoi( devicesIni->get_value("PWM", "Range") );  //1024;
-    pwm_mode = stoi( devicesIni->get_value("PWM", "Mode") );  //0;
-
+    pwm_enable = (devicesIni->get_value("PWM", "Enable") == "true");  // Turn off PWM avoid sudo node caspar.js .
+    pwm_high_ratio = stof(devicesIni->get_value("PWM", "HighRatio")); // 0.85;
+    pwm_high = 1024.0 * pwm_high_ratio;
+    pwm_low_ratio = stof(devicesIni->get_value("PWM", "LowRatio")); // 0.0;
+    pwm_low = 1024.0 * pwm_low_ratio;
+    pwm_clock = stof(devicesIni->get_value("PWM", "Clock")); // 19.53;
+    pwm_range = stoi(devicesIni->get_value("PWM", "Range")); // 1024;
+    pwm_mode = stoi(devicesIni->get_value("PWM", "Mode"));   // 0;
 
     // Some GPIO extern values from the devices.ini file.
-    HEATER_PIN = stoi( devicesIni->get_value("GPIO", "HEATER_PIN") ); // Typ 7.
-    FAN_PIN = stoi( devicesIni->get_value("GPIO", "FAN_PIN") ); // Typ 4.
-    BOX_FAN = stoi( devicesIni->get_value("GPIO", "BOX_FAN") ); // Typ 5.
-    PWM_PIN = stoi( devicesIni->get_value("GPIO", "PWM_PIN") ); // Typ 23.
-    ALERT_PIN = stoi( devicesIni->get_value("GPIO", "ALERT_PIN") ); // Typ 23.
+    HEATER_PIN = stoi(devicesIni->get_value("GPIO", "HEATER_PIN")); // Typ 7.
+    FAN_PIN = stoi(devicesIni->get_value("GPIO", "FAN_PIN"));       // Typ 4.
+    BOX_FAN = stoi(devicesIni->get_value("GPIO", "BOX_FAN"));       // Typ 5.
+    PWM_PIN = stoi(devicesIni->get_value("GPIO", "PWM_PIN"));       // Typ 23.
+    ALERT_PIN = stoi(devicesIni->get_value("GPIO", "ALERT_PIN"));   // Typ 23.
 
-}// end doHardwareConfig
+} // end doHardwareConfig
 
 // doRecipeConfig - Reads the INI file for the setup to almost every except hardware, so the cycle count, the
 // channels to use on the Qiagens and for what, amplitude settings on the derivative check on the LDNA cycling, etc.
@@ -424,27 +432,27 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
 // 20230305 weg, Do a check for existence of the recipe (called for configs.txt it might no), use default.ini if not.
 void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
 {
-    ostringstream bstream;  // For complicated printouts.
+    ostringstream bstream; // For complicated printouts.
     string progName = "doRecipeConfig";
 
     /*
-    * These declarations are all for the externally linked variables found in caspar.h 
-    * and used throughout the code. Please try to keep those declarations IN setup.cpp 
-    * for consistency.
-    */
+     * These declarations are all for the externally linked variables found in caspar.h
+     * and used throughout the code. Please try to keep those declarations IN setup.cpp
+     * for consistency.
+     */
 
     // Read the config file with sections like [Qiagen] and [ADC], etc.
     delete recipeIni;
-    if ( ! fileExists(filename) )  // File does NOT exist.
+    if (!fileExists(filename)) // File does NOT exist.
     {
-        filename = "./configs/recipe/default.ini";
+        filename = "./configs/recipes/default.ini";
         bstream << progName << ": the requested recipe does not exist, " << filename << " ." << endl;
         bstream << "\t Setting it to default.ini ." << endl;
         cout << bstream.str();
         // runtimeout ?? does it exist on the first call?
     }
     recipeIni = new config(filename); //"configs/recipes/default.ini");
-    
+
     recipeVersion = recipeIni->get_value("Description", "RecipeVersion");
     recipeDate = recipeIni->get_value("Description", "Date");
     recipeDescShort = recipeIni->get_value("Description", "Short");
@@ -456,65 +464,65 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     cout << bstream.str();
 
     // Laser control is in the recipes file.
-    pwm_enable = (recipeIni->get_value("PWM", "Enable") == "true"); // Turn off PWM avoid sudo node caspar.js .
-    pwm_high_ratio = stof( recipeIni->get_value("PWM", "HighRatio") ); //0.85;
-    pwm_high = 1024.0*pwm_high_ratio;
-    pwm_low_ratio = stof( recipeIni->get_value("PWM", "LowRatio") );  //0.0;
-    pwm_low = 1024.0*pwm_low_ratio;
-    pwm_clock = stof( recipeIni->get_value("PWM", "Clock") );  //19.53;
-    pwm_range = stoi( recipeIni->get_value("PWM", "Range") );  //1024;
-    pwm_mode = stoi( recipeIni->get_value("PWM", "Mode") );  //0;
+    pwm_enable = (recipeIni->get_value("PWM", "Enable") == "true");  // Turn off PWM avoid sudo node caspar.js .
+    pwm_high_ratio = stof(recipeIni->get_value("PWM", "HighRatio")); // 0.85;
+    pwm_high = 1024.0 * pwm_high_ratio;
+    pwm_low_ratio = stof(recipeIni->get_value("PWM", "LowRatio")); // 0.0;
+    pwm_low = 1024.0 * pwm_low_ratio;
+    pwm_clock = stof(recipeIni->get_value("PWM", "Clock")); // 19.53;
+    pwm_range = stoi(recipeIni->get_value("PWM", "Range")); // 1024;
+    pwm_mode = stoi(recipeIni->get_value("PWM", "Mode"));   // 0;
 
     // Miscellaneous Fit and RT values.  Some of these should be in Assay Recipes too.
-    SMOOTHING = stoi( recipeIni->get_value("Fitting", "SMOOTHING") );  // 25
-    CONVERGENCE_THRESHOLD = stoi( recipeIni->get_value("Fitting", "CONVERGENCE_THRESHOLD") );  // 1
-    
-    RT_Enable = (recipeIni->get_value("RT", "RTEnable")=="true");
-    RT_LENGTH = stoi( recipeIni->get_value("RT", "RT_LENGTH") );  // 600
-    RT_TEMP = stoi( recipeIni->get_value("RT", "RT_TEMP") );  // 60
-    RT_WAITTOTEMP = stoi( recipeIni->get_value("RT", "RT_WAITTOTEMP") );  // 55
-    
-    RECON_Enable = (recipeIni->get_value("Recon", "ReconEnable")=="true");
-    RECON_LENGTH = stoi( recipeIni->get_value("Recon", "RECON_LENGTH") );  // 600
-    RECON_TEMP = stoi( recipeIni->get_value("Recon", "RECON_TEMP") );  // 55
-    RECON_WAITTOTEMP = stoi( recipeIni->get_value("Recon", "RECON_WAITTOTEMP") );  // 55
+    SMOOTHING = stoi(recipeIni->get_value("Fitting", "SMOOTHING"));                         // 25
+    CONVERGENCE_THRESHOLD = stoi(recipeIni->get_value("Fitting", "CONVERGENCE_THRESHOLD")); // 1
+
+    RT_Enable = (recipeIni->get_value("RT", "RTEnable") == "true");
+    RT_LENGTH = stoi(recipeIni->get_value("RT", "RT_LENGTH"));         // 600
+    RT_TEMP = stoi(recipeIni->get_value("RT", "RT_TEMP"));             // 60
+    RT_WAITTOTEMP = stoi(recipeIni->get_value("RT", "RT_WAITTOTEMP")); // 55
+
+    RECON_Enable = (recipeIni->get_value("Recon", "ReconEnable") == "true");
+    RECON_LENGTH = stoi(recipeIni->get_value("Recon", "RECON_LENGTH"));         // 600
+    RECON_TEMP = stoi(recipeIni->get_value("Recon", "RECON_TEMP"));             // 55
+    RECON_WAITTOTEMP = stoi(recipeIni->get_value("Recon", "RECON_WAITTOTEMP")); // 55
     // int CALIBRATION_MIN = stoi( devicesIni->get_value("MISC", "CALIBRATION_MIN") );  // 150
 
     // Some fitting params in control.cpp L345-ish.
-    ITER_MAX = stoi( recipeIni->get_value("Cycling", "ITER_MAX") ); // 24
-    AMPL_MIN = stod( recipeIni->get_value("Cycling", "AMPL_MIN") ); // 10
-    CTR_MIN = stod( recipeIni->get_value("Cycling", "CTR_MIN") ); // 2
-    ITER_MAX_PREMELT = stoi( recipeIni->get_value("Recon", "ITER_MAX_PREMELT") );
-    AMPL_MIN_PREMELT = stod( recipeIni->get_value("Recon", "AMPL_MIN_PREMELT") );
-    CTR_MIN_PREMELT = stod( recipeIni->get_value("Recon", "CTR_MIN_PREMELT") );
+    ITER_MAX = stoi(recipeIni->get_value("Cycling", "ITER_MAX")); // 24
+    AMPL_MIN = stod(recipeIni->get_value("Cycling", "AMPL_MIN")); // 10
+    CTR_MIN = stod(recipeIni->get_value("Cycling", "CTR_MIN"));   // 2
+    ITER_MAX_PREMELT = stoi(recipeIni->get_value("Recon", "ITER_MAX_PREMELT"));
+    AMPL_MIN_PREMELT = stod(recipeIni->get_value("Recon", "AMPL_MIN_PREMELT"));
+    CTR_MIN_PREMELT = stod(recipeIni->get_value("Recon", "CTR_MIN_PREMELT"));
     // The Channels used.  Set qiagen properties for fitting-- format is {QIAGEN, METHOD}
-    LTP = convertstr2vecint( recipeIni->get_value("Cycling", "LTP") );
-    HTP = convertstr2vecint( recipeIni->get_value("Cycling", "HTP") );
-    //int fittingqiagen;
- 
+    LTP = convertstr2vecint(recipeIni->get_value("Cycling", "LTP"));
+    HTP = convertstr2vecint(recipeIni->get_value("Cycling", "HTP"));
+    // int fittingqiagen;
+
     // Thresholds for switching, see control.cpp Lxxx.  Lower case variable names show up a lot in code.
-    THRESH = stod( recipeIni->get_value("Cycling", "THRESH") ); // 0.05
-    THRESHCOOL = stod( recipeIni->get_value("Cycling", "THRESHCOOL") ); // 0.135
-    DTHRESHHEAT = stod( recipeIni->get_value("Cycling", "DTHRESHHEAT") );  // 0.25
-    DTHRESHCOOL = stod( recipeIni->get_value("Cycling", "DTHRESHCOOL") );
-    FluorCalib = stod( recipeIni->get_value("Cycling", "FluorCalib") ); // 300
-    FluorCalibLDNA = stod( recipeIni->get_value("Cycling", "FluorCalibLDNA") ); // 200
+    THRESH = stod(recipeIni->get_value("Cycling", "THRESH"));           // 0.05
+    THRESHCOOL = stod(recipeIni->get_value("Cycling", "THRESHCOOL"));   // 0.135
+    DTHRESHHEAT = stod(recipeIni->get_value("Cycling", "DTHRESHHEAT")); // 0.25
+    DTHRESHCOOL = stod(recipeIni->get_value("Cycling", "DTHRESHCOOL"));
+    FluorCalib = stod(recipeIni->get_value("Cycling", "FluorCalib"));         // 300
+    FluorCalibLDNA = stod(recipeIni->get_value("Cycling", "FluorCalibLDNA")); // 200
     // casparapi L65-102
-    FluorCalibPremelt = stod( recipeIni->get_value("RT", "FluorCalibPremelt") );  // 150
+    FluorCalibPremelt = stod(recipeIni->get_value("RT", "FluorCalibPremelt")); // 150
 
     // Was in control.cpp L14.
-    heattoolong = stod( recipeIni->get_value("Errors", "heattoolong") );  // secs, 75 typically, too long? 20221027 weg
-    cooltoolong = stod( recipeIni->get_value("Errors", "cooltoolong") );  // secs, 75 typically
-    allowed_temp_errors = stoi( recipeIni->get_value("Errors", "allowed_temp_errors") );  // 3-ish
+    heattoolong = stod(recipeIni->get_value("Errors", "heattoolong"));                 // secs, 75 typically, too long? 20221027 weg
+    cooltoolong = stod(recipeIni->get_value("Errors", "cooltoolong"));                 // secs, 75 typically
+    allowed_temp_errors = stoi(recipeIni->get_value("Errors", "allowed_temp_errors")); // 3-ish
 
     // Declare cycle number variable.
     cycles = 0;
-    //cyclecutoff = 40;
-    
-    cyclecutoff = stoi( recipeIni->get_value("Cycling", "cyclesMax") );
+
+    // Need to send this to the UI, and/or handle the different cyclecutoff that occurs there as input.
+    cyclecutoff = stoi(recipeIni->get_value("Cycling", "cyclesMax"));
 
     // Declare the file operator and a few check variables for the thread.
-    //FILE *output;
+    // FILE *output;
     datapoints = 0;
     run_start = 0;
 
@@ -528,11 +536,11 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     // Get initialization time, format YYYYMMDD_HHMMSS .
     string ts = timestamp();
 
-    // Declare initial file names for saving the data. 
+    // Declare initial file names for saving the data.
     // For Project and Experiment names (might be none), use the
     // directory ./data/ProjName/Expt/TimeStamp/<filename.csv> .
     dataDir = "./data/";
-    coeffstorage = "coeff_" + ts + ".csv";  // these are not really used with openFiles() in setup gone.
+    coeffstorage = "coeff_" + ts + ".csv"; // these are not really used with openFiles() in setup gone.
     pcrstorage = "pcr_" + ts + ".csv";
     temperstorage = "temper_" + ts + ".csv";
     notesstorage = "notes_" + ts + ".txt";
@@ -540,8 +548,7 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     runlogDir = "./";
     runlog = "runtimelog.txt";
 
-    
-}// end doRecipeConfig
+} // end doRecipeConfig
 
 // Put some parts or all of this in the Qiagen class when it reads the BoardID and the BoardSerialNumber
 // IF it knows its number, that is.
@@ -554,12 +561,12 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
 // Found that I need refrences in the below and de-pointer the qiagens
 // coming in.
 
-void checkRenameQiagens(qiagen*& s1, qiagen*& s2, config* devIni)
+void checkRenameQiagens(qiagen *&s1, qiagen *&s2, config *devIni)
 {
     ostringstream bstream;
     string progName = "checkRenameQiagens";
 
-    string s1BoardID, s1SerialNo, s2BoardID, s2SerialNo; 
+    string s1BoardID, s1SerialNo, s2BoardID, s2SerialNo;
     string Q1BoardID, Q1SerialNo, Q2BoardID, Q2SerialNo;
     // Read from the hardware config, devices.ini .
     Q1BoardID = devIni->get_value("Qiagen", "Q1BoardID");
@@ -567,58 +574,60 @@ void checkRenameQiagens(qiagen*& s1, qiagen*& s2, config* devIni)
     Q2BoardID = devIni->get_value("Qiagen", "Q2BoardID");
     Q2SerialNo = devIni->get_value("Qiagen", "Q2SerialNo");
     // Grab the actual value filled in when the Qiagens were instantiated.
-    s1BoardID = s1->getBoardID().substr(0,14);  // ESML10-MB-3021??   ? = junk chars
-    s1SerialNo = s1->getBoardSerialNumber().substr(0,4);  // 0016????
-    s2BoardID = s2->getBoardID().substr(0,14);
-    s2SerialNo = s2->getBoardSerialNumber().substr(0,4); 
+    s1BoardID = s1->getBoardID().substr(0, 14);           // ESML10-MB-3021??   ? = junk chars
+    s1SerialNo = s1->getBoardSerialNumber().substr(0, 4); // 0016????
+    s2BoardID = s2->getBoardID().substr(0, 14);
+    s2SerialNo = s2->getBoardSerialNumber().substr(0, 4);
     // Because of the junk characters read from the qiagens only check the
     // first 14 chars on BoardID, and 4 chars on SerialNo.
     bstream << progName << ":Q1BoardID (config) s1BoardID (Qiagen)" << endl;
     bstream << "\t" << Q1BoardID << endl;
     bstream << "\t" << s1BoardID << endl;
-    bstream << "\t" << "Q1SerailNo s1SerialNo" << endl;
+    bstream << "\t"
+            << "Q1SerailNo s1SerialNo" << endl;
     bstream << "\t" << Q1SerialNo << endl;
     bstream << "\t" << s1SerialNo << endl;
-    bstream << "\t" << "Q2BoardID s2BoardID" << endl;
+    bstream << "\t"
+            << "Q2BoardID s2BoardID" << endl;
     bstream << "\t" << Q2BoardID << endl;
     bstream << "\t" << s2BoardID << endl;
-    bstream << "\t" << "Q2SerialNo s2SerialNo" << endl;
+    bstream << "\t"
+            << "Q2SerialNo s2SerialNo" << endl;
     bstream << "\t" << Q2SerialNo << endl;
     bstream << "\t" << s2SerialNo << endl;
     cout << bstream.str();
 
-    if ( s1BoardID == Q1BoardID && s2BoardID == Q2BoardID && 
-        s1SerialNo == Q1SerialNo && s2SerialNo == Q2SerialNo )
-        {
-            cout << progName << ": Qiagens are not swapped, keeping them as they are." << endl;
-            return;  // Everything is okay.
-        }
-    else if ( s1BoardID == Q2BoardID && s1SerialNo == Q2SerialNo &&
-        s2BoardID == Q1BoardID && s2SerialNo == Q1SerialNo ) 
-        {
-            bstream << progName << ": Qiagens not matching hardware config order." << endl;
-            bstream << "\tLooks like first one matches Q2 and second Q1." << endl;
-            bstream << "\tSwapping pointers." << endl;
-            cout << bstream.str();
+    if (s1BoardID == Q1BoardID && s2BoardID == Q2BoardID &&
+        s1SerialNo == Q1SerialNo && s2SerialNo == Q2SerialNo)
+    {
+        cout << progName << ": Qiagens are not swapped, keeping them as they are." << endl;
+        return; // Everything is okay.
+    }
+    else if (s1BoardID == Q2BoardID && s1SerialNo == Q2SerialNo &&
+             s2BoardID == Q1BoardID && s2SerialNo == Q1SerialNo)
+    {
+        bstream << progName << ": Qiagens not matching hardware config order." << endl;
+        bstream << "\tLooks like first one matches Q2 and second Q1." << endl;
+        bstream << "\tSwapping pointers." << endl;
+        cout << bstream.str();
 
-            cout << progName << ": Before swap, s1 " << s1 << " s2 " << s2 << endl;
-            std::swap(s1, s2);  // Likely the USB ports were swapped.
-            cout << progName << ": After swap, s1 " << s1 << " s2 " << s2 << endl;
+        cout << progName << ": Before swap, s1 " << s1 << " s2 " << s2 << endl;
+        std::swap(s1, s2); // Likely the USB ports were swapped.
+        cout << progName << ": After swap, s1 " << s1 << " s2 " << s2 << endl;
 
-            return;
-        }
+        return;
+    }
 
     // Some other problem.
-    bstream << endl << string(40,'=') << endl;
+    bstream << endl
+            << string(40, '=') << endl;
     bstream << progName << ": Qiagens not matching hardware config." << endl;
     bstream << "\t Check the devices.ini-><correct file> in configs folder and restart." << endl;
     bstream << "\t Not changing anything, running swapped or wrong or whatever." << endl;
-    bstream << string(40,'=') << endl << endl;
+    bstream << string(40, '=') << endl
+            << endl;
     cout << bstream.str();
 
     return;
 
-}// end checkRenameQiagens
-
-
-
+} // end checkRenameQiagens

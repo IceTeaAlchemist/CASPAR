@@ -137,7 +137,7 @@
         <p class="inrtxt">Current Cycle:</p>
           <p class="inrtxt" id="currentCycle" style="font-weight:bold; font-size:120%; margin-bottom:40px;"> 0 </p> <!--Changes-->
         <p class="inrtxt">Total Cycles:</p>
-          <input class = "inrinp" style = "width: 15%; text-align: center; font-size:120%; font-weight:bold;" type="text" id="totCycles"> <!--Changes-->
+          <input class = "inrinp" style = "width: 15%; text-align: center; font-size:120%; font-weight:bold;" type="text" id="totCycles" onchange="setTotCycles()"> <!--Changes-->
         <p class="inrtxt">Reconstitution/Premelt:</p>
           <input type="checkbox" id="Recon" disabled="disabled" style=
           "display: inline; width: 23px; height:23px; border-width: 1px; margin-right: 4px; margin-bottom: 30px; opacity: 0.6"> <!--Check Mark Changes-->
@@ -1176,7 +1176,7 @@
             return false;
         }
           else {return true;}
-      }
+      }//end configSafety
 
       // This runs when the person presses the save configuration button. It sends data to the server
       function saveConfig()
@@ -1378,6 +1378,8 @@ var ss = myDate.getSeconds().toString().padStart(2,'0');
 return (yy+mo+dd+'_'+hh+min+ss)
 }
 
+
+// updateTotCycles - Not used??  Updates the UI page values for the total cycles.
 function updateTotCycles(myTotCycles)
 {
   // Tab 1
@@ -1413,6 +1415,27 @@ function DOMUpdate(myId, myValueEtc, myData)
     // Do nothing for now. weg 20230305
   }
 }
+
+function setTotCycles()
+{
+  var myValue = parseInt( (document.getElementById("totCycles").value).trim() );
+
+  // Check it is between 2 and 60 cycles and is a number.
+  if( isNaN(myValue) || ( myValue < 2 || myValue > 60 ) )
+  {
+    alert("setTotCycles:  Please enter Total Cycles as an integer BETWEEN 2 AND 60, tried to set a value " + myValue);
+    return;
+  }
+  // So do it now.
+  console.log("setTotCycles: new cycles value is " + myValue + ".");
+  var msg = 
+  {
+    id: "setTotCycles",
+    totCycles: myValue,
+  };
+  ws.send(JSON.stringify(msg));
+  
+}//end setTotCycles
 
 
 //Functions End
