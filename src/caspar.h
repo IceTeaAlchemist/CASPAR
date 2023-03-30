@@ -130,10 +130,10 @@ extern string recipeDescLong;
 extern int DEVICE_ID;  // Used in only one place, but for consistency will to this.  Typ 0x48.
 extern int TEMP_ID;    // Typ 0x49.
 extern int HEATER_PIN; // These are used a lot of places. Typ 7.
-extern int FAN_PIN; // Typ 4.
-extern int BOX_FAN; // Typ 5.
-extern int PWM_PIN; // Typ 23.
-extern int ALERT_PIN;  // Typ 3.
+extern int FAN_PIN; // Typ 4
+extern int BOX_FAN; // Typ 5
+extern int PWM_PIN; // Typ 23
+extern int ALERT_PIN;  // Typ 3
 extern int SMOOTHING;  // 25
 extern int CONVERGENCE_THRESHOLD;  // 1
 extern bool RT_Enable;
@@ -180,6 +180,7 @@ void doWriteComments(string savedComments, string savedStartDate, string savedSt
    string savedProjName, string savedOperator, string savedExperimentName);
 extern void doHardwareConfig(string filename = "configs/devices.ini");  // Defaults only in header files?? weg
 extern void doRecipeConfig(string filename = "configs/recipes/default.ini");
+extern void setupPWMLaser();
 
 // heat.cpp function definitions. These handle generation of fluoresence based heat curves and temperature-based control.
 

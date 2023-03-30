@@ -17,8 +17,7 @@ void setupPi(void)
 {
     string progName = "setupPi";
     // Read the defaults for the devices.ini/Hardware and for the default.ini/Recipe.
-    doHardwareConfig();
-    doRecipeConfig();
+    doHardwareConfig();  // Does NOT inlcude setupPWMLaser.  See below.
 
     // Print out the hardware config/ini file.
     // cout << devicesIni->print_file() << endl;
@@ -29,22 +28,8 @@ void setupPi(void)
     pinMode(FAN_PIN, OUTPUT);
     pinMode(BOX_FAN, OUTPUT);
     // cout << progName << ": Info, pwm_enable is " << pwm_enable << endl;
-    if (pwm_enable)
-    {
-        pinMode(PWM_PIN, PWM_OUTPUT);
-        pwmSetMode(pwm_mode);   //(PWM_MODE_MS);
-        pwmSetClock(pwm_clock); //(19.53); // See wiringPi.h, takes an int.
-        // Clock should be 19.2e6 divided by the desired Hz (1000) and then the Range (1024),
-        // usually like 19.2 Mhz / 1024 / 1000 = 19 (an int).
-        pwmSetRange(pwm_range); //(1024);
-        // Set up the interrupt for sample reading. Note that these CANNOT be turned off once started,
-        // so wrapping them in a boolean with a flag is a good idea.
-        // wiringPiISR(3,INT_EDGE_RISING,sampletriggered);
-        // Open the runtime log file for appending and print the initialization time to it.
-        delay(1000);
-        cout << progName << ":  pwm_enable is " << pwm_enable << " pwm_low is " << pwm_low << endl;
-        pwmWrite(PWM_PIN, pwm_low);
-    }
+    doRecipeConfig(); // Include setupPWMLaser.
+
     digitalWrite(BOX_FAN, HIGH);
     digitalWrite(HEATER_PIN, LOW);
     // Open the runtime log file for appending and print the initialization time to it.
@@ -472,6 +457,8 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     pwm_clock = stof(recipeIni->get_value("PWM", "Clock")); // 19.53;
     pwm_range = stoi(recipeIni->get_value("PWM", "Range")); // 1024;
     pwm_mode = stoi(recipeIni->get_value("PWM", "Mode"));   // 0;
+    // Re-setup the PWM parameters, in case they changed.
+    setupPWMLaser();
 
     // Miscellaneous Fit and RT values.  Some of these should be in Assay Recipes too.
     SMOOTHING = stoi(recipeIni->get_value("Fitting", "SMOOTHING"));                         // 25
@@ -631,3 +618,27 @@ void checkRenameQiagens(qiagen *&s1, qiagen *&s2, config *devIni)
     return;
 
 } // end checkRenameQiagens
+
+// setupPWMLaser - to set the necessary RPi parameters to run PWM, etc.
+// This MUST be called after the wiringPiSetup() function near the top is called, for pinMode, etc.
+// 20230329 weg
+void setupPWMLaser()
+{
+    string progName = "setupPWMLaser";
+
+    pinMode(PWM_PIN, PWM_OUTPUT);
+    pwmSetMode(pwm_mode);   //(PWM_MODE_MS);
+    pwmSetClock(pwm_clock); //(19.53); // See wiringPi.h, takes an int.
+    // Clock should be 19.2e6 divided by the desired Hz (1000) and then the Range (1024),
+    // usually like 19.2 Mhz / 1024 / 1000 = 19 (an int).
+
+    pwmSetRange(pwm_range); //(1024);
+    // Set up the interrupt for sample reading. Note that these CANNOT be turned off once started,
+    // so wrapping them in a boolean with a flag is a good idea.
+    // wiringPiISR(3,INT_EDGE_RISING,sampletriggered);
+    // Open the runtime log file for appending and print the initialization time to it.
+    delay(1000);
+    cout << progName << ":  pwm_enable is " << pwm_enable << " pwm_low is " << pwm_low << ", pwm_high is " << pwm_high << endl;
+    pwmWrite(PWM_PIN, pwm_low);
+}
+

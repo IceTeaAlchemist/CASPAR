@@ -62,11 +62,11 @@ float temper_calibVoffset;
 float temper_calibSlope;
 
 // Some GPIO extern values from the devices.ini file.
-int HEATER_PIN; // Typ 7.
-int FAN_PIN; // Typ 4.
-int BOX_FAN; // Typ 5.
-int PWM_PIN; // Typ 23.
-int ALERT_PIN; // Typ 23.
+int HEATER_PIN; // Typ 7
+int FAN_PIN; // Typ 4
+int BOX_FAN; // Typ 5
+int PWM_PIN; // Typ 23
+int ALERT_PIN; // Typ 23
 
 // Miscellaneous Fit and RT values.  Some of these should be in Assay Recipes too.
 int SMOOTHING; // 25
@@ -171,5 +171,7 @@ string devicesFile = "devices.ini";  // default file name, see setup.cpp
 string devicesDir = "./configs/";   // default
 string recipeFile = "default.ini";  // default file name
 string recipeDir = "./configs/recipes/";  // default
+
+void setupPWMLaser();
 
 #endif
