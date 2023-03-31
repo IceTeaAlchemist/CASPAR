@@ -252,7 +252,7 @@ namespace caspar
         recordflag = false;
         digitalWrite(HEATER_PIN, LOW);
         digitalWrite(FAN_PIN, LOW);
-        //cout << "stopRun:  pwm_enable is " << pwm_enable << endl;
+        cout << "stopRun:  pwm_enable is " << pwm_enable << endl;
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
         sens1->LED_off(1);
         sens1->LED_off(2);

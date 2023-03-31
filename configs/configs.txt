@@ -14,7 +14,7 @@ cname: laser heating
 oname: bill rosana franz nick
 ename: bill.gabella@gmail.com
 pname: laser_heating
-rname: default.ini
+rname: run_with_laser.ini
 fam: one
 cy5: two
 hex: three

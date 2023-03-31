@@ -224,7 +224,7 @@ wss.on('connection', function connection(ws) {
 
  
                 }//else {  // Do nothing, same file selected.
-
+                // Continue saving some data and setting the recipe filename...without the recipeDir  (?).
                 lastRecipeRequest = msg.recipe;
 
                 var selRecipeFilename = lastRecipeRequest; //  'default.ini';

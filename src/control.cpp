@@ -303,6 +303,7 @@ int cycle()
             if(x[x.size()-1] > heattoolong)// Check for first or second hump, add in the time from the first hump.
             {
                 temperrors++;
+                bstream.str("");  // Was concatenating the warnings.
                 bstream << progName << ": Heated for too long, error thrown, " << heattoolong << " secs." << endl;
                 cout << bstream.str();
                 runtime_out << bstream.str();
@@ -318,6 +319,7 @@ int cycle()
             if(x[x.size()-1] > cooltoolong)// Check for first or second hump, add in the time from the first hump.
             {
                 temperrors++;
+                bstream.str(""); 
                 bstream << progName << ": Cooled for too long, error thrown, " << cooltoolong << " secs." << endl;
                 cout << bstream.str();
                 runtime_out << bstream.str();
@@ -330,6 +332,7 @@ int cycle()
 
         if(temperrors > allowed_temp_errors)
         {
+            bstream.str(""); 
             bstream << progName << ": Too many heating/cooling failures, " << allowed_temp_errors << " , cycling ended." << endl;
             cout << bstream.str();
             runtime_out << bstream.str();

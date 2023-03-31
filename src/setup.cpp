@@ -28,7 +28,7 @@ void setupPi(void)
     pinMode(FAN_PIN, OUTPUT);
     pinMode(BOX_FAN, OUTPUT);
     // cout << progName << ": Info, pwm_enable is " << pwm_enable << endl;
-    doRecipeConfig(); // Include setupPWMLaser.
+    doRecipeConfig(); // Includes setupPWMLaser.
 
     digitalWrite(BOX_FAN, HIGH);
     digitalWrite(HEATER_PIN, LOW);
@@ -639,6 +639,7 @@ void setupPWMLaser()
     // Open the runtime log file for appending and print the initialization time to it.
     delay(1000);
     cout << progName << ":  pwm_enable is " << pwm_enable << " pwm_low is " << pwm_low << ", pwm_high is " << pwm_high << endl;
+    cout << "\t pwm_low_ratio " << pwm_low_ratio << " pwm_high_ratio " << pwm_high_ratio << endl;
     pwmWrite(PWM_PIN, pwm_low);
 }
 

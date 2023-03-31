@@ -814,6 +814,7 @@
          ws.send(JSON.stringify(msg));
         }
         lastRecipeRequest = dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text;
+        console.log("loadDataRequest: recipe: and lastRecipeRequest " + dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text);
        }// end loadRecipeRequest
 
       // Checks if project name, operator name, and configuration are filled out before run can begin.
@@ -888,8 +889,9 @@
                 "All previous data will be cleared and you will be starting this experiment with the following parameters:\n\n" +
                 "Save Data Filename: " + displayFileName1  + "\nOperator Name: " + document.getElementById("opName").value + "\nExperiment Name: " +
                 document.getElementById("expName").value + "\nConfiguration: " + dropdownID.options[dropdownID.selectedIndex].text +
-                "\nRecipe: " + dropdownID.options[dropdownIDRecipes.selectedIndex].text +
+                "\nRecipe: " + dropdownIDRecipes.options[dropdownIDRecipes.selectedIndex].text +
                 "\nTotal Cycles: " + document.getElementById("totCycles").value + "\nReverse Transcription: " + dispRT3 + "\n\nPress 'OK' to confirm.";
+                
                 if (confirm(text) == true) // Checks that you hit "Ok" on the dialog.
                 {
                   // Changes Button and System Vars
@@ -1061,9 +1063,15 @@
       var tmpRecipeFilename;
       if (tmpRecipeFilenameSel)
       {
+        console.log("startStopPCR: in tmpRecipeFilenameSel defined.");
+        console.log("\t .text value " + tmpRecipeFilenameSel.text );
         tmpRecipeFilename = tmpRecipeFilenameSel.text;
-      } else
+      } 
+      else
       {
+        console.log("startStopPCR: in tmpRecipeFilenameSel undefined.");
+        console.log("\t tmpRecipeFilenameSel..text value " + tmpRecipeFilenameSel.text );
+        console.log("\t dropdownIDRecipes.options[0].text " + dropdownIDRecipes.options[0].text);
         tmpRecipeFilename = dropdownIDRecipes.options[0].text
       }
       console.log("UI: startStopPCR: tmpRecipeFilename is " + tmpRecipeFilename);
