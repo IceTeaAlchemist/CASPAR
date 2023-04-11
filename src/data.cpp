@@ -107,6 +107,8 @@ void sampletriggered(void)
     }
 }
 
+// retrieveSample - Retrieves the Qiagen data.
+// Called from casparapi.cpp in the thread mechanism.
 void retrieveSample()
 {
     if(recordflag == true)
@@ -237,3 +239,57 @@ void readPCR()
     pcr_out << endl; // Send a new line to the file to get ready for the next cycle.
     pcrReady = true; // Say that our PCR readings are ready for output to the gui.
 }
+
+// retrieveTemperatures - Retrieves the Temperature ADC data.
+// Called from casparapi.cpp in the thread mechanism.
+void retrieveTemperatures()
+{
+    string progName = "retrieveTemperatures";
+
+    cout << progName << ": recordflag is " << recordflag << endl;
+    if(recordflag == true)
+    {
+    // Locking the thread here prevents it from interfering with global variables while they're being used by other portions of the 
+    // program that lock the same thread.
+    piLock(1);  // Use 1 as the temperatures key.
+    // Get the current time in milliseconds.
+    auto millisecs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    // Declare a reading object and put our timestamp and fluoresence inside, then push it into our data vector.
+    reading now0_tempers, now1_tempers;   // timestamp and voltage for reading
+    now0_tempers.timestamp = millisecs;
+    now0_tempers.voltage = 1.0*( TEMP->getreading() )* TEMP->getgainvoltage() / TEMP->getmaxbitcounts();
+    now1_tempers.timestamp = millisecs;
+    now1_tempers.voltage = 0.0;
+
+    //float voltage = (TEMP->getreading() * temper_vmax) / temper_pow2effbits;
+    //float temperature = (voltage - temper_calibVoffset) / temper_calibSlope;
+
+    data0_tempers.push_back(now0_tempers);
+    data1_tempers.push_back(now1_tempers);
+
+    // The run_start has been reset when x.size() == 0.  Just use it here?
+
+    x0_tempers.push_back( now0_tempers.timestamp - run_start );
+    x1_tempers.push_back( now1_tempers.timestamp - run_start );
+    y0_tempers.push_back( now0_tempers.voltage );
+    y1_tempers.push_back( now1_tempers.voltage );
+
+    temper_out << now0_tempers.timestamp <<"\t" << now0_tempers.voltage << "\t";
+    temper_out << now1_tempers.timestamp <<"\t" << now1_tempers.voltage << endl;
+
+    cout << progName << ": now0 " << now0_tempers.timestamp <<"\t" << now0_tempers.voltage << "\t";
+    cout << "\t now1 " << now1_tempers.timestamp <<"\t" << now1_tempers.voltage << endl;
+
+    piUnlock(1);
+    }
+    else  // recordflag is false.
+    {
+        // do nothing
+    }
+
+
+
+
+}// end retrieveTemperatures
+
+

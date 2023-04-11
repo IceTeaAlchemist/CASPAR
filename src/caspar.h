@@ -63,6 +63,12 @@ extern vector<double> tempkey;
 extern vector<double> fluorkey;
 extern vector<double> x;
 extern vector<double> y;
+extern vector<reading> data0_tempers;
+extern vector<reading> data1_tempers;
+extern vector<double> x0_tempers;  // In setup.h and data.cpp.
+extern vector<double> y0_tempers;
+extern vector<double> x1_tempers;
+extern vector<double> y1_tempers;
 extern bool RTdone;
 extern bool runflag;
 extern vector<double> xderivs;
@@ -127,8 +133,8 @@ extern string recipeVersion;
 extern string recipeDate;
 extern string recipeDescShort;
 extern string recipeDescLong;
-extern int DEVICE_ID;  // Used in only one place, but for consistency will to this.  Typ 0x48.
-extern int TEMP_ID;    // Typ 0x49.
+extern int DEVICE_ID;  // Typ 0x48.  Qiagen ADC (ADS115).
+extern int TEMP_ID;    // Typ 0x49.  Temperature TC ADC (ADS115).
 extern int HEATER_PIN; // These are used a lot of places. Typ 7.
 extern int FAN_PIN; // Typ 4
 extern int BOX_FAN; // Typ 5
@@ -208,6 +214,7 @@ void sampletriggered(void);
 void readPCR(void);
 string timestamp(void);
 void retrieveSample(void);
+void retrieveTemperatures(void);
 
 // Needed for the config files with strings like vectors "{0, -1}" .
 // Returns the vector of ints {0, -1}, in this example.

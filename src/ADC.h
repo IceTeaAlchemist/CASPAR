@@ -11,6 +11,7 @@ class adc
 		int lowthresh;
 		int pihandle;
 		float gainvoltage;
+		int maxbitcounts;
 		void writeconfig();
 		void adcsetup();
 	public:
@@ -34,6 +35,9 @@ class adc
 		int gethighthresh();
 		int getlowthresh();
 		int getconfig();
+
+		float getgainvoltage(){ return gainvoltage; };
+		int getmaxbitcounts(){ return maxbitcounts; };
 
 		~adc();
 };

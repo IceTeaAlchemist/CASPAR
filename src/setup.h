@@ -114,6 +114,15 @@ vector<double> y;
 vector<double> xderivs;
 vector<double> derivs;
 
+// Declare the vectors for the Temperature (and other ADC) data, in thread,
+// see data.cpp and casparapi.cpp.
+vector<reading> data0_tempers;
+vector<reading> data1_tempers;
+vector<double> x0_tempers;
+vector<double> y0_tempers;
+vector<double> x1_tempers;
+vector<double> y1_tempers;
+
 // Declare deques for the moving average filter. SMOOTHING is NOT defined in caspar.h.  Read from config file.
 deque<double> yaverage;
 deque<double> derivaverage;

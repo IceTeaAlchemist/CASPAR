@@ -75,7 +75,7 @@ void setupQiagen(void)
  */
 void setupADC(void)
 {
-    string progName("setupADC");
+    string progName="setupADC";
     cout << progName << ": before D2->SetGain(1);" << endl;
     // Setup the qiagen tapped ADC. See the class for documentation.
     D2->SetGain(1);
@@ -92,6 +92,10 @@ void setupADC(void)
     TEMP->SetCompPol(adc1comppol);
     TEMP->SetCompQueue(adc1compqueue);
     TEMP->SetMultiplex(adc1multiplex[0], adc1multiplex[1]);
+
+    int chkconfig = TEMP->getconfig();
+    cout << progName << ": getconfig " << chkconfig;
+    cout << " and hex " << hex << chkconfig << dec << endl;
 }
 
 /* Runs the calibration algorithm for the L-DNA. CALIBRATION_MIN can be set in devices.ini .
@@ -372,8 +376,10 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
     // Double check that sens1 is Q1, OPPOSITE or Nick's definition.
 
     // Set up the ADCs to use interrupts as well as declare them.
-    DEVICE_ID = stoul(devicesIni->get_value("ADC", "ADC0DevID"));
-    TEMP_ID = stoul(devicesIni->get_value("ADC", "ADC1DevID"));
+    DEVICE_ID = stoi(devicesIni->get_value("ADC", "ADC0DevID"), 0, 16);
+    TEMP_ID = stoi(devicesIni->get_value("ADC", "ADC1DevID"), 0, 16);
+    // cout << progName << ": DEVICE_ID is (hex) " << hex << DEVICE_ID;
+    // cout << " and TEMP_ID is (hex) " << TEMP_ID << dec << endl;
     delete D2;
     delete TEMP;
     D2 = new adc(DEVICE_ID, 0x8000, 0x7FFF); // Was define DEVICE_ID, 0x48 . // Already declared default constructor.

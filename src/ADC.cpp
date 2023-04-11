@@ -28,7 +28,11 @@ adc::adc(int addr)
 	highthresh = 0x7FFF;
 	lowthresh = 0x8000;
 	config = {0,0,0,0,0,1,0,1,1,0,0,0,0,0,1,1};
+	// config is the integer repr of the 15 bit config reg.
+	// congfig[0] is bit 15, 1, 14, etc.  See Fig. 36 docs.
 	gainvoltage = 2.048;
+	maxbitcounts = 32768; //2**15;  // The number of effective bits for the ADS1115, 15 bits because signed.
+	// Intended to be used in getvoltage() or similar.
 	adcsetup();
 }
 
@@ -46,6 +50,7 @@ adc::adc(int addr, int ht, int lt)
 	lowthresh = lt;
 	config = {0,0,0,0,0,1,0,1,1,0,0,0,0,0,1,1};
 	gainvoltage = 2.048;
+	maxbitcounts = 32768; // 2**15 
 	adcsetup();
 }
 
@@ -60,11 +65,13 @@ void adc::adcsetup()
 	pihandle = wiringPiI2CSetup(address);
 	if (pihandle == -1)
 	{
-		cout << "Warning: Failed to initiate I2C communication." << endl;
+		cout << "adc::adcsetup: Warning: Failed to initiate I2C communication." << endl;
 	}
 	wiringPiI2CWriteReg16(pihandle, HITHRESH, __bswap_16(highthresh));
 	wiringPiI2CWriteReg16(pihandle, LOWTHRESH, __bswap_16(lowthresh));
 	writeconfig();
+	// checking
+	cout << "adc::adcsetup: At the end of this method.  Address " << hex << address << endl; 
 }
 
 void adc::writeconfig()
@@ -76,7 +83,7 @@ void adc::writeconfig()
 		reg += config[i] * place;
 		place = place/2;
 	}
-	wiringPiI2CWriteReg16(pihandle,CONFIG, __bswap_16(reg));
+	wiringPiI2CWriteReg16(pihandle, CONFIG, __bswap_16(reg));
 }
 
 void adc::StartConversion()
@@ -90,16 +97,16 @@ void adc::SetMultiplex(int up)
 	SetMultiplex(up, -1);
 }
 
-void adc::SetMultiplex(int up,int down)
+void adc::SetMultiplex(int up, int down)
 {
-	if(up == 0 && down == 1)
+	if(up == 0 && down == 1)  // A0 - A1
 	{
 		config[1] = 0;
 		config[2] = 0;
 		config[3] = 0;
 		writeconfig();
 	} 
-	else if(up == 0 && down == 3)
+	else if(up == 0 && down == 3)  // A0 - A3
 	{
 		config[1] = 0;
 		config[2] = 0;
@@ -120,14 +127,14 @@ void adc::SetMultiplex(int up,int down)
 		config[3] = 1;
 		writeconfig();
 	}
-	else if(up == 0 && down == -1)
+	else if(up == 0 && down == -1)  // A0 - GND
 	{
 		config[1] = 1;
 		config[2] = 0;
 		config[3] = 0;
 		writeconfig();
 	}
-	else if(up == 1 && down == -1)
+	else if(up == 1 && down == -1)  // A1 - GND
 	{
 		config[1] = 1;
 		config[2] = 0;
@@ -150,7 +157,7 @@ void adc::SetMultiplex(int up,int down)
 	}
 	else
 	{
-		cout << "Invalid multiplex configuration. Valid combos are 0 and 1, any value and 3 or ground." << endl;
+		cout << "adc::SetMultiplex: Invalid multiplex configuration. Valid combos are 0 and 1, any value and 3 or ground." << endl;
 	}
 }
 
@@ -215,7 +222,7 @@ void adc::SetGain(int gain)
 		writeconfig();
 		break;
 	default:
-		cout << "Invalid gain selected. Please use 0 - 7. Write cancelled." << endl;
+		cout << "adc::SetGain: Invalid gain selected. Please use 0 - 7. Write cancelled." << endl;
 	}
 }
 
@@ -233,7 +240,7 @@ void adc::SetMode(int mode)
 	}
 	else
 	{
-		cout << "Invalid mode selected. Canceled without writing." << endl;
+		cout << "adc::SetMode: Invalid mode selected. Canceled without writing." << endl;
 	}
 }
 
@@ -290,7 +297,7 @@ void adc::SetSPS(int sps)
 		writeconfig();
 		break;
 	default:
-		cout << "Invalid samples per second selected. Please use 0 - 7. Write cancelled." << endl;
+		cout << "adc::SetSPS: Invalid samples per second selected. Please use 0 - 7. Write cancelled." << endl;
 	}
 }
 
@@ -308,7 +315,7 @@ void adc::SetCompMode(int mode)
 	}
 	else
 	{
-		cout << "Invalid comparator mode selected. Canceled without writing." << endl;
+		cout << "adc::SetCompMode: Invalid comparator mode selected. Canceled without writing." << endl;
 	}
 }
 
@@ -326,7 +333,7 @@ void adc::SetCompPol(int pol)
 	}
 	else
 	{
-		cout << "Invalid comparator polarity selected. Canceled without writing." << endl;
+		cout << "adc::SetCompPol: Invalid comparator polarity selected. Canceled without writing." << endl;
 	}
 }
 
@@ -344,7 +351,7 @@ void adc::SetLatch(int latch)
 	}
 	else
 	{
-		cout << "Invalid latch selected. Canceled without writing." << endl;
+		cout << "adc::SetLatch: Invalid latch selected. Canceled without writing." << endl;
 	}
 }
 
@@ -373,13 +380,13 @@ void adc::SetCompQueue(int que)
 		writeconfig();
 		break;
 	default:
-		cout << "Invalid comparator queue. Write canceled." << endl;
+		cout << "adc::SetCompQueue: Invalid comparator queue. Write canceled." << endl;
 	}
 }
 
 int adc::getreading()
 {
-	int reading = __bswap_16(wiringPiI2CReadReg16(pihandle,CONVERSION));
+	int reading = __bswap_16(wiringPiI2CReadReg16(pihandle, CONVERSION));
 	return reading;
 }
 
@@ -395,7 +402,7 @@ int adc::getlowthresh()
 
 int adc::getconfig()
 {
-	int readconfig = __bswap_16(wiringPiI2CReadReg16(pihandle,CONFIG));
+	int readconfig = __bswap_16(wiringPiI2CReadReg16(pihandle, CONFIG));
 	int reg = 0;
 	int place = 32768;
 	for(int i = 0; i < 16; i++)
@@ -405,7 +412,7 @@ int adc::getconfig()
 	}
 	if(reg != readconfig)
 	{
-		cout << "Register and class mismatch." << endl;
+		cout << "adc::getconfig: Register and class mismatch." << endl;
 		return -1;
 	}
 	else
@@ -418,5 +425,5 @@ adc::~adc()
 {
 	int resetd = wiringPiI2CSetup(0x00); // Writes to the default "bus" to ALL ADS-ADC's all listen on 0x00.
 	wiringPiI2CWrite(resetd, 0b00000110);
-	cout << "ADC reset and turned off." << endl;
+	cout << "adc::~adc: ADC reset and turned off.  Address " << hex << address << endl;
 }

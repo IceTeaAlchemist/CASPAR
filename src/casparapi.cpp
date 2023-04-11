@@ -28,6 +28,27 @@ namespace caspar
     int iterate = 0;
     int threadIter = 0; // For sampler thread below print statements.
 
+    // Setup a thread to read the temperatures thermocouples,
+    // or also the ADC voltages if not temperatures.  Copying
+    // the pollSample and retrieveSample below.
+    void pollTemperatureNADC()
+    {
+        while (runflag == true)
+        {
+            retrieveTemperatures();
+            delay(250);  // in ms
+        }
+    }
+    PI_THREAD(readTemperatures)
+    {
+        pollTemperatureNADC();
+        return 0;
+    }
+
+
+    // Setup a thread for reading the Qiagen LDNA channel using the
+    // ADC.  Very fast but pretty much unused now.  See also 
+    // piThreadCreate(sampler); in CASPARCycler::Execute .
     void pollSample()
     {
         while (runflag == true)
@@ -78,6 +99,7 @@ namespace caspar
             }
             changeQiagen(HTP);
             piThreadCreate(sampler);
+            piThreadCreate(readTemperatures);  // weg 20230410 adding in ADCs.
             delay(100);
             recordflag = true;
             if (RTflag)
@@ -373,15 +395,55 @@ namespace caspar
         doRecipeConfig(recipeDir + recipeFile);  // Be sure to check for nonexistent recipeFile.
     }
 
+    // Gave up on the AsyncWorker for a symple thread, now called from XXX.
+    // TemperatureNADC - like CASPARCycler, a class for reading the ADC for temperatures or other analog in (laser photodiode).
+    // This may be overkill, see the PITHREAD(sample) above, created in the CASPARCycler class.
+    class TemperatureNADC : public AsyncWorker
+    {
+        public:
+            TemperatureNADC(Callback *atcallback) : AsyncWorker(atcallback) 
+            {
+                tcallback = atcallback;
+            }
+            Callback *tcallback; // Temperature callback
+            ~TemperatureNADC(){};
+
+        void Execute()
+        {
+            piThreadCreate(readTemperatures);
+            delay(100); 
+        }
+        
+        void HandleOKCallback()
+        {
+            Nan::HandleScope tscope;
+            v8::Local<v8::Array> tresults = New<v8::Array>(1);
+            Nan::Set(tresults, 0, New<v8::Number>(runerror));
+            Local<Value> argv[] = {Null(), tresults};
+            tcallback->Call(2, argv);
+        }
+
+    }; // end TemperatureNADC
+
+
     NAN_METHOD(Ignition)
     {
         Callback *callback = new Callback(info[0].As<Function>());
         AsyncQueueWorker(new CASPARCycler(callback));
     }
 
+    // Nick suggest NOT doing it this way.  Keep it as a pithread in C++.
+    // NAN_METHOD(Temperatures)
+    // {
+    //     Callback *tcallback = new Callback(info[0].As<Function>());
+    //     AsyncQueueWorker(new TemperatureNADC(tcallback));
+    // }
+
     void Initialize(Local<Object> exports)
     {
         Nan::Set(exports, New<String>("start").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Ignition)).ToLocalChecked());
+        // weg added 20230410 for the Temperatures asyncworker.  Nick says unnecessary to do this here/nodejs.  Just a c++ thread.
+        // Nan::Set(exports, New<String>("start").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Temperatures)).ToLocalChecked());
         NODE_SET_METHOD(exports, "initializePCR", initializePCR);
         NODE_SET_METHOD(exports, "stop", stopRun);
         NODE_SET_METHOD(exports, "readdata", readoutData);
