@@ -94,13 +94,13 @@ void setupADC(void)
     TEMP->SetMultiplex(adc1multiplex[0], adc1multiplex[1]);
 
     int chkconfig = TEMP->getconfig();
-    cout << progName << ": getconfig " << chkconfig;
+    cout << progName << ": TEMP->getconfig " << chkconfig;
     cout << " and hex " << hex << chkconfig << dec << endl;
 }
 
 /* Runs the calibration algorithm for the L-DNA. CALIBRATION_MIN can be set in devices.ini .
  */
-// NOT USED ANYMORE, see casparapi.h and sensN.calibrateGain() calls.
+// NOT USED ANYMORE, see casparapi.cpp and Qiagen sensN.calibrateGain() calls.
 // void calibrategain()
 // {
 //     string progName = "calibrategain";

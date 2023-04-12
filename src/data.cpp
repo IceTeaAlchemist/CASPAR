@@ -246,7 +246,7 @@ void retrieveTemperatures()
 {
     string progName = "retrieveTemperatures";
 
-    cout << progName << ": recordflag is " << recordflag << endl;
+    // cout << progName << ": recordflag is " << recordflag << endl;
     if(recordflag == true)
     {
     // Locking the thread here prevents it from interfering with global variables while they're being used by other portions of the 
@@ -277,8 +277,8 @@ void retrieveTemperatures()
     temper_out << now0_tempers.timestamp <<"\t" << now0_tempers.voltage << "\t";
     temper_out << now1_tempers.timestamp <<"\t" << now1_tempers.voltage << endl;
 
-    cout << progName << ": now0 " << now0_tempers.timestamp <<"\t" << now0_tempers.voltage << "\t";
-    cout << "\t now1 " << now1_tempers.timestamp <<"\t" << now1_tempers.voltage << endl;
+    // cout << progName << ": now0 " << now0_tempers.timestamp <<"\t" << now0_tempers.voltage << "\t";
+    // cout << "\t now1 " << now1_tempers.timestamp <<"\t" << now1_tempers.voltage << endl;
 
     piUnlock(1);
     }
