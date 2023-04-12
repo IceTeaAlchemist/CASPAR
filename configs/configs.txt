@@ -10,6 +10,18 @@ recon: false
 rtval: false
 cycles: 3
 
+cname: laser heating RA
+oname: rosana
+ename: bill.gabella@gmail.com
+pname: laser_heating_RA
+rname: run_with_laser.ini
+fam: one
+cy5: two
+hex: three
+recon: false
+rtval: false
+cycles: 50
+
 cname: laser heating
 oname: bill rosana franz nick
 ename: bill.gabella@gmail.com
