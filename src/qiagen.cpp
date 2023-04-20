@@ -527,4 +527,5 @@ qiagen::~qiagen()
 	LED_off(1);
 	LED_off(2);
 	close(serial_port);
+	cout << "Qiagen " << BoardID << " turned off and serial port " << serial_port << " closed." << endl; 
 }

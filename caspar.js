@@ -481,6 +481,7 @@ wss.on('connection', function connection(ws) {
                 // Log that the server is turning off and tell the client as much.
                 console.log("Server disconnected.");
                 engine.boxfanoff();
+                engine.kill();
                 console.log("Delaying to allow threads to wrap up. Closing in five seconds.");
                 // Hard shutdown. There should be a better way.
                 setTimeout(killserver, 5000);

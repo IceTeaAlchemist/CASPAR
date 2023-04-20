@@ -400,7 +400,7 @@ int cycle()
                             triggertime = delaytocycleend(coeff,dthreshcool);
                         }
                     }
-                    else
+                    else  // dtrigger is true, looking for the second/double hump
                     {
                         if(state == true)
                         {

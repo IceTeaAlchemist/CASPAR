@@ -1,5 +1,5 @@
 #include "ADC.h"
-#include "caspar.h"  // For devicesIni .
+// #include "caspar.h"  // For devicesIni .
 #include <wiringPiI2C.h>
 #include <wiringPi.h>
 #include <byteswap.h>

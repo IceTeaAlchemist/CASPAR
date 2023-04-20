@@ -36,7 +36,7 @@ namespace caspar
         while (runflag == true)
         {
             retrieveTemperatures();
-            delay(250);  // in ms
+            delay(100);  // in ms
         }
     }
     PI_THREAD(readTemperatures)
@@ -284,6 +284,15 @@ namespace caspar
 
 
     }
+    /* Accessible method to shut down the device and delete dynamically allocated memory.
+    */
+    void stopEngine(const FunctionCallbackInfo<Value> &args)
+    {
+        delete sens1;
+        delete sens2;
+        delete D2;
+        delete TEMP;
+    }
 
     void writeComments(const FunctionCallbackInfo<Value> &args)
     {
@@ -446,6 +455,7 @@ namespace caspar
         // Nan::Set(exports, New<String>("start").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Temperatures)).ToLocalChecked());
         NODE_SET_METHOD(exports, "initializePCR", initializePCR);
         NODE_SET_METHOD(exports, "stop", stopRun);
+        NODE_SET_METHOD(exports, "kill", stopEngine);
         NODE_SET_METHOD(exports, "readdata", readoutData);
         NODE_SET_METHOD(exports, "readtemp", readoutTemp);
         NODE_SET_METHOD(exports, "readPCR", readoutPCR);
