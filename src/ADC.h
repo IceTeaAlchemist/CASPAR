@@ -31,6 +31,7 @@ class adc
 		void SetCompQueue(int que);
 
 		int getreading();
+		double getvoltage();
 
 		int gethighthresh();
 		int getlowthresh();

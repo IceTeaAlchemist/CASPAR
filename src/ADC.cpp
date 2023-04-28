@@ -390,6 +390,21 @@ int adc::getreading()
 	return reading;
 }
 
+double adc::getvoltage()
+{
+	int reading = getreading();
+	int adjustedreading;
+	if(reading >= 32768)
+	{
+		adjustedreading = reading - 32768;
+		return adjustedreading/32767.0*-1.0*gainvoltage;
+	}
+	else
+	{
+		return reading/32767.0*gainvoltage;
+	}
+}
+
 int adc::gethighthresh()
 {
 	return highthresh;
