@@ -672,9 +672,11 @@
       function sendThePing(){
         var timeStamp = new Date(); //initialize Start Time
         var timeStampClean = timeStamp.toLocaleTimeString();
+        var timeStampDate = timeStamp.toLocaleDateString();
         var msg = {
           id: "ping",
-          timeStamp: timeStampClean
+          timeStamp: timeStampClean,
+          timeStampDate: timeStampDate
         };
         try{ // try sending it first
           ws.send(JSON.stringify(msg));

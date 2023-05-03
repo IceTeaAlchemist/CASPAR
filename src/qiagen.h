@@ -62,6 +62,7 @@ class qiagen
 		void fill_SoftwareVersion();
 		inline string getSoftwareVersion(){return SoftwareVersion;}
 		int calibrateGain(int minimum_reading, int method);
+		int calibrateGainOld(int minimum_reading, int method);
 
 		~qiagen();
 };
