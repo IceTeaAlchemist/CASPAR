@@ -144,52 +144,50 @@ wss.on('connection', function connection(ws) {
             // the file to load it
             case "configrequest":
                 console.log(msg);
-                //if(lastRequest != msg.config){ //ensures we dont load it if we just loaded it
-                if (true)  // Load it every time it is selected.
-                {
-                    // var requestdata = "";
-                    var requestdata = [];
-                    var tmpSelRecipeFilename;
-                    let alldata = fs.readFileSync('./configs/configs.txt', 'utf8'); //read file
-                    var dataarray = alldata.toString().split("\n");
-                    console.log("caspar.js: case configrequest: dataarray is " + dataarray);
-                    // Loop over the lines in the long configs.txt file.
-                    for (i = 0; i<dataarray.length; i++) { 
-                        //console.log(dataarray[i]);
-                        // Find the line for the config you asked for.
-                        if (dataarray[i].includes("cname: " + msg.config)){  
-                            let j = i+1;
-                            while(j < dataarray.length)
+
+                var requestdata = [];
+                var tmpSelRecipeFilename;
+                let alldata = fs.readFileSync('./configs/configs.txt', 'utf8'); //read file
+                var dataarray = alldata.toString().split("\n");
+                console.log("caspar.js: case configrequest: dataarray is " + dataarray);
+                // Loop over the lines in the long configs.txt file.
+                for (i = 0; i<dataarray.length; i++) { 
+                    //console.log(dataarray[i]);
+                    // Find the line for the config you asked for.
+                    //weg if (dataarray[i].includes("cname: " + msg.config)){  
+                    if (dataarray[i] === "cname: " + msg.config)
+                    {                             
+                        let j = i+1;
+                        while(j < dataarray.length)
+                        {
+                            if(dataarray[j].includes("cname: ") == false)  // Have not hit the next config list.
                             {
-                                if(dataarray[j].includes("cname: ") == false)  // Have not hit the next config list.
+                                //console.log(dataarray[j]);  // Avoid too much printing.
+                                requestdata.push( dataarray[j].substring( dataarray[j].indexOf(":")+1 ).trim() );  
+                                // .trim() seems not to work.
+                                if (dataarray[j].includes("rname: ") == true)
                                 {
-                                    //console.log(dataarray[j]);  // Avoid too much printing.
-                                    requestdata.push( dataarray[j].substring( dataarray[j].indexOf(":")+1 ).trim() );  
-                                    // .trim() seems not to work.
-                                    if (dataarray[j].includes("rname: ") == true)
-                                    {
-                                        tmpSelRecipeFilename = dataarray[j].split(':')[1].trim();  // Two element array with recipe the second element.
-                                    }
-                                } 
-                                else  // Hit the next cname: xxx line.
-                                {
-                                    break;
+                                    tmpSelRecipeFilename = dataarray[j].split(':')[1].trim();  // Two element array with recipe the second element.
                                 }
-                                j++;
+                            } 
+                            else  // Hit the next cname: xxx line.
+                            {
+                                break;
                             }
-                            // requestdata = dataarray[i+1] + ":;:;:" + dataarray[i+2] + ":;:;:" + dataarray[i+3]; //sends all necessary data in one string with a separator
+                            j++;
                         }
                     }
-
-                    // console.log(requestdata);  // These are getting long-ish.
-
-                    var configloader = {
-                        id: "loadconfig",
-                        data: requestdata,
-                    };
-                    console.log(configloader);
-                    ws.send(JSON.stringify(configloader)); // data sent back to client
                 }
+
+                // console.log(requestdata);  // These are getting long-ish.
+
+                var configloader = {
+                    id: "loadconfig",
+                    data: requestdata,
+                };
+                console.log(configloader);
+                ws.send(JSON.stringify(configloader)); // data sent back to client
+
                 // else{}
                 lastRequest = msg.config;
                 //  Check that recipe name was found.

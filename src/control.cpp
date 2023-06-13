@@ -349,9 +349,13 @@ int cycle()
 
 
 //        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1) // Other version, 20220915 weg.
+        //  Check that if there is a gaussian fit, typ AMPL_MIN is 10.0 and CTR_MIN 2.0.
+        //  The thresholds are THRESH = 0.05, THRESHCOOL = 0.135, DTHRESHHEAT = 0.25, and DTHRESHCOOL = 0.8,
+        //  and CONVERGENCE_THRESHOLD = 1 .
         if (iter < ITER_MAX && abs(coeff[0]) > AMPL_MIN && coeff[1] > CTR_MIN)  
         {
-            if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
+            if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && 
+                    abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {
                 cout << progName << ": coeffs[0] etc, Amplitude " << coeff[0] << " Center " << coeff[1] << " Width " << coeff[2]  << 
                 "  Iteration " << iter << endl;
@@ -433,7 +437,7 @@ int cycle()
             coeffprev[2] = coeff[2];
         }
         delay(100);
-    }
+    }  // end if there is a gaussian fit.
     // fclose(output);
     runflag = false;
     digitalWrite(HEATER_PIN, LOW);
