@@ -60,6 +60,7 @@ float temper_vmax;
 float temper_pow2effbits;
 float temper_calibVoffset;
 float temper_calibSlope;
+float temper_readeveryms;
 
 // Some GPIO extern values from the devices.ini file.
 int HEATER_PIN; // Typ 7
@@ -82,8 +83,10 @@ int RECON_WAITTOTEMP; // 55
 // int CALIBRATION_MIN = stoi( devicesIni.get_value("MISC", "CALIBRATION_MIN") );  // 150
 // Some fitting params in control.cpp L345-ish.
 int ITER_MAX; // 24
-double AMPL_MIN; // 10
-double CTR_MIN; // 2
+double AMPL_MIN_HTP; // 10
+double CTR_MIN_HTP; // 2
+double AMPL_MIN_LTP; // 10
+double CTR_MIN_LTP; // 2
 int ITER_MAX_PREMELT;
 double AMPL_MIN_PREMELT;
 double CTR_MIN_PREMELT;
@@ -141,6 +144,7 @@ int cyclecutoff = 40;
 // Set qiagen properties for fitting-- format is {QIAGEN, METHOD}
 vector<int> LTP;
 vector<int> HTP;
+bool single_hump = false;  // If true then single hump running, if false double.
 int fittingqiagen;
 
 // Declare the file operator and a few check variables for the thread.

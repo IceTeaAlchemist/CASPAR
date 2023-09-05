@@ -1,0 +1,11 @@
+[Add recent changes to the code at the top.]
+
+20230905 weg
+  Added AMPL_MIN_HTP and LTP to all *.ini and in setup.cpp, caspar.h, etc.  In control.cpp now use the correct
+AMPL_MIN and CTR_MIN for the cycle you fit---cooling and heating cycles can be very different times, so the AMPL_MIN
+could be different.
+  Added check that LTP == HTP, if it does new boolean single_hump is false, true otherwise.  Used in control to set
+boolean doublehump for the control of modeshift()'ing.
+  Tested on a single hump sample and double with the heat gun.  Seems to work.
+Updated github.
+

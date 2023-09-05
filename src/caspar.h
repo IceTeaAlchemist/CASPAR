@@ -117,7 +117,8 @@ extern vector<int> adc1multiplex;
 extern float temper_vmax;
 extern float temper_pow2effbits;
 extern float temper_calibVoffset;
-extern float temper_calibSlope; 
+extern float temper_calibSlope;
+extern float temper_readeveryms; 
 //
 extern int cyclecutoff;
 extern double heattoolong; // secs, 75 typically, too long? 20221027 weg
@@ -125,6 +126,7 @@ extern double cooltoolong; // secs, 75 typically, in control.cpp .
 extern int allowed_temp_errors; // 3-ish
 extern vector<int> LTP;
 extern vector<int> HTP;
+extern bool single_hump; // If using same HTP == LTP then double hump, single_hump=false.
 extern int fittingqiagen;
 extern config *devicesIni;  // devices.ini file via config reading, hardware in the box.
 extern config *recipeIni;   // xxxx.ini file via config reading, recipes for each assay.
@@ -152,8 +154,10 @@ extern int RECON_TEMP;
 extern int RECON_WAITTOTEMP;
 // extern int CALIBRATION_MIN;  // 150
 extern int ITER_MAX; // 24
-extern double AMPL_MIN; // 10
-extern double CTR_MIN; // 2
+extern double AMPL_MIN_HTP; // 10
+extern double CTR_MIN_HTP; // 2
+extern double AMPL_MIN_LTP; // 10
+extern double CTR_MIN_LTP; // 2
 extern int ITER_MAX_PREMELT;  // For both RECON and RT steps? weg
 extern double AMPL_MIN_PREMELT;
 extern double CTR_MIN_PREMELT;

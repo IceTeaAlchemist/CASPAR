@@ -396,6 +396,7 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
     temper_pow2effbits = stof(devicesIni->get_value("Temperature", "Pow2EffBits"));
     temper_calibVoffset = stof(devicesIni->get_value("Temperature", "CalibVoffset"));
     temper_calibSlope = stof(devicesIni->get_value("Temperature", "CalibSlope"));
+    temper_readeveryms = stof(devicesIni->get_value("Temperature", "ReadEveryMS"));
 
     // PWM stuff is repeated in the recipe files too.
     pwm_enable = (devicesIni->get_value("PWM", "Enable") == "true");  // Turn off PWM avoid sudo node caspar.js .
@@ -483,8 +484,10 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
 
     // Some fitting params in control.cpp L345-ish.
     ITER_MAX = stoi(recipeIni->get_value("Cycling", "ITER_MAX")); // 24
-    AMPL_MIN = stod(recipeIni->get_value("Cycling", "AMPL_MIN")); // 10
-    CTR_MIN = stod(recipeIni->get_value("Cycling", "CTR_MIN"));   // 2
+    AMPL_MIN_HTP = stod(recipeIni->get_value("Cycling", "AMPL_MIN_HTP")); // 10
+    CTR_MIN_HTP = stod(recipeIni->get_value("Cycling", "CTR_MIN_HTP"));   // 2
+    AMPL_MIN_LTP = stod(recipeIni->get_value("Cycling", "AMPL_MIN_LTP")); // 10
+    CTR_MIN_LTP = stod(recipeIni->get_value("Cycling", "CTR_MIN_LTP"));   // 2    
     ITER_MAX_PREMELT = stoi(recipeIni->get_value("Recon", "ITER_MAX_PREMELT"));
     AMPL_MIN_PREMELT = stod(recipeIni->get_value("Recon", "AMPL_MIN_PREMELT"));
     CTR_MIN_PREMELT = stod(recipeIni->get_value("Recon", "CTR_MIN_PREMELT"));
@@ -492,6 +495,9 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     LTP = convertstr2vecint(recipeIni->get_value("Cycling", "LTP"));
     HTP = convertstr2vecint(recipeIni->get_value("Cycling", "HTP"));
     // int fittingqiagen;
+    // If LTP == HTP then it is in double hump, if not equal then single hump.
+    if (LTP[0]==HTP[0] && LTP[1]==HTP[1]) single_hump = false;
+    else single_hump = true;
 
     // Thresholds for switching, see control.cpp Lxxx.  Lower case variable names show up a lot in code.
     THRESH = stod(recipeIni->get_value("Cycling", "THRESH"));           // 0.05
@@ -573,21 +579,14 @@ void checkRenameQiagens(qiagen *&s1, qiagen *&s2, config *devIni)
     s2SerialNo = s2->getBoardSerialNumber().substr(0, 4);
     // Because of the junk characters read from the qiagens only check the
     // first 14 chars on BoardID, and 4 chars on SerialNo.
-    bstream << progName << ":Q1BoardID (config) s1BoardID (Qiagen)" << endl;
-    bstream << "\t" << Q1BoardID << endl;
-    bstream << "\t" << s1BoardID << endl;
-    bstream << "\t"
-            << "Q1SerailNo s1SerialNo" << endl;
-    bstream << "\t" << Q1SerialNo << endl;
-    bstream << "\t" << s1SerialNo << endl;
-    bstream << "\t"
-            << "Q2BoardID s2BoardID" << endl;
-    bstream << "\t" << Q2BoardID << endl;
-    bstream << "\t" << s2BoardID << endl;
-    bstream << "\t"
-            << "Q2SerialNo s2SerialNo" << endl;
-    bstream << "\t" << Q2SerialNo << endl;
-    bstream << "\t" << s2SerialNo << endl;
+    bstream << progName << ":Q1BoardID (config file) s1BoardID (USB bus)" << endl;
+    bstream << "\t" << Q1BoardID << "\t" << s1BoardID << endl;
+    bstream << "\t" << "Q1SerialNo s1SerialNo" << endl;
+    bstream << "\t" << Q1SerialNo << "\t" << s1SerialNo << endl;
+    bstream << "\t" << "Q2BoardID s2BoardID" << endl;
+    bstream << "\t" << Q2BoardID << "\t" << s2BoardID << endl;
+    bstream << "\t" << "Q2SerialNo s2SerialNo" << endl;
+    bstream << "\t" << Q2SerialNo << "\t" << s2SerialNo << endl;
     cout << bstream.str();
 
     if (s1BoardID == Q1BoardID && s2BoardID == Q2BoardID &&

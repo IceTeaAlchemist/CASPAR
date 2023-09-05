@@ -149,7 +149,7 @@ wss.on('connection', function connection(ws) {
                 var tmpSelRecipeFilename;
                 let alldata = fs.readFileSync('./configs/configs.txt', 'utf8'); //read file
                 var dataarray = alldata.toString().split("\n");
-                console.log("caspar.js: case configrequest: dataarray is " + dataarray);
+                // Long debug statement. console.log("caspar.js: case configrequest: dataarray is " + dataarray);
                 // Loop over the lines in the long configs.txt file.
                 for (i = 0; i<dataarray.length; i++) { 
                     //console.log(dataarray[i]);

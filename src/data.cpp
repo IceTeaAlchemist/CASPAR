@@ -249,20 +249,25 @@ void retrieveTemperatures()
     // cout << progName << ": recordflag is " << recordflag << endl;
     if(recordflag == true)
     {
-    // Locking the thread here prevents it from interfering with global variables while they're being used by other portions of the 
-    // program that lock the same thread.
+    // Locking the thread here prevents it from interfering with global variables while they're being 
+    // used by other portions of the program that lock the same thread.
     piLock(1);  // Use 1 as the temperatures key.
-    // Get the current time in milliseconds.
-    auto millisecs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    // Declare a reading object and put our timestamp and fluoresence inside, then push it into our data vector.
+    // Declare a reading object and put our timestamp and fluoresence inside, then push it into our 
+    // data vector.
     reading now0_tempers, now1_tempers;   // timestamp and voltage for reading
-    now0_tempers.timestamp = millisecs;
-    now0_tempers.voltage = 1.0*( TEMP->getreading() )* TEMP->getgainvoltage() / TEMP->getmaxbitcounts();
-    now1_tempers.timestamp = millisecs;
-    now1_tempers.voltage = 0.0;
-
-    //float voltage = (TEMP->getreading() * temper_vmax) / temper_pow2effbits;
-    //float temperature = (voltage - temper_calibVoffset) / temper_calibSlope;
+    
+    // Reading two temperatures, ends up at slightly different times.  
+    // Configure a0-a3 on asd115.
+    TEMP->SetMultiplex(0,3);
+    usleep(40000);  // 40ms wait seemed to work in other codes doing this switch channels.  WEG
+    now0_tempers.voltage = TEMP->convertToDegC( TEMP->getvoltage() );
+    // Get the current time in milliseconds.
+    now0_tempers.timestamp = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    
+    TEMP->SetMultiplex(1,3);
+    usleep(40000);
+    now1_tempers.voltage = TEMP->convertToDegC( TEMP->getvoltage() );   
+    now1_tempers.timestamp = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 
     data0_tempers.push_back(now0_tempers);
     data1_tempers.push_back(now1_tempers);

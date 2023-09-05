@@ -32,6 +32,7 @@ class adc
 
 		int getreading();
 		double getvoltage();
+		double convertToDegC(double volts);  // Conversion for AD8495 board.
 
 		int gethighthresh();
 		int getlowthresh();

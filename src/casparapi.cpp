@@ -36,7 +36,7 @@ namespace caspar
         while (runflag == true)
         {
             retrieveTemperatures();
-            delay(100);  // in ms
+            delay(temper_readeveryms);  // in ms
         }
     }
     PI_THREAD(readTemperatures)

@@ -223,16 +223,16 @@ int cycle()
 {
     string progName = "cycle";
     ostringstream bstream;
-    int mode = 2;  // Hard coded double hump.  See Nick edits.
-    bool doublehump;
-    if(mode == 2)
-    {
-        doublehump = true;
-    }
-    else
-    {
-        doublehump = false;
-    }
+    int mode = 2;  // Double hump.  See below for check with single_hump boolean.
+    bool doublehump = !single_hump;  // Calc form recipe, if HTP==LTP, single_hump is false.
+    // if(mode == 2)
+    // {
+    //     doublehump = true;
+    // }
+    // else
+    // {
+    //     doublehump = false;
+    // }
     bool dtrigger = false;
     double beta0[3] = {10, 10, 1};
     double lb[3] = {min_vals[0], min_vals[1], min_vals[2]};
@@ -249,6 +249,7 @@ int cycle()
     double threshcool = THRESHCOOL;
     double dthreshheat = DTHRESHHEAT;
     double dthreshcool = DTHRESHCOOL;
+    double AMPL_MIN, CTR_MIN;
     coeffprev[0] = 0;
     coeffprev[1] = 0;
     coeffprev[2] = 0;
@@ -352,12 +353,21 @@ int cycle()
         //  Check that if there is a gaussian fit, typ AMPL_MIN is 10.0 and CTR_MIN 2.0.
         //  The thresholds are THRESH = 0.05, THRESHCOOL = 0.135, DTHRESHHEAT = 0.25, and DTHRESHCOOL = 0.8,
         //  and CONVERGENCE_THRESHOLD = 1 .
+        if (state==true) // In heating cycle.
+        {
+            AMPL_MIN = AMPL_MIN_HTP;
+            CTR_MIN = CTR_MIN_HTP;
+        } else  // In cooling cycle.
+        {
+            AMPL_MIN = AMPL_MIN_LTP;
+            CTR_MIN = CTR_MIN_LTP;            
+        }
         if (iter < ITER_MAX && abs(coeff[0]) > AMPL_MIN && coeff[1] > CTR_MIN)  
         {
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && 
                     abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {
-                cout << progName << ": coeffs[0] etc, Amplitude " << coeff[0] << " Center " << coeff[1] << " Width " << coeff[2]  << 
+                cout << progName << ": coeffs[], Amplitude " << coeff[0] << " Center " << coeff[1] << " Width " << coeff[2]  << 
                 "  Iteration " << iter << endl;
                 if(doublehump == false)
                 {

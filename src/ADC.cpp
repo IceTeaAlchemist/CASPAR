@@ -394,14 +394,14 @@ double adc::getvoltage()
 {
 	int reading = getreading();
 	int adjustedreading;
-	if(reading >= 32768)
+	if(reading >= maxbitcounts) // maxbitcounts is 32768
 	{
-		adjustedreading = reading - 32768;
-		return adjustedreading/32767.0*-1.0*gainvoltage;
+		adjustedreading = reading - maxbitcounts;
+		return adjustedreading/(maxbitcounts-1.0)*(-1.0)*gainvoltage;  // negative voltages
 	}
 	else
 	{
-		return reading/32767.0*gainvoltage;
+		return reading/(maxbitcounts-1.0)*gainvoltage;
 	}
 }
 
@@ -435,6 +435,12 @@ int adc::getconfig()
 		return readconfig;
 	}
 }
+
+// Conversion for AD8495 board.  (volts-1.25)/0.005 for volts in Volts and output deg C.
+double adc::convertToDegC(double volts)
+{
+	return (volts-1.25)*200.;
+} 
 
 adc::~adc()
 {
