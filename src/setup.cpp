@@ -27,6 +27,7 @@ void setupPi(void)
     pinMode(HEATER_PIN, OUTPUT);
     pinMode(FAN_PIN, OUTPUT);
     pinMode(BOX_FAN, OUTPUT);
+    
     // cout << progName << ": Info, pwm_enable is " << pwm_enable << endl;
     doRecipeConfig(); // Includes setupPWMLaser.
 
@@ -378,12 +379,15 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
     // Set up the ADCs to use interrupts as well as declare them.
     DEVICE_ID = stoi(devicesIni->get_value("ADC", "ADC0DevID"), 0, 16);
     TEMP_ID = stoi(devicesIni->get_value("ADC", "ADC1DevID"), 0, 16);
+    cout << "We're past the ADC setup stage." << endl;
     // cout << progName << ": DEVICE_ID is (hex) " << hex << DEVICE_ID;
     // cout << " and TEMP_ID is (hex) " << TEMP_ID << dec << endl;
     delete D2;
     delete TEMP;
     D2 = new adc(DEVICE_ID, 0x8000, 0x7FFF); // Was define DEVICE_ID, 0x48 . // Already declared default constructor.
     TEMP = new adc(TEMP_ID, 0x8000, 0x7FFF); // Was define TEMP_ID, 0x49 .
+
+    cout << "Declaring ADCs." << endl;
 
     temper_enable = (devicesIni->get_value("Temperature", "Enable") == "true");
     adc1gain = stoi(devicesIni->get_value("Temperature", "ADC1Gain"));
@@ -397,6 +401,8 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
     temper_calibVoffset = stof(devicesIni->get_value("Temperature", "CalibVoffset"));
     temper_calibSlope = stof(devicesIni->get_value("Temperature", "CalibSlope"));
     temper_readeveryms = stof(devicesIni->get_value("Temperature", "ReadEveryMS"));
+
+    cout << "ADCs setup." << endl;
 
     // PWM stuff is repeated in the recipe files too.
     pwm_enable = (devicesIni->get_value("PWM", "Enable") == "true");  // Turn off PWM avoid sudo node caspar.js .

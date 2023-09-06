@@ -516,7 +516,10 @@ int qiagen::calibrateGain(int minimum_reading, int method){
 		if (readinval > minimum_reading*0.9 && readinval < minimum_reading*1.1)  // Use a 20% window around minimum reading.
 		{
 			cout << progName << ": within bounds, min " << minimum_reading*0.9 << " and max " << minimum_reading*1.1 << endl;
-			return 1;
+			cout << progName << ": Gain calibrated for LED " << LED << "." << endl; 
+			LED_off(LED);
+			stopMethod();
+			return 0;
 		}
 	}	
 

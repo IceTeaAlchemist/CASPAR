@@ -207,12 +207,12 @@ bool modeshift(bool state)
         readPCR();
         changeQiagen(HTP);
         piUnlock(0);
+        digitalWrite(HEATER_PIN, HIGH);
+        if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
         delay(500);
         // Turn the cycling LED back on.
         recordflag = true;
         // digitalWrite(BOX_FAN,HIGH);
-        digitalWrite(HEATER_PIN, HIGH);
-        if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
         return true;
     }
 }
@@ -223,6 +223,8 @@ int cycle()
 {
     string progName = "cycle";
     ostringstream bstream;
+    digitalWrite(HEATER_PIN,LOW);
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     int mode = 2;  // Double hump.  See below for check with single_hump boolean.
     bool doublehump = !single_hump;  // Calc form recipe, if HTP==LTP, single_hump is false.
     // if(mode == 2)
@@ -259,17 +261,18 @@ int cycle()
     bool past_the_hump;
     temperrors = 0;
     delay(100);
-    digitalWrite(HEATER_PIN,LOW);
-    if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
+    digitalWrite(HEATER_PIN, HIGH); //BILL LOOKIE
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
+    delay(500);
     clearactivedata();
-    delay(3000);// Tried 100ms and it for sure causes a segmentation violation AFTER
+    delay(1000);// Tried 100ms and it for sure causes a segmentation violation AFTER
     // the heater starts!!  Mess with this at your peril.  20221028 weg
 
     // Begin heating.
-    digitalWrite(HEATER_PIN, HIGH);
-    if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
+
+    
     digitalWrite(FAN_PIN,LOW);   
-    bool state = true;
+    bool state = true;  // Set the heating flag.
     delay(100);
     while (cycles < cutoff && runflag == true)
     {

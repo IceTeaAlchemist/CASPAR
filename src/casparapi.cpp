@@ -81,22 +81,26 @@ namespace caspar
             sens1->LED_off(2);
             sens2->LED_off(1);
             sens2->LED_off(2);
-            if(LTP[0] == 1)
+            if (RTflag)
             {
-                sens1->calibrateGain(FluorCalibPremelt,LTP[1]);
+                if(LTP[0] == 1)
+                {
+                    sens1->calibrateGain(FluorCalibPremelt,LTP[1]);
+                }
+                else
+                {
+                    sens2->calibrateGain(FluorCalibPremelt,LTP[1]);
+                }
+                if(HTP[0] == 1)
+                {
+                    sens1->calibrateGain(FluorCalibPremelt,HTP[1]);
+                }
+                else
+                {
+                    sens2->calibrateGain(FluorCalibPremelt,HTP[1]);
+                }                                
             }
-            else
-            {
-                sens2->calibrateGain(FluorCalibPremelt,LTP[1]);
-            }
-            if(HTP[0] == 1)
-            {
-                sens1->calibrateGain(FluorCalibPremelt,HTP[1]);
-            }
-            else
-            {
-                sens2->calibrateGain(FluorCalibPremelt,HTP[1]);
-            }
+
             changeQiagen(HTP);
             piThreadCreate(sampler);
             piThreadCreate(readTemperatures);  // weg 20230410 adding in ADCs.
