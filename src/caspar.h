@@ -43,10 +43,10 @@ struct reading
 };
 
 //Declare error class (or struct?).
-class error
+struct error
 {
-    int itime;
-    string stime;
+    long timestamp;
+    string progname;
     string message;
 };
 
@@ -58,7 +58,7 @@ extern adc *TEMP;
 extern qiagen *sens1;
 extern qiagen *sens2;
 extern vector<reading> data;
-extern vector<error> errorArray;  // Above, class with members itime, stime, message .
+extern vector<error> errorArray;  // Above, class with members timestamp, progname, message .
 extern vector<double> tempkey;
 extern vector<double> fluorkey;
 extern vector<double> x;
@@ -121,8 +121,9 @@ extern float temper_calibSlope;
 extern float temper_readeveryms; 
 //
 extern int cyclecutoff;
-extern double heattoolong; // secs, 75 typically, too long? 20221027 weg
-extern double cooltoolong; // secs, 75 typically, in control.cpp .
+extern double heattoolongfirst; // secs, 75 typically for first heating cycle.
+extern double heattoolong; // secs, 40 typ., second and up heating cycle.
+extern double cooltoolong; // secs, 40 typ., cooling cycle check.
 extern int allowed_temp_errors; // 3-ish
 extern vector<int> LTP;
 extern vector<int> HTP;

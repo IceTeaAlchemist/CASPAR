@@ -6,8 +6,13 @@
 #include "GaussNewton3.h"
 #include <fstream>
 #include <sstream>
+#include <chrono>
+#include <ctime>
 
 using namespace std;
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
+using std::chrono::system_clock;
 
 bool runflag = false;
 // Cannot call devicesIni.get_value() here, gives sementation fault.  Is an extern in caspar.h .  20221117 weg
@@ -226,15 +231,8 @@ int cycle()
     digitalWrite(HEATER_PIN,LOW);
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     int mode = 2;  // Double hump.  See below for check with single_hump boolean.
-    bool doublehump = !single_hump;  // Calc form recipe, if HTP==LTP, single_hump is false.
-    // if(mode == 2)
-    // {
-    //     doublehump = true;
-    // }
-    // else
-    // {
-    //     doublehump = false;
-    // }
+    bool doublehump = !single_hump;  // Calc from recipe, if HTP==LTP, single_hump is false.
+
     bool dtrigger = false;
     double beta0[3] = {10, 10, 1};
     double lb[3] = {min_vals[0], min_vals[1], min_vals[2]};
@@ -252,11 +250,13 @@ int cycle()
     double dthreshheat = DTHRESHHEAT;
     double dthreshcool = DTHRESHCOOL;
     double AMPL_MIN, CTR_MIN;
+    double heattoolongActual; // For taking the value of heattoolongfirst (cycles 0) or heattoolong.
+    error anerror;  // For filling the errorArray.
     coeffprev[0] = 0;
     coeffprev[1] = 0;
     coeffprev[2] = 0;
     int cutoff = cyclecutoff;
-    cout << "control.cpp: cycle(): cutoff (and cyclecutoff) are " << cutoff << " ." << endl;
+    cout << progName << ": cutoff (and cyclecutoff) are " << cutoff << " ." << endl;
     long triggertime; // 20220822 weg, from int to long
     bool past_the_hump;
     temperrors = 0;
@@ -269,8 +269,7 @@ int cycle()
     // the heater starts!!  Mess with this at your peril.  20221028 weg
 
     // Begin heating.
-
-    
+  
     digitalWrite(FAN_PIN,LOW);   
     bool state = true;  // Set the heating flag.
     delay(100);
@@ -301,16 +300,26 @@ int cycle()
         piUnlock(0);
 
         // Check the heat or cool too long.  How to handle the clearing of data after first hump---save it somewhere.
-        // Separately for cooling and heating, heattoolong and cooltoolong in caspar.h .
+        // Separately for cooling and heating, heattoolongfirst, heattoolong, and cooltoolong in caspar.h and in the
+        // recipes file.  Counter cycles = 0 in casparapi and setup.
         if ( state == true )  // The heating cycle.
         {
-            if(x[x.size()-1] > heattoolong)// Check for first or second hump, add in the time from the first hump.
+            if (cycles == 0) heattoolongActual = heattoolongfirst;
+            else heattoolongActual = heattoolong;
+
+            if(x[x.size()-1] > heattoolongActual)// Check for first or second hump, add in the time from the first hump.
             {
                 temperrors++;
                 bstream.str("");  // Was concatenating the warnings.
-                bstream << progName << ": Heated for too long, error thrown, " << heattoolong << " secs." << endl;
+                bstream << progName << ": Heated for too long, error thrown, " << heattoolongActual << " secs";
+                bstream << " on cycles " << cycles << " ." << endl;
                 cout << bstream.str();
                 runtime_out << bstream.str();
+
+                anerror.timestamp = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+                anerror.progname = progName;
+                anerror.message = bstream.str();
+                errorArray.push_back(anerror);
 
                 state = modeshift(state);
                 dtrigger = false;
@@ -324,11 +333,18 @@ int cycle()
             {
                 temperrors++;
                 bstream.str(""); 
-                bstream << progName << ": Cooled for too long, error thrown, " << cooltoolong << " secs." << endl;
+                bstream << progName << ": Cooled for too long, error thrown, " << cooltoolong << " secs.";
+                bstream << " on cycles " << cycles << " ." << endl;
                 cout << bstream.str();
                 runtime_out << bstream.str();
 
+                anerror.timestamp = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+                anerror.progname = progName;
+                anerror.message = bstream.str();
+                errorArray.push_back(anerror);       
+
                 state = modeshift(state);  // modeshift has piLock() in it!  Make sure it is unlocked when this is executed.
+                cycles++;  // If in these errors there is NO gaussian fit, so below will not trigger the cycles incrementing.
                 dtrigger = false;
                 clearactivedata();
             }
@@ -340,6 +356,12 @@ int cycle()
             bstream << progName << ": Too many heating/cooling failures, " << allowed_temp_errors << " , cycling ended." << endl;
             cout << bstream.str();
             runtime_out << bstream.str();
+
+            anerror.timestamp = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+            anerror.progname = progName;
+            anerror.message = bstream.str();
+            errorArray.push_back(anerror);
+
             runflag = false;
             digitalWrite(HEATER_PIN, LOW);
             digitalWrite(FAN_PIN, LOW);
@@ -352,7 +374,7 @@ int cycle()
         }
 
 
-//        if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1) // Other version, 20220915 weg.
+        //  if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1) // Other version, 20220915 weg.
         //  Check that if there is a gaussian fit, typ AMPL_MIN is 10.0 and CTR_MIN 2.0.
         //  The thresholds are THRESH = 0.05, THRESHCOOL = 0.135, DTHRESHHEAT = 0.25, and DTHRESHCOOL = 0.8,
         //  and CONVERGENCE_THRESHOLD = 1 .

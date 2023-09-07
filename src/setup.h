@@ -101,8 +101,9 @@ double FluorCalib; // 300
 double FluorCalibLDNA; // 200
 
 // Was in control.cpp L14.
-double heattoolong;  // secs, 75 typically, too long? 20221027 weg
-double cooltoolong;  // secs, 75 typically
+double heattoolongfirst; // secs, 75 typically, first heating cycle.
+double heattoolong;  // secs, 40 typ., second and up heating cycle check
+double cooltoolong;  // secs, 40 typ., first and up coolin gcycle check.
 int allowed_temp_errors;  // 3-ish
 
 // Declare vectors for tracking the thermal/fluor correspondence.

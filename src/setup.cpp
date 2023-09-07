@@ -516,8 +516,9 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     FluorCalibPremelt = stod(recipeIni->get_value("RT", "FluorCalibPremelt")); // 150
 
     // Was in control.cpp L14.
-    heattoolong = stod(recipeIni->get_value("Errors", "heattoolong"));                 // secs, 75 typically, too long? 20221027 weg
-    cooltoolong = stod(recipeIni->get_value("Errors", "cooltoolong"));                 // secs, 75 typically
+    heattoolongfirst = stod(recipeIni->get_value("Errors", "heattoolongfirst"));             // secs, 75 typically first cycle heating
+    heattoolong = stod(recipeIni->get_value("Errors", "heattoolong"));                 // secs, 40 typ, second and other heating cycles
+    cooltoolong = stod(recipeIni->get_value("Errors", "cooltoolong"));                 // secs, 40 typ, first and other cooling cycles
     allowed_temp_errors = stoi(recipeIni->get_value("Errors", "allowed_temp_errors")); // 3-ish
 
     // Declare cycle number variable.
