@@ -74,7 +74,9 @@ void premelt()
         if (iter < ITER_MAX_PREMELT && abs(coeff[0]) > AMPL_MIN_PREMELT && coeff[1] > CTR_MIN_PREMELT)  
         {
             // If we're past the hump and this fit is within a reasonable threshold of the previous one:
-            if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
+            if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && 
+                abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && 
+                abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {
                 // Accept the fit and log the coefficients.
                 cout << "premelt: Coeffs: " << coeff[0] << " " << coeff[1] << " " << coeff[2] << endl;
@@ -158,7 +160,7 @@ bool modeshift(bool state)
                 sens1->LED_off(1);
             }
         }
-        else
+        else // HTP[0] == 2, other Qiagen, only methods 1 and 3 are valid in our code.
         {
             if(HTP[1] == 3)
             {
@@ -222,7 +224,7 @@ bool modeshift(bool state)
     }
 }
 
-/* Current version of the core PCR paradigm. Needs serious updates to match UI.
+/* Current version of the core PCR paradigm. Needs serious updates to match UI. ??weg
  */
 int cycle()
 {
@@ -230,7 +232,7 @@ int cycle()
     ostringstream bstream;
     digitalWrite(HEATER_PIN,LOW);
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
-    int mode = 2;  // Double hump.  See below for check with single_hump boolean.
+    //int mode = 2;  // Double hump.  See below for check with single_hump boolean.
     bool doublehump = !single_hump;  // Calc from recipe, if HTP==LTP, single_hump is false.
 
     bool dtrigger = false;
@@ -276,13 +278,13 @@ int cycle()
     while (cycles < cutoff && runflag == true)
     {
         piLock(0);
-        if(state == true)
+        if(state == true)  // The heating cycle.
         {
             auto maxlocation = max_element(begin(derivs), end(derivs));
             beta0[0] = *maxlocation;
             beta0[1] = x[distance(derivs.begin(), maxlocation)];
         }
-        else
+        else   // The cooling cycle.
         {
             auto minlocation = min_element(begin(derivs), end(derivs));
             beta0[0] = *minlocation;
@@ -307,10 +309,10 @@ int cycle()
             if (cycles == 0) heattoolongActual = heattoolongfirst;
             else heattoolongActual = heattoolong;
 
-            if(x[x.size()-1] > heattoolongActual)// Check for first or second hump, add in the time from the first hump.
+            if(x[x.size()-1] > heattoolongActual)
             {
                 temperrors++;
-                bstream.str("");  // Was concatenating the warnings.
+                bstream.str("");
                 bstream << progName << ": Heated for too long, error thrown, " << heattoolongActual << " secs";
                 bstream << " on cycles " << cycles << " ." << endl;
                 cout << bstream.str();
@@ -344,9 +346,9 @@ int cycle()
                 errorArray.push_back(anerror);       
 
                 state = modeshift(state);  // modeshift has piLock() in it!  Make sure it is unlocked when this is executed.
-                cycles++;  // If in these errors there is NO gaussian fit, so below will not trigger the cycles incrementing.
                 dtrigger = false;
                 clearactivedata();
+                cycles++;  // If in these errors there is NO gaussian fit, so below will not trigger the cycles incrementing.
             }
         }
 
@@ -387,7 +389,7 @@ int cycle()
             AMPL_MIN = AMPL_MIN_LTP;
             CTR_MIN = CTR_MIN_LTP;            
         }
-        if (iter < ITER_MAX && abs(coeff[0]) > AMPL_MIN && coeff[1] > CTR_MIN)  
+        if (iter < ITER_MAX && abs(coeff[0]) > AMPL_MIN && coeff[1] > CTR_MIN)  // Successfully found a fit, deriv of fluorescence.
         {
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && 
                     abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
@@ -396,7 +398,7 @@ int cycle()
                 "  Iteration " << iter << endl;
                 if(doublehump == false)
                 {
-                    if(state == true)
+                    if(state == true) // heating
                     {
                         triggertime = delaytocycleend(coeff,thresh);
                     }
@@ -409,21 +411,11 @@ int cycle()
                     if(state == false)
                     {
                         pcr_out << triggertime << ",";
-                    }
-                    state = modeshift(state);
-                    clearactivedata();
-                    if(state == true)
-                    {
-                        //lb[0] = -max_vals[0];
-                        //ub[0] = -min_vals[0];
-                    }
-                    else
-                    {
-                        //lb[0] = min_vals[0];
-                        //ub[0] = max_vals[0];
                         cout << progName << ": Cycle " << cycles << " complete." << endl;
                         cycles++;
                     }
+                    state = modeshift(state);
+                    clearactivedata();
                 }
                 else // doublehump is true
                 {
@@ -441,7 +433,7 @@ int cycle()
                     }
                     else  // dtrigger is true, looking for the second/double hump
                     {
-                        if(state == true)
+                        if(state == true)// heating
                         {
                             triggertime = delaytocycleend(coeff,thresh);
                             //lb[0] = -max_vals[0];
@@ -470,9 +462,9 @@ int cycle()
             coeffprev[0] = coeff[0];
             coeffprev[1] = coeff[1];
             coeffprev[2] = coeff[2];
-        }
+        }// end if there is a gaussian fit.
         delay(100);
-    }  // end if there is a gaussian fit.
+    }// end while running cycles, while (cycles < cutoff && runflag == true)  
     // fclose(output);
     runflag = false;
     digitalWrite(HEATER_PIN, LOW);
