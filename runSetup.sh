@@ -68,4 +68,30 @@ domod cp -p ./icons/startServer.sh ~/bin
 domod cp -p ./icons/ghost-icon-12496.png ~/bin
 domod cp -p ./icons/CASPAR.desktop ~/Desktop
 
+# Link the correct devices<Machine name>.ini file to devices.ini .
+echo "For linking the correct devices.ini file,"
+echo "what is the machine name? Type 10 for Production01, 11 for Production02,"
+echo "12 for CASPAR01, and 13 for CASPAR02."
+
+read devNumber
+case $devNumber in
+    "10")
+	devFilename="devicesProduction01.ini"
+	;;
+    "11")
+	devFilename="devicesProduction02.ini"
+	;;
+    "12")
+	devFilename="devicesCASPAR01.ini"
+	;;
+    "13")
+	devFilename="devicesCASPAR02.ini"
+	;;
+esac
+
+echo "You typed $devNumber for devices filename $devFilename."
+echo "Will run the link command..."
+echo "(cd configs; ln -sf $devFilename devices.ini)"
+
+(cd configs; ln -sf $devFilename devices.ini)
 
