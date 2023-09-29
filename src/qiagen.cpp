@@ -15,9 +15,63 @@
 using namespace std;
 
 /*
- * Default (and for now ONLY) constructor. Takes the filename linux is using to handle the com-port 
+*  QiagenMappings give the back and forth for qiagen number to channel and channel to number.
+*	Same with the qiagen method.
+*/
+qiagenMap::qiagenMap(config* recipeIni)
+{
+	// Initialize the NameToQiagen and NameToMethod unordered maps.
+	for (auto pre_iter=qmPrefix.begin(); pre_iter!=qmPrefix.end(); pre_iter++ )
+	{
+		for(auto suf_iter=qmSuffix.begin(); suf_iter!=qmSuffix.end(); suf_iter++)
+		{
+			string aa = recipeIni->get_value("Channels", *pre_iter+*suf_iter);
+			qmIniFullMap[*pre_iter+*suf_iter] = aa;
+		}
+
+		string bb = recipeIni->get_value("Channels", *pre_iter+"Qiagen");
+		if ( bb == "Q1" ) NameToQiagen[*pre_iter] = 1;
+		else NameToQiagen[*pre_iter] = 2;
+
+		string cc = recipeIni->get_value("Channels", *pre_iter+"Channel");
+		if ( cc == "E1D1" ) NameToMethod[*pre_iter] = 1;
+		else if ( cc == "E1D2" ) NameToMethod[*pre_iter] = 2;
+		else if ( cc == "E2D2" ) NameToMethod[*pre_iter] = 3;
+
+		NameToGain[*pre_iter] = stof(recipeIni->get_value("Channels", *pre_iter+"Gain") );
+
+	}
+	
+}
+
+void qiagenMap::qmPrintAll()
+{
+	// Run through the Qiagen channels with Qiagen and Method.
+}
+// For building {1,3}, etc we use elsewhere.
+vector<int> qiagenMap::qmBuildArray(int aa, int bb)
+{
+	vector<int> myQM = {aa, bb};
+	return (myQM);  // Should look like {1,3} etc.  Check code what is it?
+
+}
+// Inputs as in qmPrefix and qmMethods strings. 
+vector<int> qiagenMap::qmBuildArray(string Qiagen, string Method)
+{
+	vector<int> myQM;
+	int aqiagen, amethod;
+	// Check that Qiagen is legit somehow.  Method too.
+
+
+
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+* Default (and for now ONLY) constructor. Takes the filename linux is using to handle the com-port 
 *  and creates a serial interface. 
- */
+*/
 qiagen::qiagen(string serial)
 {
 	string progName = "qiagen::qiagen";

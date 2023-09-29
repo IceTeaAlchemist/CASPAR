@@ -275,6 +275,8 @@ int cycle()
     digitalWrite(FAN_PIN,LOW);   
     bool state = true;  // Set the heating flag.
     delay(100);
+    // Update the cutoff at the end of while loop or just use cyclecutoff and not cutoff?? (weg)
+
     while (cycles < cutoff && runflag == true)
     {
         piLock(0);
@@ -348,6 +350,7 @@ int cycle()
                 state = modeshift(state);  // modeshift has piLock() in it!  Make sure it is unlocked when this is executed.
                 dtrigger = false;
                 clearactivedata();
+                // Should there be some printouts here, like above, cycle end, and a pcr_out?? weg 20230911
                 cycles++;  // If in these errors there is NO gaussian fit, so below will not trigger the cycles incrementing.
             }
         }
@@ -398,17 +401,17 @@ int cycle()
                 "  Iteration " << iter << endl;
                 if(doublehump == false)
                 {
-                    if(state == true) // heating
+                    if(state == true)  // heating
                     {
                         triggertime = delaytocycleend(coeff,thresh);
                     }
-                    else
+                    else  // cooling
                     {
                         triggertime = delaytocycleend(coeff,threshcool);
                     }
                     cout << progName << ": Control triggered at " << triggertime - (long)run_start << " milliseconds after initiation." << endl;
                     coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - (long)run_start << endl; 
-                    if(state == false)
+                    if(state == false)  // cooling
                     {
                         pcr_out << triggertime << ",";
                         cout << progName << ": Cycle " << cycles << " complete." << endl;
@@ -419,27 +422,27 @@ int cycle()
                 }
                 else // doublehump is true
                 {
-                    if(dtrigger == false)
+                    if(dtrigger == false)  // Just found the first hump. 
                     {
                         dtrigger = true;
-                        if(state == true)
+                        if(state == true)  // heating
                         {
                             triggertime = delaytocycleend(coeff,dthreshheat);
                         }
-                        else
+                        else   // cooling
                         {
                             triggertime = delaytocycleend(coeff,dthreshcool);
                         }
                     }
-                    else  // dtrigger is true, looking for the second/double hump
+                    else  // dtrigger is true, looking for the second/double hump.
                     {
-                        if(state == true)// heating
+                        if(state == true)   // heating
                         {
                             triggertime = delaytocycleend(coeff,thresh);
                             //lb[0] = -max_vals[0];
                             //ub[0] = -min_vals[0];
                         }
-                        else
+                        else  // cooling
                         {
                             triggertime = delaytocycleend(coeff,threshcool);
                             //lb[0] = min_vals[0];
@@ -454,7 +457,7 @@ int cycle()
                     cout << progName << ": Control triggered at " << triggertime - (long)run_start << " milliseconds after initiation." << endl;
                     coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - (long)run_start << endl; 
                     clearactivedata();
-                }
+                }   // end doublehump is true
             }
             coeffdouble[0] = coeffprev[0];
             coeffdouble[1] = coeffprev[1];
@@ -462,9 +465,11 @@ int cycle()
             coeffprev[0] = coeff[0];
             coeffprev[1] = coeff[1];
             coeffprev[2] = coeff[2];
-        }// end if there is a gaussian fit.
+        }   // end if there is a gaussian fit.
         delay(100);
-    }// end while running cycles, while (cycles < cutoff && runflag == true)  
+        // Update the cyclecutoff in case it was updated.
+        cutoff = cyclecutoff;
+    }   // end while running cycles, while (cycles < cutoff && runflag == true)  
     // fclose(output);
     runflag = false;
     digitalWrite(HEATER_PIN, LOW);

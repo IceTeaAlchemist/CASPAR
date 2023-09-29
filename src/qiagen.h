@@ -8,9 +8,35 @@
 #include <errno.h>
 #include <termios.h>
 #include <unistd.h>
+#include "configINI.h" // For the qiagenMap class below, to read recipes directly.
+#include <unordered_map> // For the qiagenMap class below.
 
 using namespace std;
 
+// The Qiagen mapping of qiagen number and method to one of
+// HTP, LTP, pcrA, pcrB, pcrC, or pcrD.
+class qiagenMap
+{
+	public:  // Start with everything public, once working reconsider this.
+		// From the recipe file, must match the [Channels] section of a recipe.
+		vector<string> qmPrefix = {"HTP", "LTP", "pcrA", "pcrB", "pcrC", "pcrD", "Recon", "RT"}, 
+        	qmSuffix={"", "Qiagen", "Channel", "Name", "Gain"};
+		const unordered_map<string, int> qmMethods = { {"E1D1", 1}, {"E1D2", 2}, {"E2D2", 3}, {"E1D1+E1D2", 4}, 
+			{"E1D1+E2D2", 5}, {"E1D2+E2D2", 6}, {"E1D1+E1D2+E2D2", 7} };  
+			// See ESELog manual page 24, there are more channels, for scope mode.
+		inline vector<string> getPrefix(){ return qmPrefix; };
+		inline vector<string> getSuffix(){ return qmSuffix; };
+		unordered_map<string, int> NameToQiagen, NameToMethod;  // Name is "HTP", "LTP", "pcrA" to "pcrD"
+		unordered_map<string, float> NameToGain;
+		unordered_map<string, string> qmIniFullMap;
+		qiagenMap(config* recipeIni);
+		qiagenMap(){};  // Copy constructor??
+		void qmPrintAll(); // Print out all the channels.
+		vector<int> qmBuildArray(int aa, int bb);  // For building {1,3}, etc we use elsewhere.
+		vector<int> qmBuildArray(string Qiagen, string Method); // Inputs as in above strings.
+};
+
+// Qiagen hardware class.
 class qiagen
 {
 	private:

@@ -57,6 +57,8 @@ extern adc *D2;
 extern adc *TEMP;
 extern qiagen *sens1;
 extern qiagen *sens2;
+extern bool gainCalibration;
+extern qiagenMap myQiagenMap;  // Mapping of HTP, LTP, etc to Qiagen number and method/channel.
 extern vector<reading> data;
 extern vector<error> errorArray;  // Above, class with members timestamp, progname, message .
 extern vector<double> tempkey;
