@@ -96,5 +96,55 @@ The .htaccess is pretty simple and it exists in CASPAR and in CASPAR/data<br>
 </FilesMatch>
 ```
 
+## Precision Realtime Clock - Adafruit DS3231 Precision RTC Breakout
+See the web page and associated configuration pages at https://www.adafruit.com/product/3013 .  This is an I2C integrated hardware clock with a 
+battery backup to it.  Advertised as extremely precise,<br>
+
+<img src="./icons/AdafruitDS3231HardwareClockRTC.jpg" alt="DS3231 pix" width="400"/>
+
+Our configuration for the added RTC comes form the page https://learn.adafruit.com/adding-a-real-time-clock-to-raspberry-pi , following 
+the "systemd" approach.  In short:<br>
+* Connect up the board to power, VCC to 3.3V for DS3231, GND to GND, and I2C SDA and SCL to the RPi's SDA and SCL.  Our auxiliary electronics board
+handles these connections.  Make sure there is a battery installed.<br>
+* Scan the bus, with 
+```
+sudo i2cdetect -y 1
+```
+
+<img src="./icons/screenshot_i2cdetect.png" alt="terminal window i2cdetect" width="500"/>
+
+and should see the device on address 0x68.  On our current system you should also see 0x48 and 0x49 addresses taken by the ADS1115 ADC chips.
+On systems where the Kernel driver has been install you will see UU in the 0x68 address place.<br>
+* Now to edit the system configuration.  Add the the lines below as the last lines to /boot/config.txt<br>
+```
+dtoverlay=i2c-rtc,ds3231
+```
+if using the DS3231 chip.  
+* Reboot and then the **i2cdetect -y 1** should see a UU in address 0x68.  And the clock should be working.
+* Disable the FAKE hardware clock the Raspberry Pis come with:
+```
+sudo apt-get -y remove fake-hwclock
+sudo update-rc.d -f fake-hwclock remove
+sudo systemctl disable fake-hwclock
+```
+* Edit <code>/lib/udev/hwclock-set</code>, e.g. using nano like **sudo nano /lib/udev/hwclock-set**, and comment out the lines so the final form is
+```
+#if [ -e /run/systemd/system ] ; then
+# exit 0
+#fi
+```
+Also comment out the lines<br>
+```
+/sbin/hwclock --rtc=$dev --systz --badyear
+...
+/sbin/hwclock --rtc=$dev --systz
+```
+* Read the hardware clock with **sudo hwclock -r**.
+* Make sure the Raspberry Pi is connected to the internet and the NTP is working.  Once it syncs with the ntpservers, do a write to hwclock,
+```
+sudo hwclock -w
+```
+Now the RPi and the hardware clock are synchronized.  And the hwclock should be the "master" of time.
+
 
 This contains the current, weekly updated version of the CASPAR device code until someone makes me change the name.
