@@ -141,6 +141,8 @@ fstream temper_out;
 // Declare cycle number variable.  ADD THESE TO RECIPE.
 int cycles = 0;
 int cyclecutoff = 40;
+int cyclesfit;
+int cyclesaverage;
 
 // Set qiagen properties for fitting-- format is {QIAGEN, METHOD}
 vector<int> LTP;

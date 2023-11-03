@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include "GaussNewton3.h"
+#include "GaussNewton4.h"
 #include <fstream>
 #include <sstream>
 #include <chrono>
@@ -129,9 +130,9 @@ void reconstitute()
 // Delays to a point based on the fitted coefficients and the value of the derivative, depending 
 // on a fraction of peak threshold. Returns the time from epoch when control triggered.
 // Changed to long from int, weg 20220822.
-long delaytocycleend(const double coeff[3], double thresh)
+long delaytocycleend(const double coeff[4], double thresh)
 {
-    while(abs(derivs[derivs.size()-1]) > abs(coeff[0] * thresh))
+    while(abs(derivs[derivs.size()-1]) > abs(coeff[0] * thresh)+coeff[3])
     {
         delay(10);
     }
@@ -148,6 +149,8 @@ bool modeshift(bool state)
         digitalWrite(HEATER_PIN, LOW);
         digitalWrite(FAN_PIN, HIGH);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
+        phaseend = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         piLock(0);
         if(HTP[0] == 1)
         {
@@ -179,6 +182,7 @@ bool modeshift(bool state)
     else  // state = false, the cooling state.
     {
         digitalWrite(FAN_PIN,LOW);
+        phaseend = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         recordflag = false;
       
         piLock(0);
@@ -216,6 +220,7 @@ bool modeshift(bool state)
         piUnlock(0);
         digitalWrite(HEATER_PIN, HIGH);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
+        phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         delay(500);
         // Turn the cycling LED back on.
         recordflag = true;
@@ -234,15 +239,16 @@ int cycle()
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     //int mode = 2;  // Double hump.  See below for check with single_hump boolean.
     bool doublehump = !single_hump;  // Calc from recipe, if HTP==LTP, single_hump is false.
-
+    // doublehump = false; //fix this
     bool dtrigger = false;
-    double beta0[3] = {10, 10, 1};
-    double lb[3] = {min_vals[0], min_vals[1], min_vals[2]};
-    double ub[3] = {max_vals[0], max_vals[1], max_vals[2]};
-    double coeff[3];
+    int fittingvars = 4;
+    double beta0[fittingvars] = {10, 10, 1, 0};
+    double lb[fittingvars] = {min_vals[0], min_vals[1], min_vals[2], 0};
+    double ub[fittingvars] = {max_vals[0], max_vals[1], max_vals[2], 0};
+    double coeff[fittingvars];
     double iter;
-    double coeffprev[3];
-    double coeffdouble[3];
+    double coeffprev[fittingvars];
+    double coeffdouble[fittingvars];
     // double thresh = 0.05;  // Looked at LV and recipe for CDZ double hump has 0.05 here, 20221026 weg.
     // double threshcool = 0.135;
     // double dthreshheat = 0.25; // Other version has 0.25, 20220915 weg.
@@ -257,13 +263,21 @@ int cycle()
     coeffprev[0] = 0;
     coeffprev[1] = 0;
     coeffprev[2] = 0;
+    coeffprev[3] = 0;
     int cutoff = cyclecutoff;
+    int fittingcutoff = cyclesfit; //Bill, this hardcoded value can be replaced to fix the code.
+    int usedtimes = cyclesaverage; //same here.
+    vector<int> heating_times;
+    vector<int> cooling_times;
     cout << progName << ": cutoff (and cyclecutoff) are " << cutoff << " ." << endl;
     long triggertime; // 20220822 weg, from int to long
     bool past_the_hump;
     temperrors = 0;
     delay(100);
     digitalWrite(HEATER_PIN, HIGH); //BILL LOOKIE
+    phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    double savestart;
+    digitalWrite(FAN_PIN,LOW);
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
     delay(500);
     clearactivedata();
@@ -271,11 +285,10 @@ int cycle()
     // the heater starts!!  Mess with this at your peril.  20221028 weg
 
     // Begin heating.
-  
-    digitalWrite(FAN_PIN,LOW);   
+     
     bool state = true;  // Set the heating flag.
     delay(100);
-    while (cycles < cutoff && runflag == true)
+    while (cycles < fittingcutoff && cycles < cutoff && runflag == true)
     {
         piLock(0);
         if(state == true)  // The heating cycle.
@@ -290,7 +303,7 @@ int cycle()
             beta0[0] = *minlocation;
             beta0[1] = x[distance(derivs.begin(), minlocation)];
         }
-        GaussNewton3(xderivs, derivs, beta0, lb, ub, coeff, &iter);
+        GaussNewton4(xderivs, derivs, beta0, coeff, &iter);
         if(coeff[1] < x[x.size()-1])
         {
             past_the_hump = true;
@@ -394,7 +407,7 @@ int cycle()
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && 
                     abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
             {
-                cout << progName << ": coeffs[], Amplitude " << coeff[0] << " Center " << coeff[1] << " Width " << coeff[2]  << 
+                cout << progName << ": coeffs[], Amplitude " << coeff[0] << " Center " << coeff[1] << " Width " << coeff[2]  << " Offset " << coeff[3] <<
                 "  Iteration " << iter << endl;
                 if(doublehump == false)
                 {
@@ -414,8 +427,19 @@ int cycle()
                         cout << progName << ": Cycle " << cycles << " complete." << endl;
                         cycles++;
                     }
+                    savestart = phasestart;
                     state = modeshift(state);
                     clearactivedata();
+                    if(state == false)//These are inverted due to the modeshift function swapping state before we get here.
+                    {
+                        heating_times.push_back(phaseend-savestart);
+                        cout << "Phase time: " << heating_times[heating_times.size()-1] << endl;
+                    }
+                    else
+                    {
+                        cooling_times.push_back(phaseend-savestart);
+                        cout << "Phase time: " << cooling_times[cooling_times.size()-1] << endl;
+                    }
                 }
                 else // doublehump is true
                 {
@@ -447,7 +471,18 @@ int cycle()
                             pcr_out << triggertime << ",";
                             cycles++;
                         }
+                        savestart = phasestart;
                         state = modeshift(state);
+                        if(state == false)//These are inverted due to the modeshift function swapping state before we get here.
+                        {
+                            heating_times.push_back(phaseend-savestart);
+                            cout << "Phase time: " << heating_times[heating_times.size()-1] << endl;
+                        }
+                        else
+                        {
+                            cooling_times.push_back(phaseend-savestart);
+                            cout << "Phase time: " << cooling_times[cooling_times.size()-1] << endl;
+                        }
                         cout << progName << ": Cycle " << cycles << " complete." << endl;
                         dtrigger = false;
                     }
@@ -459,13 +494,58 @@ int cycle()
             coeffdouble[0] = coeffprev[0];
             coeffdouble[1] = coeffprev[1];
             coeffdouble[2] = coeffprev[2];
+            coeffdouble[3] = coeffprev[3];
             coeffprev[0] = coeff[0];
             coeffprev[1] = coeff[1];
             coeffprev[2] = coeff[2];
+            coeffprev[3] = coeff[3];
         }// end if there is a gaussian fit.
         delay(100);
     }// end while running cycles, while (cycles < cutoff && runflag == true)  
     // fclose(output);
+    cout << progName << ":  pwm_enable is " << pwm_enable << endl;
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
+    state = true;
+    digitalWrite(FAN_PIN, LOW);
+    digitalWrite(HEATER_PIN, HIGH);
+    if(cycles >= fittingcutoff && cycles < cutoff && runflag == true)
+    {
+        int recentcycle = heating_times.size()-1;
+        int heat_time = 0;
+        int cool_time = 0;
+        for(int i = 0; i < usedtimes; i++)
+        {
+            heat_time += heating_times[recentcycle - i];
+            cool_time += cooling_times[recentcycle - i];
+        }
+        heat_time = heat_time/usedtimes;
+        cool_time = cool_time/usedtimes;
+        cout << "Autopilot calibrated." <<endl;
+        cout << "Cycles used: " << usedtimes << endl;
+        cout << "Heating time: " << heat_time << "ms." << endl;
+        cout << "Cooling time: " << cool_time << "ms." << endl;
+        int i = 0;
+        while (cycles < cutoff && runflag == true)
+        {
+            i = 0;
+            while(i < 100 && runflag == true)
+            {
+                usleep(heat_time*10);
+                i++;
+            }
+            i = 0;
+            state = modeshift(state);
+            while(i < 100 && runflag == true)
+            {
+                usleep(cool_time*10);
+                i++;
+            }
+            pcr_out << data[data.size()-1].timestamp << ",";
+            cycles++;
+            state = modeshift(state);
+            cout << "Autopilot: cycle " << cycles << " complete." << endl;
+        }
+    }
     runflag = false;
     digitalWrite(HEATER_PIN, LOW);
     cout << progName << ":  pwm_enable is " << pwm_enable << endl;

@@ -13,6 +13,9 @@
 
 /* Sets up the Pi's GPIO pins and initiates wiringPi's library for GPIO communications.
  */
+
+double phasestart;
+double phaseend;
 void setupPi(void)
 {
     string progName = "setupPi";
@@ -526,6 +529,8 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
 
     // Need to send this to the UI, and/or handle the different cyclecutoff that occurs there as input.
     cyclecutoff = stoi(recipeIni->get_value("Cycling", "cyclesMax"));
+    cyclesfit = stoi(recipeIni->get_value("Cycling", "cyclesFit"));
+    cyclesaverage = stoi(recipeIni->get_value("Cycling", "autopilotAverage"));
 
     // Declare the file operator and a few check variables for the thread.
     // FILE *output;

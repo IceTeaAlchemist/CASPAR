@@ -120,7 +120,11 @@ extern float temper_calibVoffset;
 extern float temper_calibSlope;
 extern float temper_readeveryms; 
 //
+extern double phasestart;
+extern double phaseend;
 extern int cyclecutoff;
+extern int cyclesfit;
+extern int cyclesaverage;
 extern double heattoolongfirst; // secs, 75 typically for first heating cycle.
 extern double heattoolong; // secs, 40 typ., second and up heating cycle.
 extern double cooltoolong; // secs, 40 typ., cooling cycle check.
