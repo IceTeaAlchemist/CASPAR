@@ -464,6 +464,9 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     bstream << "\t" << recipeDescShort << endl;
     cout << bstream.str();
 
+    // Setup the Qiagen mappings, see the [Channel] section of the recipe file.
+    readQiagenMappings(recipeIni);
+
     // Laser control is in the recipes file.
     pwm_enable = (recipeIni->get_value("PWM", "Enable") == "true");  // Turn off PWM avoid sudo node caspar.js .
     pwm_high_ratio = stof(recipeIni->get_value("PWM", "HighRatio")); // 0.85;
@@ -658,5 +661,38 @@ void setupPWMLaser()
     cout << progName << ":  pwm_enable is " << pwm_enable << " pwm_low is " << pwm_low << ", pwm_high is " << pwm_high << endl;
     cout << "\t pwm_low_ratio " << pwm_low_ratio << " pwm_high_ratio " << pwm_high_ratio << endl;
     pwmWrite(PWM_PIN, pwm_low);
+}
+
+// setup_qiagen_mappings - read from the recipes file lines like 
+// [Channels]
+// HTP = Q1_E1D1
+// HTPQiagen = Q1
+// ...
+// and write out files that map HTP, LTP, PCRA, PCRB, PCRC, PCRD to qiagens and channels.  Our Qiagen class uses {1,3} for qiagen and method.
+// Look at data.cpp:readPCR() etc for how these mappings will be used.
+// Find and remove all hardcoded LED_on/offs, etc.  Well, except when turning them all off, maybe.
+// 20230911 weg
+// ?? put all the following in a class??
+void readQiagenMappings(config* recipeIni)
+{
+    ostringstream bstream; // For complicated printouts.
+    string progName = "readQiagenMappings";
+
+    //recipeIni = new config(filename); //"configs/recipes/default.ini");
+
+    //recipeVersion = recipeIni->get_value("Description", "RecipeVersion");
+    // Channels are HTP, LTP, PCRA, PCRB, PCRC, PCRD, Recon, RT for the main 
+    // channels as of now (20230914).
+    // Want there qiagen number as int, and method number as integer.
+
+    // Use the qiagen mappings class for handling all the directions of the mappings.
+    // For now (20230911) need the know the HTP, LTP, etc Qiagen numbers (1 or 2) and 
+    // their Channels/Methods (1 or 3 as of now).
+
+    qiagenMap myQiagenMap(recipeIni);  // ??Also in setup.h and caspar.h.
+
+    // If true, do the gain calibration...usually always do the gain calibration.
+    gainCalibration = ( recipeIni->get_value("Channels", "GainCalibration") == "true" );
+
 }
 

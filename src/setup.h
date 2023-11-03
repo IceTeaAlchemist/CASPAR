@@ -31,8 +31,10 @@ string recipeDescLong;
 // Set up the qiagens on relevant USB ports.
 qiagen *sens1;  // "/dev/ttyUSB0"
 qiagen *sens2;  // "/dev/ttyUSB1"
-// Check that it matches devices.ini file for Q1 and Q2.  Adjust which is Q1 (front one) and which Q2 (back one).
-// put in control.cpp??  checkRenameQiagens(sens1, sens2, devicesIni);
+// Check that it matches devices.ini file for Q1 and Q2.  Adjust which is Q1 (front one) and which 
+// Q2 (back one).
+qiagenMap myQiagenMap;  // Mapping of HTP, LTP, etc to Qiagen number and method/channel.
+bool gainCalibration; // If true, do the gain calibration...usually always do the gain calibration.
 
 // Set up the ADCs to use interrupts as well as declare them.
 int DEVICE_ID;
@@ -189,5 +191,6 @@ string recipeFile = "default.ini";  // default file name
 string recipeDir = "./configs/recipes/";  // default
 
 void setupPWMLaser();
+void readQiagenMappings(config* recipeIni);
 
 #endif

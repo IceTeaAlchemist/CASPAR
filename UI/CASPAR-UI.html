@@ -293,7 +293,8 @@
     // https://stackoverflow.com/questions/287903/how-can-i-guarantee-that-my-enums-definition-doesnt-change-in-javascript
     // Use the below in the dataarray[<num>] by dataarray[configEnum.opName] etc.
     // COPY to caspar.js !!
-    const configEnum = {"opName":0, "email":1, "projName":2, "recName":3, "FAM":4, "CY5":5, "HEX":6, "reconCheckbox":7, "RTCheckbox":8, "totCycles":9}; 
+    const configEnum = {"opName":0, "email":1, "projName":2, "recName":3, "FAM":4, "CY5":5, "HEX":6, "reconCheckbox":7, 
+                        "RTCheckbox":8, "totCycles":9}; 
     Object.freeze(configEnum);
 
 
@@ -577,7 +578,7 @@
 
 
           case "PCRdata": //In the future, msg.cycleNo will give us the real cycleNo -- NS: Done June 28th 2022
-            cycleNo = msg.cycle; //Increase PCR cycle on receipt of PCR data.
+            cycleNo = msg.cycle; //Update PCR cycle on receipt of PCR data.
             document.getElementById("currentCycle").innerHTML =  "<span style='font-weight:bold; font-size:110%'>" + cycleNo + "</span>"; //Changes Cycle Number
             fam = msg.fam; //Retrieve FAM fluorescence.
             cy5 = msg.cy5; //Retrieve Cy5 fluorescence.
@@ -1241,11 +1242,13 @@
           var calculate = "Calculating...";
           document.getElementById("estFinTime").innerHTML =  "<br> Est. Finish Time: <br> <br> <span style=font-size:110%> &ensp;" +
             calculate.bold() + "</span>";
-          document.getElementById("esEstFin").innerHTML = "<span style = 'text-decoration: underline;'> Est. Finish Time:</span>" + " " + calculate;
+          document.getElementById("esEstFin").innerHTML = "<span style = 'text-decoration: underline;'> Est. Finish Time:</span>" + " " +
+                                                          calculate;
         }
         else {
           //If its been atleast the third PCR cycle, Estimated FInish Time is displayeds. Not otherwise
-          var totalsecondsLeft = ((parseInt(String(document.getElementById("totCycles").value).trim()) - parseInt(String(cycleno).trim()))+1) * parseInt(String(seconds).trim());
+          var totalsecondsLeft = ((parseInt(String(document.getElementById("totCycles").value).trim()) - parseInt(String(cycleno).trim()))+1) *
+                                   parseInt(String(seconds).trim());
 
           var currentTime = new Date(); //initialize Start Time
           var futureTime = new Date(currentTime.getTime() + totalsecondsLeft * 1000);
