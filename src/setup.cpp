@@ -424,6 +424,10 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
     PWM_PIN = stoi(devicesIni->get_value("GPIO", "PWM_PIN"));       // Typ 23.
     ALERT_PIN = stoi(devicesIni->get_value("GPIO", "ALERT_PIN"));   // Typ 23.
 
+    // Print at the end of the doHardwareConfig
+    bstream << progName << ": At end of subroutine." << endl;
+    cout << bstream.str();
+
 } // end doHardwareConfig
 
 // doRecipeConfig - Reads the INI file for the setup to almost every except hardware, so the cycle count, the
@@ -504,6 +508,7 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     AMPL_MIN_PREMELT = stod(recipeIni->get_value("Recon", "AMPL_MIN_PREMELT"));
     CTR_MIN_PREMELT = stod(recipeIni->get_value("Recon", "CTR_MIN_PREMELT"));
     // The Channels used.  Set qiagen properties for fitting-- format is {QIAGEN, METHOD}
+
     LTP = convertstr2vecint(recipeIni->get_value("Cycling", "LTP"));
     HTP = convertstr2vecint(recipeIni->get_value("Cycling", "HTP"));
     // int fittingqiagen;
@@ -520,13 +525,11 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     FluorCalibLDNA = stod(recipeIni->get_value("Cycling", "FluorCalibLDNA")); // 200
     // casparapi L65-102
     FluorCalibPremelt = stod(recipeIni->get_value("RT", "FluorCalibPremelt")); // 150
-
     // Was in control.cpp L14.
     heattoolongfirst = stod(recipeIni->get_value("Errors", "heattoolongfirst"));             // secs, 75 typically first cycle heating
     heattoolong = stod(recipeIni->get_value("Errors", "heattoolong"));                 // secs, 40 typ, second and other heating cycles
     cooltoolong = stod(recipeIni->get_value("Errors", "cooltoolong"));                 // secs, 40 typ, first and other cooling cycles
     allowed_temp_errors = stoi(recipeIni->get_value("Errors", "allowed_temp_errors")); // 3-ish
-
     // Declare cycle number variable.
     cycles = 0;
 
@@ -561,6 +564,9 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     rawstorage = "binaryoutput_" + ts + ".bin";
     runlogDir = "./";
     runlog = "runtimelog.txt";
+
+    bstream << progName << ": At end of the subroutine." << endl;
+    cout << bstream.str();
 
 } // end doRecipeConfig
 
