@@ -130,13 +130,37 @@ void reconstitute()
 // Delays to a point based on the fitted coefficients and the value of the derivative, depending 
 // on a fraction of peak threshold. Returns the time from epoch when control triggered.
 // Changed to long from int, weg 20220822.
+
+// Hmmm, with four param fit and effort to change AMPL_MIN_HTP or LTP to signed, negative
+// for negative derivs, and positive for postitive derivs.
+
+// Heating OR Cooling could be negative going derivatives, so check C0 > C3 POSitive deriv,
+// and C0 < C3 NEGative derivs.
 long delaytocycleend(const double coeff[4], double thresh)
 {
-    while(abs(derivs[derivs.size()-1]) > abs(coeff[0] * thresh)+coeff[3])
+    bool isPos = (coeff[0]-coeff[3])>0?true:false;
+    if(isPos)  // derivs[] is updated in other thread(?) while this loop is going.
     {
-        delay(10);
+        while( derivs[derivs.size()-1] > (coeff[0]-coeff[3])*thresh + coeff[3] )
+        {
+            delay(10);
+        }
+    } else
+    {
+        while( derivs[derivs.size()-1] < (coeff[0]-coeff[3])*thresh + coeff[3] )
+        {
+            delay(10);
+        }        
     }
-    cout << "delaytocycleend: Absolute value of derivs[last] " << derivs[derivs.size()-1] << " is less than thresh*coeff[0] " << thresh*coeff[0] << endl;
+    // while(abs(derivs[derivs.size()-1]) > abs(coeff[0] * thresh)+coeff[3])
+    // {
+    //     delay(10);
+    // }
+    // cout << "delaytocycleend: Absolute value of derivs[last] " << derivs[derivs.size()-1] << endl;
+    // cout << "\t is less than thresh*coeff[0] + coeff[3] " << thresh*coeff[0] << " plus " << coeff[3] << endl;
+    cout << "delaytocycleend: isPos " << isPos << " derivs[last] " << derivs[derivs.size()-1] << " and test condition \"below\" ";
+    cout << endl << "\t (coeff[0]-coeff[3])*thresh + coeff[3] " << ((coeff[0]-coeff[3])*thresh + coeff[3]) << endl;
+   
     return data[data.size()-1].timestamp;
 }
 
@@ -258,6 +282,7 @@ int cycle()
     double dthreshheat = DTHRESHHEAT;
     double dthreshcool = DTHRESHCOOL;
     double AMPL_MIN, CTR_MIN;
+    bool CHECKFIT;  // The list of conditions to call it a good fit.
     double heattoolongActual; // For taking the value of heattoolongfirst (cycles 0) or heattoolong.
     error anerror;  // For filling the errorArray.
     coeffprev[0] = 0;
@@ -398,20 +423,23 @@ int cycle()
         //  and CONVERGENCE_THRESHOLD = 1 .
         if (state==true) // In heating cycle.
         {
-            AMPL_MIN = AMPL_MIN_HTP;
+            AMPL_MIN = AMPL_MIN_HTP;  // Heating may not always be a positive bump!!  Sign handled by AMPL_MIN*() below.
             CTR_MIN = CTR_MIN_HTP;
         } else  // In cooling cycle.
         {
-            AMPL_MIN = AMPL_MIN_LTP;
-            CTR_MIN = CTR_MIN_LTP;            
+            AMPL_MIN = AMPL_MIN_LTP;  // Should be negative if Fluor starts high and is going low. weg 20240208
+            CTR_MIN = CTR_MIN_LTP;           
         }
-        if (iter < ITER_MAX && abs(coeff[0]) > AMPL_MIN && coeff[1] > CTR_MIN)  // Successfully found a fit, deriv of fluorescence.
+        if ( (iter < ITER_MAX && AMPL_MIN*(coeff[0]-AMPL_MIN) > 0 && coeff[1] > CTR_MIN) )  
+        // Successfully found a fit for the deriv of fluorescence.
         {
-            if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && 
-                    abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD)
+            if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && 
+                    abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && 
+                    abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD &&
+                    abs(abs(coeffprev[3] - coeff[3])) < CONVERGENCE_THRESHOLD)
             {
-                cout << progName << ": coeffs[], Amplitude " << coeff[0] << " Center " << coeff[1] << " Width " << coeff[2]  << " Offset " << coeff[3] <<
-                "  Iteration " << iter << endl;
+                cout << progName << ": coeffs[], Amplitude " << coeff[0] << " Center " << coeff[1] << " Width ";
+                cout <<  coeff[2]  << endl << "\t Offset " << coeff[3] << "  Iteration " << iter << endl;
                 if(doublehump == false)
                 {
                     if(state == true)  // heating
@@ -422,8 +450,10 @@ int cycle()
                     {
                         triggertime = delaytocycleend(coeff,threshcool);
                     }
-                    cout << progName << ": Control triggered at " << triggertime - (long)run_start << " milliseconds after initiation." << endl;
-                    coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - (long)run_start << endl; 
+                    cout << progName << ": Control triggered at " << triggertime - (long)run_start;
+                    cout << " milliseconds after initiation." << endl;
+                    coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << coeff[3];
+                    coeff_out << "," << triggertime - (long)run_start << endl; 
                     if(state == false)  // cooling
                     {
                         pcr_out << triggertime << ",";

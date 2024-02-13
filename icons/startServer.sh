@@ -11,5 +11,8 @@ echo "===================================================" >> ${mylog}
 # date is 31 chars long.
 # tee -a appends to the document.
 cd /home/pi/Documents/githubs/CASPAR
-sudo node caspar.js  | tee -a data/serverlog/casparRun.txt
+sudo nice --10 node caspar.js  | tee -a data/serverlog/casparRun.txt
+# Added nice level -10 to increase server priority with system scheduler.  See
+# https://www.howtogeek.com/411979/how-to-set-process-priorities-with-the-nice-and-renice-commands-in-linux/
+#
 

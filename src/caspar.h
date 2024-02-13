@@ -1,6 +1,10 @@
 #ifndef CASPARMAIN
 #define CASPARMAIN
 
+// Code is copyrighted by Nick Spurlock, Bill Gabella, and Rick Haselton, as well as
+// Vanderbilt University for 2022-2024.
+
+
 #include "ADC.h"
 #include "qiagen.h"
 #include "configINI.h"
