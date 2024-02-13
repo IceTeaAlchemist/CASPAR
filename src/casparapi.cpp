@@ -29,8 +29,9 @@ namespace caspar
     int threadIter = 0; // For sampler thread below print statements.
 
     // Setup a thread to read the temperatures thermocouples,
-    // or also the ADC voltages if not temperatures.  Copying
-    // the pollSample and retrieveSample below.
+    // and the ADC0 voltage if slow reads.  Other commented thread
+    // for fast reading of Qiagen...as Nick originally planned.
+    // Copying the pollSample and retrieveSample below.
     void pollTemperatureNADC()
     {
         while (runflag == true)
@@ -294,7 +295,7 @@ namespace caspar
     {
         delete sens1;
         delete sens2;
-        delete D2;
+        delete ADC0;
         delete TEMP;
     }
 

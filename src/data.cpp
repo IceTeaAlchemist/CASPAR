@@ -51,7 +51,7 @@ void clearactivedata()
 }
 
 
-/* Is called whenever the D2 ADC has a sample ready and performs all relevant updates.
+/* Is called whenever the D2 ADC (generic ADC0?) has a sample ready and performs all relevant updates.
  * This includes:
  *  Matching the ADC value to a time.
  *  Storing both.
@@ -70,7 +70,7 @@ void sampletriggered(void)
     // Declare a reading object and put our timestamp and fluoresence inside, then push it into our data vector.
     reading now;
     now.timestamp = millisecs;
-    now.voltage = D2->getreading();
+    now.voltage = ADC0->getreading();
     data.push_back(now);
     // If it's our first entry this fitting, set the starting time for our fit to our current reading.
     if(x.size() == 0)
@@ -241,6 +241,7 @@ void readPCR()
 }
 
 // retrieveTemperatures - Retrieves the Temperature ADC data.
+// Also the ADC0 data, for slow reads.  See Nick's original code/thread for fast Qiagen reads.
 // Called from casparapi.cpp in the thread mechanism.
 void retrieveTemperatures()
 {
@@ -254,7 +255,7 @@ void retrieveTemperatures()
     piLock(1);  // Use 1 as the temperatures key.
     // Declare a reading object and put our timestamp and fluoresence inside, then push it into our 
     // data vector.
-    reading now0_tempers, now1_tempers;   // timestamp and voltage for reading
+    reading now0_tempers, now1_tempers, now0_adc0;   // timestamp and voltage for reading
     
     // Reading two temperatures, ends up at slightly different times.  
     // Configure a0-a3 on asd115.

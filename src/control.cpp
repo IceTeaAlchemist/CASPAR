@@ -82,7 +82,7 @@ void premelt()
                 // Accept the fit and log the coefficients.
                 cout << "premelt: Coeffs: " << coeff[0] << " " << coeff[1] << " " << coeff[2] << endl;
                 // Keep going until we've found the endpoint of the current gaussian.
-                delaytocycleend(coeff, 0.05);  // Hardcoded heating threshold number!!
+                delaytocycleend(coeff, 0.05, AMPL_MIN_PREMELT);  // Hardcoded heating threshold number!!
                 //Generate the heating curve for this gaussian.
                 heatgen(coeff,dtrigger);
                 if(dtrigger == false) // If we're on the first hump:
@@ -136,30 +136,24 @@ void reconstitute()
 
 // Heating OR Cooling could be negative going derivatives, so check C0 > C3 POSitive deriv,
 // and C0 < C3 NEGative derivs.
-long delaytocycleend(const double coeff[4], double thresh)
+long delaytocycleend(const double coeff[4], double thresh, double ampl_min)
 {
-    bool isPos = (coeff[0]-coeff[3])>0?true:false;
-    if(isPos)  // derivs[] is updated in other thread(?) while this loop is going.
+    // int isPos = (coeff[0]-ampl_min)>0? 1: -1; // Was (coeff[0]-coeff[3]) but coeff[3] can be big when wrong(?).
+    // derivs[] is updated in other thread while this loop is going.
+    while( ampl_min*( derivs[derivs.size()-1] - ((coeff[0]-coeff[3])*thresh + coeff[3]) ) > 0 )
     {
-        while( derivs[derivs.size()-1] > (coeff[0]-coeff[3])*thresh + coeff[3] )
-        {
-            delay(10);
-        }
-    } else
-    {
-        while( derivs[derivs.size()-1] < (coeff[0]-coeff[3])*thresh + coeff[3] )
-        {
-            delay(10);
-        }        
+        delay(10);
     }
+
     // while(abs(derivs[derivs.size()-1]) > abs(coeff[0] * thresh)+coeff[3])
     // {
     //     delay(10);
     // }
     // cout << "delaytocycleend: Absolute value of derivs[last] " << derivs[derivs.size()-1] << endl;
     // cout << "\t is less than thresh*coeff[0] + coeff[3] " << thresh*coeff[0] << " plus " << coeff[3] << endl;
-    cout << "delaytocycleend: isPos " << isPos << " derivs[last] " << derivs[derivs.size()-1] << " and test condition \"below\" ";
-    cout << endl << "\t (coeff[0]-coeff[3])*thresh + coeff[3] " << ((coeff[0]-coeff[3])*thresh + coeff[3]) << endl;
+    cout << "delaytocycleend: ampl_min " << ampl_min << " derivs[last] " << derivs[derivs.size()-1];
+    cout << " and test condition \"below\" " << endl;
+    cout << "\t (coeff[0]-coeff[3])*thresh + coeff[3] " << ((coeff[0]-coeff[3])*thresh + coeff[3]) << endl;
    
     return data[data.size()-1].timestamp;
 }
@@ -430,7 +424,7 @@ int cycle()
             AMPL_MIN = AMPL_MIN_LTP;  // Should be negative if Fluor starts high and is going low. weg 20240208
             CTR_MIN = CTR_MIN_LTP;           
         }
-        if ( (iter < ITER_MAX && AMPL_MIN*(coeff[0]-AMPL_MIN) > 0 && coeff[1] > CTR_MIN) )  
+        if ( (iter < ITER_MAX && AMPL_MIN*(coeff[0]-AMPL_MIN) > 0 && coeff[1] > CTR_MIN )  ) // Can have negative sigmas! 
         // Successfully found a fit for the deriv of fluorescence.
         {
             if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && 
@@ -444,11 +438,11 @@ int cycle()
                 {
                     if(state == true)  // heating
                     {
-                        triggertime = delaytocycleend(coeff,thresh);
+                        triggertime = delaytocycleend(coeff,thresh,AMPL_MIN);
                     }
                     else  // cooling
                     {
-                        triggertime = delaytocycleend(coeff,threshcool);
+                        triggertime = delaytocycleend(coeff,threshcool,AMPL_MIN);
                     }
                     cout << progName << ": Control triggered at " << triggertime - (long)run_start;
                     cout << " milliseconds after initiation." << endl;
@@ -481,24 +475,24 @@ int cycle()
                         dtrigger = true;
                         if(state == true)  // heating
                         {
-                            triggertime = delaytocycleend(coeff,dthreshheat);
+                            triggertime = delaytocycleend(coeff,dthreshheat,AMPL_MIN);
                         }
                         else   // cooling
                         {
-                            triggertime = delaytocycleend(coeff,dthreshcool);
+                            triggertime = delaytocycleend(coeff,dthreshcool,AMPL_MIN);
                         }
                     }
                     else  // dtrigger is true, looking for the second/double hump.
                     {
                         if(state == true)   // heating
                         {
-                            triggertime = delaytocycleend(coeff,thresh);
+                            triggertime = delaytocycleend(coeff,thresh,AMPL_MIN);
                             //lb[0] = -max_vals[0];
                             //ub[0] = -min_vals[0];
                         }
                         else  // cooling
                         {
-                            triggertime = delaytocycleend(coeff,threshcool);
+                            triggertime = delaytocycleend(coeff,threshcool,AMPL_MIN);
                             //lb[0] = min_vals[0];
                             //ub[0] = max_vals[0];
                             pcr_out << triggertime << ",";

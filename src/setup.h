@@ -39,7 +39,7 @@ bool gainCalibration; // If true, do the gain calibration...usually always do th
 // Set up the ADCs to use interrupts as well as declare them.
 int DEVICE_ID;
 int TEMP_ID; 
-adc *D2;  // Was define DEVICE_ID, 0x48 .
+adc *ADC0;  // Was define DEVICE_ID, 0x48 .  Generic for laser IMON or other.
 adc *TEMP;  // Was define TEMP_ID, 0x49 .
 
 bool pwm_enable; // Turn off PWM avoid sudo node caspar.js .
@@ -64,6 +64,18 @@ float temper_calibVoffset;
 float temper_calibSlope;
 float temper_readeveryms;
 
+bool imon_enable;
+int adc0gain;
+int adc0mode;
+int adc0sps;
+int adc0comppol;
+int adc0compqueue;
+vector<int> adc0multiplex;
+float imon_vmax;
+float imon_pow2effbits;
+float imon_calibVoffset;
+float imon_calibSlope;
+float imon_readeveryms;
 // Some GPIO extern values from the devices.ini file.
 int HEATER_PIN; // Typ 7
 int FAN_PIN; // Typ 4

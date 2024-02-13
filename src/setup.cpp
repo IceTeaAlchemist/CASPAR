@@ -75,20 +75,22 @@ void setupQiagen(void)
     sens2->setMethod(1);
 }
 
-/* Sets the ADC to run using the interrupt pin as well as the samples per second and mode. D2 is the Qiagen detector, TEMP is the temperature detector.
+/* Sets the ADC to run using the interrupt pin as well as the samples per second and mode. 
+   ADC0 is for laser IMON or other generic, formerly D2 as the Qiagen detector (CASPA01 only) and
+   TEMP is the temperature detectors, two thermocouples.
  */
 void setupADC(void)
 {
     string progName="setupADC";
-    cout << progName << ": before D2->SetGain(1);" << endl;
+    cout << progName << ": before ADC0->SetGain(adc0gain), with adc0gain = " << adc0gain << " ." << endl;
     // Setup the qiagen tapped ADC. See the class for documentation.
-    D2->SetGain(1);
-    D2->SetMode(0);
-    D2->SetSPS(5);
-    D2->SetCompPol(1);
-    D2->SetCompQueue(0);
-    D2->SetMultiplex(1, 3);
-    cout << progName << ": before TEMP->SetGain(adc1gain); with adc1gain = " << adc1gain << " ." << endl;
+    ADC0->SetGain(adc0gain);
+    ADC0->SetMode(adc0mode);
+    ADC0->SetSPS(adc0sps);
+    ADC0->SetCompPol(adc0comppol);
+    ADC0->SetCompQueue(adc0compqueue);
+    ADC0->SetMultiplex(adc0multiplex[0], adc0multiplex[1]);
+    cout << progName << ": before TEMP->SetGain(adc1gain), with adc1gain = " << adc1gain << " ." << endl;
     // Setup the ADC for the temperature. See the ADC class for documentation.
     TEMP->SetGain(adc1gain); // For range +/- 4.096V .  adafruit-4-chan PDF page 13.
     TEMP->SetMode(adc1mode);
@@ -385,9 +387,9 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
     cout << "We're past the ADC setup stage." << endl;
     // cout << progName << ": DEVICE_ID is (hex) " << hex << DEVICE_ID;
     // cout << " and TEMP_ID is (hex) " << TEMP_ID << dec << endl;
-    delete D2;
+    delete ADC0;
     delete TEMP;
-    D2 = new adc(DEVICE_ID, 0x8000, 0x7FFF); // Was define DEVICE_ID, 0x48 . // Already declared default constructor.
+    ADC0 = new adc(DEVICE_ID, 0x8000, 0x7FFF); // Was define DEVICE_ID, 0x48 . // Already declared default constructor.
     TEMP = new adc(TEMP_ID, 0x8000, 0x7FFF); // Was define TEMP_ID, 0x49 .
 
     cout << "Declaring ADCs." << endl;
@@ -405,6 +407,19 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
     temper_calibSlope = stof(devicesIni->get_value("Temperature", "CalibSlope"));
     temper_readeveryms = stof(devicesIni->get_value("Temperature", "ReadEveryMS"));
 
+    imon_enable = (devicesIni->get_value("ADC0Setup", "Enable") == "true");
+    adc0gain = stoi(devicesIni->get_value("ADC0Setup", "ADC0Gain"));
+    adc0mode = stoi(devicesIni->get_value("ADC0Setup", "ADC0Mode"));
+    adc0sps = stoi(devicesIni->get_value("ADC0Setup", "ADC0SPS"));
+    adc0comppol = stoi(devicesIni->get_value("ADC0Setup", "ADC0CompPol"));
+    adc0compqueue = stoi(devicesIni->get_value("ADC0Setup", "ADC0CompQueue"));
+    adc0multiplex = convertstr2vecint(devicesIni->get_value("ADC0Setup", "ADC0Multiplex"));
+    imon_vmax = stof(devicesIni->get_value("ADC0Setup", "Vmax"));
+    imon_pow2effbits = stof(devicesIni->get_value("ADC0Setup", "Pow2EffBits"));
+    imon_calibVoffset = stof(devicesIni->get_value("ADC0Setup", "CalibVoffset"));
+    imon_calibSlope = stof(devicesIni->get_value("ADC0Setup", "CalibSlope"));
+    imon_readeveryms = stof(devicesIni->get_value("ADC0Setup", "ReadEveryMS"));
+    
     cout << "ADCs setup." << endl;
 
     // PWM stuff is repeated in the recipe files too.

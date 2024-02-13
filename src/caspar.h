@@ -57,7 +57,7 @@ struct error
 // Global variable declarations. External variables are set in setup.cpp.
 // This should include devices.ini hardware type configurations and the assay recipes.
 // Take care not to collide with local variables.
-extern adc *D2;
+extern adc *ADC0;
 extern adc *TEMP;
 extern qiagen *sens1;
 extern qiagen *sens2;
@@ -208,7 +208,7 @@ extern void setupPWMLaser();
 double heatquery(double temp);
 double fluorquery(double fluor);
 void waittotemp(double temp);
-void heatgen(const double coeff[3], bool trigger);
+void heatgen(const double coeff[4], bool trigger);  // was coeff[3]
 void holdtemp(double temp, double time);
 
 // control.cpp function definitions. These handle the control loop for cycling and RT.
@@ -217,7 +217,7 @@ void premelt(void);
 void runRT(void);
 void reconstitute(void);
 int cycle(void);
-long delaytocycleend(const double coeff[3], double thresh);
+long delaytocycleend(const double coeff[4], double thresh, double ampl_min);  // was coeff[3]
 bool modeshift(bool state);
 void changeQiagen(vector<int> qiagenproperties);
 
