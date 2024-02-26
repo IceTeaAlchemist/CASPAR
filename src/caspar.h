@@ -71,10 +71,13 @@ extern vector<double> x;
 extern vector<double> y;
 extern vector<reading> data0_tempers;
 extern vector<reading> data1_tempers;
+extern vector<reading> data0_adc0;
 extern vector<double> x0_tempers;  // In setup.h and data.cpp.
 extern vector<double> y0_tempers;
 extern vector<double> x1_tempers;
 extern vector<double> y1_tempers;
+extern vector<double> x0_adc0;  // For plots that do not exist, yet(?).
+extern vector<double> y0_adc0;
 extern bool RTdone;
 extern bool runflag;
 extern vector<double> xderivs;

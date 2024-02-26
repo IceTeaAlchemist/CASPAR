@@ -8,7 +8,6 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-// Experimenting with below, weg 20230202
 #include "setup.h"
 
 /* Sets up the Pi's GPIO pins and initiates wiringPi's library for GPIO communications.
@@ -90,6 +89,12 @@ void setupADC(void)
     ADC0->SetCompPol(adc0comppol);
     ADC0->SetCompQueue(adc0compqueue);
     ADC0->SetMultiplex(adc0multiplex[0], adc0multiplex[1]);
+    ADC0->SetCalibVoffset(imon_calibVoffset);
+    ADC0->SetCalibSlope(imon_calibSlope);
+    int chkconfig = ADC0->getconfig();
+    cout << progName << ": ADC0->getconfig " << chkconfig;
+    cout << " and hex " << hex << chkconfig << dec << endl;
+
     cout << progName << ": before TEMP->SetGain(adc1gain), with adc1gain = " << adc1gain << " ." << endl;
     // Setup the ADC for the temperature. See the ADC class for documentation.
     TEMP->SetGain(adc1gain); // For range +/- 4.096V .  adafruit-4-chan PDF page 13.
@@ -99,7 +104,7 @@ void setupADC(void)
     TEMP->SetCompQueue(adc1compqueue);
     TEMP->SetMultiplex(adc1multiplex[0], adc1multiplex[1]);
 
-    int chkconfig = TEMP->getconfig();
+    chkconfig = TEMP->getconfig();
     cout << progName << ": TEMP->getconfig " << chkconfig;
     cout << " and hex " << hex << chkconfig << dec << endl;
 }

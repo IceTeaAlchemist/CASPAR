@@ -442,6 +442,12 @@ double adc::convertToDegC(double volts)
 	return (volts-1.25)*200.;
 } 
 
+// Generic linear conversion to "Engineering Units" like Amps for the 1370nm laser.
+double adc::convertToEngUnits(double volts)
+{
+	return ((volts-CalibVoffset)*CalibSlope);
+}
+
 adc::~adc()
 {
 	int resetd = wiringPiI2CSetup(0x00); // Writes to the default "bus" to ALL ADS-ADC's all listen on 0x00.

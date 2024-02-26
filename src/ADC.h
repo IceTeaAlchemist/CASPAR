@@ -12,6 +12,8 @@ class adc
 		int pihandle;
 		float gainvoltage;
 		int maxbitcounts;
+		double CalibVoffset=0.0;
+		double CalibSlope=1.0;
 		void writeconfig();
 		void adcsetup();
 	public:
@@ -33,6 +35,9 @@ class adc
 		int getreading();
 		double getvoltage();
 		double convertToDegC(double volts);  // Conversion for AD8495 board.
+		double convertToEngUnits(double volts);  // Conversion using the calibration in the devices.ini file.
+		inline void SetCalibVoffset(float imon_calibVoffset){CalibVoffset = imon_calibVoffset; };
+		inline void SetCalibSlope(float imon_calibSlope){CalibSlope = imon_calibSlope; };		
 
 		int gethighthresh();
 		int getlowthresh();

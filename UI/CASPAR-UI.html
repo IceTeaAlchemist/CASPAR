@@ -47,6 +47,7 @@
   grid-template-rows: 1.1fr 1.1fr 1.1fr 1.1fr 1.1fr 1.1fr 0.4fr;
   grid-column-gap: 8px;
   grid-row-gap: 8px;}
+  /* grid-area: grid-row-start / grid-column-start / grid-row-end / grid-column-end | itemname; */
   .div1-1 { grid-area: 1 / 1 / 6 / 3; border-style:solid; border-width: 2px} /*left content */
   .div2-1 { grid-area: 1 / 3 / 6 / 9; border-style:solid; border-width: 2px} /*middle content */
   .div3-1 { grid-area: 1 / 9 / 6 / 11; border-style:solid; border-width: 2px} /*right content */
@@ -59,8 +60,9 @@
   grid-row-gap: 8px;} /*same grid as container1*/
   .div1-2 { grid-area: 1 / 1 / 6 / 3; border-style:solid; border-width: 2px} /*left content */
   .div2-2 { grid-area: 1 / 3 / 6 / 9; border-style:solid; border-width: 2px} /*middle content */
-  .div3-2 { grid-area: 1 / 9 / 6 / 11; border-style:solid; border-width: 2px} /*right content */
-  .div4-2 { grid-area: 6 / 1 / 8 / 11; border-style:solid; border-width: 2px} /*bottom content */
+  .div3-2 { grid-area: 1 / 9 / 2 / 11; border-style:solid; border-width: 2px} /*right content */
+  .div4-2 { grid-area: 2 / 9 / 6 / 11; border-style:solid; border-width: 2px} /*right content, lower */
+  .div5-2 { grid-area: 6 / 1 / 8 / 11; border-style:solid; border-width: 2px} /*bottom content */
 
   .container3 {display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -187,11 +189,20 @@
       <div class="div2-2" id="divCYC" style="width:100%; height:100%; display:block;"> </div> <!--graph goes here-->
 
       <div class="div3-2">
+        <p class="inrtxt4" style="font-weight:bold; text-align: center; margin-top: 20px;">ADCs:</p>
+          <p class="inrtxt3" id="adctstamp"> 99:99:99 </p> 
+          <p class="inrtxt7" id="tc0" style="font-size:150%;"> <span style = "text-decoration: underline;"> TC0:</span> -99.99 <br></p>  <!--Changes-->
+          <p class="inrtxt7" id="tc1" style="font-size:150%;"> <span style = "text-decoration: underline;"> TC1:</span> -99.99 <br> </p>  <!--Changing will be implemented-->
+          <p class="inrtxt7" id="adc0" style="font-size:150%;"> <span style = "text-decoration: underline;"> ADC0:</span> -9.999 <br> </p>  <!--Changes-->
+
+      </div>
+
+      <div class="div4-2">
         <p class="inrtxt4" style="font-weight:bold; text-align: center; margin-top: 20px;">Error Status:</p>
           <p class = 'inrtxt3' id="errorInfo"> No errors found</p> <!--Changing will be implemented-->
       </div>
 
-      <div class="div4-2">
+      <div class="div5-2">
         <p class="inrtxt3" style="margin-top: 42px; display:inline; float:left; font-size:110%; margin-left:20px;"> Save Data Filename:</p>
           <input class = "inrinp1" type="text" id="filename" style="display:inline-flex; margin-top: 40px; float:left;" value=""> <!--Changes-->
         <button class="inrbtn2" id="downloadData" onclick = "downloadData()" style = "display:inline; margin-top: 28px; margin-left:55px;
@@ -301,6 +312,7 @@
     // Initialize variables for data handling.
     var x = 0;
     var y = 0;
+    var tc0, tc1, adc0, tstamp;
     var fam;
     var cy5;
     var cycleNo = 0;
@@ -616,6 +628,27 @@
               {data.push([x,y,deriv]);
                cyc.updateOptions( { 'file': data } );}
           break;
+
+          // Receive the ADC data and use local time stamp (or not??).
+          case "updateADCs":
+            tstamp = new Date();  // Get current time, here!
+            tc0 = msg.tc0; // Get tc0, etc.
+            tc1 = msg.tc1;
+            adc0 = msg.adc0;
+            document.getElementById("adctstamp").innterHTML = tstamp;            
+            document.getElementById("tc0").innerHTML = "TC0: " + tc0;
+            // <br> System Status: <br> <br> <span style=font-size:110%;color:tomato;font-weight:bold;> &ensp;"
+            //     + "RT In Progress" + "</span>";
+            document.getElementById("tc1").innerHTML = "TC1: " + tc1;
+            document.getElementById("adc0").innerHTML = "adc0: " + adc0;
+
+            // <p class="inrtxt3" id="timestamp"> 11:11:11 </p> <!--Changing will be implemented-->
+            // <p class="inrtxt7" id="tc0" style="font-size:150%;"> <span style = "text-decoration: underline;"> TC0:</span> -22.34 <br></p>  <!--Changes-->
+            // <p class="inrtxt7" id="tc1" style="font-size:150%;"> <span style = "text-decoration: underline;"> TC1:</span> -13.34 <br> </p>  <!--Changing will be implemented-->
+            // <p class="inrtxt7" id="adc0" style="font-size:150%;"> <span style = "text-decoration: underline;"> ADC0:</span> -1.234 <br> </p>  <!--Changes-->
+
+
+          break;          
 
           case "downloadresponse":
             console.log(msg);

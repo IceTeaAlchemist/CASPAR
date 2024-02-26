@@ -136,10 +136,13 @@ vector<double> derivs;
 // see data.cpp and casparapi.cpp.
 vector<reading> data0_tempers;
 vector<reading> data1_tempers;
+vector<reading> data0_adc0;
 vector<double> x0_tempers;
 vector<double> y0_tempers;
 vector<double> x1_tempers;
 vector<double> y1_tempers;
+vector<double> x0_adc0;
+vector<double> y0_adc0;
 
 // Declare deques for the moving average filter. SMOOTHING is NOT defined in caspar.h.  Read from config file.
 deque<double> yaverage;

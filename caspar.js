@@ -567,4 +567,16 @@ function readRecipeFiles(recDir)
     return trecipefiles;
 }
 
+function sendADCs()
+{
+    // Create the msg.id, etc with the data.
+    var datastruct = {
+        id: "updateADCs",
+        tc0: cyclingdata[0],
+        tc1: cyclingdata[1],
+        adc0: cyclinedata[1]
+    };
+    wss.clients.forEach( function dataupdate(ws) {ws.send(JSON.stringify(datastruct));} );
+    
+}
 

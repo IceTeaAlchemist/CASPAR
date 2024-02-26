@@ -76,7 +76,7 @@ namespace caspar
             cycles = 0;
             clearactivedata();
             data.clear();
-            setupADC();
+            // setupADC();  // Moved to initializePCR L145, weg, 20240223
             runflag = true;
             sens1->LED_off(1);
             sens1->LED_off(2);
@@ -147,6 +147,7 @@ namespace caspar
         cout << "casparapi.cpp: initializePCR(): At the start of routine." << endl;
         setupPi();
         setupQiagen();
+        setupADC(); // weg, moving from Execute function??
         // if (dataDir != "./data/")// If DataDir not correctly defined from Start Run do not do this.  Maybe never do this. weg
         // {
         //     openFiles();
@@ -409,6 +410,18 @@ namespace caspar
         doRecipeConfig(recipeDir + recipeFile);  // Be sure to check for nonexistent recipeFile.
     }
 
+    // sendADcs - Send the last read TC0, TC1, and ADC0 in engineering units.
+    // void sendADCs(const FunctionCallbackInfo<Value> &args)
+    // {
+    //     Isolate *isolate = args.GetIsolate();
+    //     String::Utf8Value adctstamp(isolate, args[0]);
+    //     String::Utf8Value tc0(isolate, args[1]);
+    //     String::Utf8Value tc1(isolate, args[2]);
+    //     String::Utf8Value adc0(isolate, args[3]);
+
+
+    // }
+
     // Gave up on the AsyncWorker for a symple thread, now called from XXX.
     // TemperatureNADC - like CASPARCycler, a class for reading the ADC for temperatures or other analog in (laser photodiode).
     // This may be overkill, see the PITHREAD(sample) above, created in the CASPARCycler class.
@@ -462,7 +475,7 @@ namespace caspar
         NODE_SET_METHOD(exports, "stop", stopRun);
         NODE_SET_METHOD(exports, "kill", stopEngine);
         NODE_SET_METHOD(exports, "readdata", readoutData);
-        NODE_SET_METHOD(exports, "readtemp", readoutTemp);
+        //NODE_SET_METHOD(exports, "readtemp", readoutTemp);
         NODE_SET_METHOD(exports, "readPCR", readoutPCR);
         NODE_SET_METHOD(exports, "changefiles", reopenFiles);
         NODE_SET_METHOD(exports, "getfiles", readoutFilenames);
@@ -474,7 +487,8 @@ namespace caspar
         NODE_SET_METHOD(exports, "RToff", RToff);
         NODE_SET_METHOD(exports, "RTon", RTon);
         NODE_SET_METHOD(exports, "putComments", writeComments);
-        NODE_SET_METHOD(exports, "setRecipeFilename", setRecipeFilename);  // Set the last pulled up recipe filename.  
+        NODE_SET_METHOD(exports, "setRecipeFilename", setRecipeFilename);  // Set the last pulled up recipe filename. 
+        //NODE_SET_METHOD(exports, "sendADCs", sendADCs); // Send updated ADC values, pretty much all the time, but slowly.
         // WEG, make these functions, putComments in caspar.js and writeComments in casparapi.cpp  or setup.cpp ??
     }
 

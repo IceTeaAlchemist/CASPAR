@@ -270,18 +270,27 @@ void retrieveTemperatures()
     now1_tempers.voltage = TEMP->convertToDegC( TEMP->getvoltage() );   
     now1_tempers.timestamp = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 
+    ADC0->SetMultiplex(0,3);
+    usleep(40000);
+    now0_adc0.voltage = ( ADC0->getvoltage() );   
+    now0_adc0.timestamp = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+
     data0_tempers.push_back(now0_tempers);
     data1_tempers.push_back(now1_tempers);
+    data0_adc0.push_back(now0_adc0);
 
     // The run_start has been reset when x.size() == 0.  Just use it here?
 
     x0_tempers.push_back( now0_tempers.timestamp - run_start );
     x1_tempers.push_back( now1_tempers.timestamp - run_start );
+    x0_adc0.push_back( now0_adc0.timestamp - run_start );
     y0_tempers.push_back( now0_tempers.voltage );
     y1_tempers.push_back( now1_tempers.voltage );
+    y0_adc0.push_back( now0_adc0.voltage );
 
     temper_out << now0_tempers.timestamp <<"\t" << now0_tempers.voltage << "\t";
-    temper_out << now1_tempers.timestamp <<"\t" << now1_tempers.voltage << endl;
+    temper_out << now1_tempers.timestamp <<"\t" << now1_tempers.voltage << "\t";
+    temper_out << now0_adc0.timestamp <<"\t" << now0_adc0.voltage << endl;
 
     // cout << progName << ": now0 " << now0_tempers.timestamp <<"\t" << now0_tempers.voltage << "\t";
     // cout << "\t now1 " << now1_tempers.timestamp <<"\t" << now1_tempers.voltage << endl;
