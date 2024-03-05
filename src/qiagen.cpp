@@ -521,6 +521,7 @@ void qiagen::fill_SoftwareVersion(){
 }
 
 // New version to try the channel before bothering to calibrate---check that it is in spec.
+// Treat minimum_reading as a minimum and we can be that plus 20%, see below.
 int qiagen::calibrateGain(int minimum_reading, int method){
 	ostringstream bstream;
 	string progName = "qiagen::calibrateGain";
@@ -532,45 +533,40 @@ int qiagen::calibrateGain(int minimum_reading, int method){
     LED_off(2);
     setMethod(method);
 	int LED;
-	if(method == 3)
-	{
-		LED = 2;
-	}
-	else
-	{
-		LED = 1;
-	}
+	if(method == 3) LED = 2;
+	else LED = 1;
+
     writeqiagen(0, {255,255});
 
     // Fill the data structure for "gain", order is // {LED1_Current, Curr Def, Curr Max,  Curr Min, LED2_Current...}
 	fill_LED_Currents();  // Update the LED Currents.
 	vector<unsigned int> myLED_Currents = get_LED_Currents();
-    //int mingain = getLED_min(LED);
-	int mingain = myLED_Currents[ 4*(LED-1) + 3 ];
-	//int maxgain = getLED_max(LED);
-	int maxgain = myLED_Currents[ 4*(LED-1) + 2 ];
+	int mingain = myLED_Currents[ 4*(LED-1) + 3 ];  //  getLED_min(LED);
+	int maxgain = myLED_Currents[ 4*(LED-1) + 2 ];  //  getLED_max(LED);
 	int currgain = myLED_Currents[ 4*(LED-1) ];
     double readinval;
 
-	// First try the defaults.
+	// First try the current gain and see if that is close enough.
 	cout << progName << ": trying the current LED gain/current of " << currgain << " ." << endl;
 	if (true)
 	{
-        // Turn the LED, adjust the current, and turn it back on.
+        // Turn the LED off, adjust the current, and turn it back on.
         LED_off(LED);
         LED_current(LED, currgain);
         LED_on(LED);
         startMethod();
         usleep(400000);
-        // Measure what gain we receive.
+        // Measure what fluor we receive.
         readinval = measure();
         // Log what reading we receive to console.
         cout << progName << ": Reading fluor of: " << readinval << endl;
 
-		if (readinval > minimum_reading*0.9 && readinval < minimum_reading*1.1)  // Use a 20% window around minimum reading.
+		if (readinval > minimum_reading*1.0 && readinval < minimum_reading*1.2)  // Use a 20% window around minimum reading.
 		{
-			cout << progName << ": within bounds, min " << minimum_reading*0.9 << " and max " << minimum_reading*1.1 << endl;
-			cout << progName << ": Gain calibrated for LED " << LED << "." << endl; 
+			cout << progName << ": final gain " << currgain << endl;
+			cout << "\tFluor " << readinval << " within first check bounds, min " << minimum_reading*1.0 << " and max ";
+			cout << minimum_reading*1.2 << endl;
+			cout << progName << ": === Gain calibrated for LED " << LED << " . ===" << endl; 
 			LED_off(LED);
 			stopMethod();
 			return 0;
@@ -599,7 +595,7 @@ int qiagen::calibrateGain(int minimum_reading, int method){
         LED_on(LED);
         startMethod();
         usleep(400000);
-        // Measure what gain we receive.
+        // Measure what fluor we receive.
         readinval = measure();
         // Log what reading we receive to console.
         cout << progName << ": Reading fluor of: " << readinval << endl;
@@ -607,7 +603,10 @@ int qiagen::calibrateGain(int minimum_reading, int method){
         basegain += 10;
         stopMethod();
     } while (readinval < minimum_reading); // Continue while we haven't reached our requested minimum calibration fluoresence.
-	cout << progName << ": Gain calibrated for LED " << LED << "." << endl; 
+	// Does NOT try to be in the 20% band, for now.
+	cout << progName << ": final gain " << basegain << endl;
+	cout << "\tFluor " << readinval << " within second check bounds, greater than min " << minimum_reading*1.0 << endl;
+	cout << progName << ": === Gain calibrated for LED " << LED << " . ===" << endl; 
 	LED_off(LED);
 	return 0;
 }

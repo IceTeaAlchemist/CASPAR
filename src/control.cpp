@@ -446,6 +446,7 @@ int cycle()
                     }
                     cout << progName << ": Control triggered at " << triggertime - (long)run_start;
                     cout << " milliseconds after initiation." << endl;
+                    
                     coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << coeff[3];
                     coeff_out << "," << triggertime - (long)run_start << endl; 
                     if(state == false)  // cooling
@@ -513,8 +514,11 @@ int cycle()
                         cout << progName << ": Cycle " << cycles << " complete." << endl;
                         dtrigger = false;
                     }
-                    cout << progName << ": Control triggered at " << triggertime - (long)run_start << " milliseconds after initiation." << endl;
-                    coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << triggertime - (long)run_start << endl; 
+                    cout << progName << ": Control triggered at " << triggertime - (long)run_start;
+                    cout << " milliseconds after initiation." << endl;
+
+                    coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << coeff[3];
+                    coeff_out << "," << triggertime - (long)run_start << endl;                  
                     clearactivedata();
                 }   // end doublehump is true
             }

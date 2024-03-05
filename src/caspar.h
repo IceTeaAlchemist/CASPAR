@@ -183,7 +183,8 @@ extern double DTHRESHCOOL; // 0.8  # Other version has 0.8, ditto weg.
 // casparapi L65-102.
 extern double FluorCalibPremelt; // 150
 extern double FluorCalib; // 300
-extern double FluorCalibLDNA; // 200
+extern double FluorCalibLDNAHTP; // 200
+extern double FluorCalibLDNALTP; // 200
 //
 extern string devicesFile;
 extern string devicesDir;

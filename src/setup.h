@@ -112,7 +112,8 @@ double DTHRESHCOOL;
 // casparapi L65-102
 double FluorCalibPremelt;  // 150
 double FluorCalib; // 300
-double FluorCalibLDNA; // 200
+double FluorCalibLDNAHTP; // 200
+double FluorCalibLDNALTP; // 200
 
 // Was in control.cpp L14.
 double heattoolongfirst; // secs, 75 typically, first heating cycle.

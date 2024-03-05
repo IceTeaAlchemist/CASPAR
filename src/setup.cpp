@@ -542,7 +542,8 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     DTHRESHHEAT = stod(recipeIni->get_value("Cycling", "DTHRESHHEAT")); // 0.25
     DTHRESHCOOL = stod(recipeIni->get_value("Cycling", "DTHRESHCOOL"));
     FluorCalib = stod(recipeIni->get_value("Cycling", "FluorCalib"));         // 300
-    FluorCalibLDNA = stod(recipeIni->get_value("Cycling", "FluorCalibLDNA")); // 200
+    FluorCalibLDNAHTP = stod(recipeIni->get_value("Cycling", "FluorCalibLDNAHTP")); // 200
+    FluorCalibLDNALTP = stod(recipeIni->get_value("Cycling", "FluorCalibLDNALTP")); // 200
     // casparapi L65-102
     FluorCalibPremelt = stod(recipeIni->get_value("RT", "FluorCalibPremelt")); // 150
     // Was in control.cpp L14.
