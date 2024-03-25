@@ -165,6 +165,7 @@ int cyclesaverage;
 // Set qiagen properties for fitting-- format is {QIAGEN, METHOD}
 vector<int> LTP;
 vector<int> HTP;
+vector<float> PIDNos;
 bool single_hump = false;  // If true then single hump running, if false double.
 int fittingqiagen;
 

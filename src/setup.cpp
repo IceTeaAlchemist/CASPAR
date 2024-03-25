@@ -58,9 +58,9 @@ void setupQiagen(void)
     // sample rate) * delay after the LED turns on in readPCR().
 
     // Set the LED power for the PCR wavelengths. Cycling sensing (sens1 LED 2) is set by the calibrator.
-    sens1->LED_current(1, 50);
-    sens2->LED_current(2, 120);
-    sens2->LED_current(1, 40);
+    //sens1->LED_current(1, 50);
+    //sens2->LED_current(2, 120);
+    //sens2->LED_current(1, 40);
 
     // Make sure all the LEDs besides the cycling one are off.
     sens2->LED_off(2);
@@ -72,6 +72,9 @@ void setupQiagen(void)
     sens1->setMethod(3);
     sens2->setMode(0);
     sens2->setMethod(1);
+
+    sens1->setPIDNos(PIDNos);
+    sens2->setPIDNos(PIDNos);
 }
 
 /* Sets the ADC to run using the interrupt pin as well as the samples per second and mode. 
@@ -342,6 +345,32 @@ vector<int> convertstr2vecint(string mystring)
     return myvec;
 }
 
+// Needed for the config files with strings like vectors "1.0, 15, -15, 0.33, 0.0, 0.0" .
+// Returns the vector of floats {1.0, 15.0, -15.0, 0.33, 0.0, 0.0} in this example.
+vector<float> convertstr2vecfloats(string mystring)
+{
+    stringstream mystream(mystring.substr(0, mystring.length() - 1));
+    vector<float> myvec;
+    //cout << "convertstr2vecfloats: before while loop" << endl;
+    while (mystream.good())
+    {
+        string substr;
+        getline(mystream, substr, ',');
+        //cout << "convertstr2vecfloats: substr is " << substr << " and mystring is " << mystring << endl;
+        myvec.push_back(stof(substr));
+    }
+    // cout << "convertstr2vecfloats: after while loop, myvec is " << endl;
+    // if (true)
+    // {
+    //     for (auto iter = myvec.begin(); iter != myvec.end(); iter++ )
+    //     { 
+    //         cout << *iter << " ";
+    //     }
+    //     cout << endl;
+    // }
+    return myvec;
+}
+
 // doHardwareConfig - reads an INI file for the unchanging hardware configuration of the system.
 // 20230202 weg, started
 void doHardwareConfig(string filename /*= "configs/devices.ini" */)
@@ -531,6 +560,7 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
 
     LTP = convertstr2vecint(recipeIni->get_value("Cycling", "LTP"));
     HTP = convertstr2vecint(recipeIni->get_value("Cycling", "HTP"));
+    PIDNos = convertstr2vecfloats(recipeIni->get_value("Cycling", "PID"));
     // int fittingqiagen;
     // If LTP == HTP then it is in double hump, if not equal then single hump.
     if (LTP[0]==HTP[0] && LTP[1]==HTP[1]) single_hump = false;

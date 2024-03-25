@@ -8,6 +8,7 @@
 #include "ADC.h"
 #include "qiagen.h"
 #include "configINI.h"
+#include "pid.h"  // For using PID class in qiagen::calibrateGain().
 #include <deque>
 #include <vector>
 #include <string>
@@ -140,6 +141,7 @@ extern double cooltoolong; // secs, 40 typ., cooling cycle check.
 extern int allowed_temp_errors; // 3-ish
 extern vector<int> LTP;
 extern vector<int> HTP;
+extern vector<float> PIDNos;
 extern bool single_hump; // If using same HTP == LTP then double hump, single_hump=false.
 extern int fittingqiagen;
 extern config *devicesIni;  // devices.ini file via config reading, hardware in the box.

@@ -9,6 +9,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include "configINI.h" // For the qiagenMap class below, to read recipes directly.
+#include "pid.h"  // Also in caspar.h for use elsewhere.
 #include <unordered_map> // For the qiagenMap class below.
 
 using namespace std;
@@ -53,6 +54,7 @@ class qiagen
 		string SoftwareVersion;
 		int lrc(vector<unsigned int> arr);
 		string assemble(unsigned int reg, char rw, vector<unsigned int> command);
+		vector<float> PIDNos;
 	public:
 		qiagen(string serial);
 		qiagen();
@@ -66,6 +68,7 @@ class qiagen
 		void LED_max(int LED, unsigned int max);
 		void LED_min(int LED, unsigned int min);
 		void setMethod(unsigned int method);
+		unsigned int getMethod();
 		void setMode(unsigned int mode);
 		void startMethod();
 		void stopMethod();
@@ -88,7 +91,14 @@ class qiagen
 		void fill_SoftwareVersion();
 		inline string getSoftwareVersion(){return SoftwareVersion;}
 		int calibrateGain(int minimum_reading, int method);
+		void setPIDNos(vector<float> PIDNos);
+		inline vector<float> getPIDNos(){return PIDNos;}
+	
 		int calibrateGainOld(int minimum_reading, int method);
+		int calibrateGainOld2(int minimum_reading, int method);
+
+		unsigned int read_average();
+		void write_average(unsigned int average);
 
 		~qiagen();
 };

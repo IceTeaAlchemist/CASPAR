@@ -10,6 +10,9 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <bits/stdc++.h>  // For the makeplot vector of pairs in calibrate helper functin calcNextGain() .
+#include <utility>  // For the pair class with .first and .second as member functions, can be heterogenous.
+
 #include "qiagen.h"
 
 using namespace std;
@@ -61,9 +64,10 @@ vector<int> qiagenMap::qmBuildArray(string Qiagen, string Method)
 	vector<int> myQM;
 	int aqiagen, amethod;
 	// Check that Qiagen is legit somehow.  Method too.
+	myQM.push_back(-999);
+	myQM.push_back(-999);
 
-
-
+	return myQM;
 }
 
 
@@ -82,7 +86,7 @@ qiagen::qiagen(string serial)
 	if(serial_port < 0)
 	{
 		bstream << progName << ":**Error: " << errno << " from open: \n\t" << strerror(errno);
-		bstream << '\n' << '\tserial is ' << serial << '\n';
+		bstream << "\n" << "\tserial is " << serial << "\n";
 		cout << bstream.str();
 	}
 	else
@@ -406,6 +410,13 @@ void qiagen::setMethod(unsigned int method)
 	writeqiagen(03, {method,00});
 }
 
+unsigned int qiagen::getMethod()
+{
+	string val = readqiagen(03, 1);
+	unsigned int method = stoul(val.substr(6,2),nullptr,16);
+	return method;
+}
+
 void qiagen::setMode(unsigned int mode)
 {
 	writeqiagen(02, {mode,00});
@@ -521,8 +532,136 @@ void qiagen::fill_SoftwareVersion(){
 }
 
 // New version to try the channel before bothering to calibrate---check that it is in spec.
-// Treat minimum_reading as a minimum and we can be that plus 20%, see below.
-int qiagen::calibrateGain(int minimum_reading, int method){
+// Treat minimum_reading as a minimum and we can be that plus 20% or whatever, see below.
+// Adding in PID control, study suggests (dt, gmax_pid, gmin_pid, Kp, Ki, Kd) of (1, 10, -10, 0.5 0. 0.).
+int qiagen::calibrateGain(int minimum_reading, int method)  // Why is this int minimum_reading not float?  Is the fluor reading.
+{
+	ostringstream bstream;
+    //PID pid = PID(1.0, 15, -15, 0.33, 0.0, 0.0);
+	PID pid = PID(PIDNos[0], PIDNos[1], PIDNos[2], PIDNos[3], PIDNos[4], PIDNos[5]); 
+	// dt, max, min, Kp, Ki, Kd for simple PID algorithm.
+
+	string progName = "qiagen::calibrateGain";
+	bstream << progName << ": calibrating Qiagen " << getBoardID() << endl;
+	bstream << "\t minimum_reading " << minimum_reading << " method " << method << endl;
+	cout << bstream.str();
+
+	LED_off(1);
+    LED_off(2);
+    setMethod(method);
+
+	int LED;
+	if(method == 3) LED = 2;
+	else LED = 1;
+
+	// Test new methods to Qiagen class.
+    write_average(4);  // Average up to 255??
+    cout << "\t my Method getMethod() " << getMethod() << " read_average " << read_average() << endl;
+    //return 1;
+
+    writeqiagen(0, {255,255});
+
+    // Fill the data structure for "gain", order is // {LED1_Current, Curr Def, Curr Max,  Curr Min, LED2_Current...}
+	fill_LED_Currents();  // Update the LED Currents.
+	vector<unsigned int> myLED_Currents = get_LED_Currents();
+	int currgain = myLED_Currents[ 4*(LED-1) ];
+	int defgain = myLED_Currents[ 4*(LED-1) +1 ];  // The "default" vs the "current" ??
+ 	int maxgain = myLED_Currents[ 4*(LED-1) + 2 ];  //  getLED_max(LED);
+	int mingain = myLED_Currents[ 4*(LED-1) + 3 ];  //  getLED_min(LED);
+    double readinval;
+
+	cout << progName << ": ===== Starting calibration. =====" << endl;
+	cout << "\t LED_Currents:  Current " << currgain << ", Default " << defgain;
+	cout << ", Maximum " << maxgain << ", Minimum " << mingain << endl;
+
+	int basegain = currgain, deltagain, prevbasegain;
+    int icount = 0, iminerr = 0, imaxerr = 0, errLim = 1;
+	bool doloop = true;
+    do
+    {
+		// Turn the LED off, adjust the current, and turn it back on.
+		LED_off(LED);
+		LED_current(LED, basegain);
+		LED_on(LED);
+		startMethod();
+		usleep(400000);
+		// Measure what fluor we receive.
+		readinval = measure();
+		// Log what reading we receive to console.
+		cout << progName << ": Gain of " << basegain << ", reading fluor of " << readinval << " ." << endl;
+        // Diagnostics printout, debugging.
+		if (false) cout << "icount " << icount << " abs(readinval-minimum_reading) " << abs(readinval-minimum_reading) << endl;	
+
+        // Increase the gain.
+		prevbasegain = basegain;
+        deltagain = pid.calculate(minimum_reading, readinval);
+        basegain += deltagain;
+
+		// If our gain outstrips the limits of the qiagen, exit the loop 
+        // and log that we're pushing the limits of our optics.
+		if (basegain <= mingain)
+		{
+			iminerr += 1;
+			basegain = mingain;
+			cout << progName << ": Next gain below mingain " << mingain << " set to mingain." << endl;
+			if (iminerr > errLim) 
+			{
+				doloop = false;
+				cout << progName << ": Next gain set to mingain " << (errLim+1) << " times, exiting loop." <<endl;
+			}
+		}
+
+		if (basegain >= maxgain-1)
+		{
+			imaxerr += 1;
+			basegain = maxgain-1;
+			cout << progName << ": Next gain above maxgain " << maxgain << " set to maxgain-1." << endl;
+			if (imaxerr > errLim) 
+			{
+				doloop = false;
+				cout << progName << ": Next gain set to maxgain " << (errLim+1) << " times, exiting loop." <<endl;				
+			}
+		}
+
+        stopMethod();
+		icount += 1;
+
+	} while (doloop & icount < 10 & abs(readinval-minimum_reading) > 1.0); 
+    // Continue while we haven't reached our requested minimum calibration fluoresence.
+
+	cout << progName << ": Final gain " << prevbasegain << endl;
+	cout << progName << ": === Gain calibration loop for LED " << LED << " finished. ===" << endl; 
+
+	LED_off(LED);
+    LED_current(LED,prevbasegain);
+
+    write_average(1);
+    cout << progName << ": Final gain at " << basegain << ", LED off, and average to ";
+	cout << read_average() << " ." << endl;
+
+	return 0;	
+}// end qiaqen::calibrateGain()
+
+void qiagen::setPIDNos(vector<float> aPIDNos)
+{
+	// Need better checks.
+	if ( aPIDNos.size() == 6 )
+	{ 
+		PIDNos = aPIDNos;
+	} else  // Wrong size.  Use default.
+	{
+		PIDNos.push_back(1.0);
+		PIDNos.push_back(15);
+		PIDNos.push_back(-15);
+		PIDNos.push_back(0.333);
+		PIDNos.push_back(0.0);
+		PIDNos.push_back(0.0);
+		cout << "qiagen::setPIDNos aPIDNos is wrong length, aPidNos.size() " << aPIDNos.size() << endl;
+		cout << "\t Using default PID numbers 1.0, 15, -15, 0.333, 0.0, 0.0 " << endl;
+	}
+}
+
+int qiagen::calibrateGainOld2(int minimum_reading, int method){
 	ostringstream bstream;
 	string progName = "qiagen::calibrateGain";
 	bstream << progName << ": calibrating Qiagen " << getBoardID() << endl;
@@ -611,6 +750,7 @@ int qiagen::calibrateGain(int minimum_reading, int method){
 	return 0;
 }
 
+
 // Was the calibrateGain, updating to try the channel before bothering to calibrate.
 int qiagen::calibrateGainOld(int minimum_reading, int method){
 	ostringstream bstream;
@@ -675,4 +815,27 @@ qiagen::~qiagen()
 	LED_off(2);
 	close(serial_port);
 	cout << "Qiagen " << BoardID << " turned off and serial port " << serial_port << " closed." << endl; 
+}
+
+// Algorithm to calc the next gain based on previous ones.
+// Scales on these gains are like 20 to 200, min to max, some much smaller.
+// Calibrating fluor values are 100 to 300-ish.  Typical percent is 5%.
+bool checkGainBounds(int gain, int mingain, int maxgain) // Helper function.  Could use ternary  ()? true : false ;
+{
+	if ( gain >= mingain && gain < maxgain ) return true;
+	else return false;
+}
+
+
+unsigned int qiagen::read_average()
+{
+	unsigned int store;
+	string val = readqiagen(05, 1);
+	store = stoul(val.substr(6,2),nullptr,16);
+	return store;
+
+}
+void qiagen::write_average(unsigned int average)
+{
+	writeqiagen(05, {average,00});	
 }
