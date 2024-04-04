@@ -626,8 +626,9 @@ int qiagen::calibrateGain(int minimum_reading, int method)  // Why is this int m
         stopMethod();
 		icount += 1;
 
-	} while (doloop & icount < 10 & abs(readinval-minimum_reading) > 1.0); 
-    // Continue while we haven't reached our requested minimum calibration fluoresence.
+	} while (doloop & icount < 10 & abs(readinval-minimum_reading) > 1.0 && abs(basegain-prevbasegain) > 1); 
+	// Continue if basegain is within mingain to maxgain, if the loop has run less than 10 times,
+	// if the fluor reading is greater than minimum_reading by 1, or if gain changed by more than 1 unit this iteration.
 
 	cout << progName << ": Final gain " << prevbasegain << endl;
 	cout << progName << ": === Gain calibration loop for LED " << LED << " finished. ===" << endl; 

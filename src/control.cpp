@@ -588,18 +588,22 @@ int cycle()
     return 0;
 }// end cycle
 
+// changeQiagen - Switch to another Qiagen and Method.  The
+// qiagenproperties is {Qiagen, Method} and is usually called HTP or LTP.
 void changeQiagen(vector<int> qiagenproperties)
 {
     string progName = "changeQiagen";
     int LED;
-    if(qiagenproperties[1] == 3)
-    {
-        LED = 2;
-    }
-    else
-    {
-        LED = 1;
-    }
+    // if(qiagenproperties[1] == 3)
+    // {
+    //     LED = 2;
+    // }
+    // else
+    // {
+    //     LED = 1;
+    // }
+    LED = ( qiagenproperties[1] == 3? LED = 2: LED = 1);
+
     sens1->stopMethod();
     sens2->stopMethod();
     fittingqiagen = qiagenproperties[0];
@@ -626,5 +630,5 @@ void changeQiagen(vector<int> qiagenproperties)
     {
         cout << sens2->getBoardID() << endl;
     }
-    cout << "\tFitting qiagen is " << fittingqiagen << "." << endl;
+    cout << "\tFitting Qiagen is " << fittingqiagen << " with Method " << qiagenproperties[1] << "." << endl;
 }

@@ -84,21 +84,24 @@ namespace caspar
             sens2->LED_off(2);
             if (RTflag)
             {
-                if(LTP[0] == 1)
+                if (gainCalibration)
                 {
-                    sens1->calibrateGain(FluorCalibPremelt,LTP[1]);
-                }
-                else
-                {
-                    sens2->calibrateGain(FluorCalibPremelt,LTP[1]);
-                }
-                if(HTP[0] == 1)
-                {
-                    sens1->calibrateGain(FluorCalibPremelt,HTP[1]);
-                }
-                else
-                {
-                    sens2->calibrateGain(FluorCalibPremelt,HTP[1]);
+                    if(LTP[0] == 1)
+                    {
+                        sens1->calibrateGain(FluorCalibPremelt,LTP[1]);
+                    }
+                    else
+                    {
+                        sens2->calibrateGain(FluorCalibPremelt,LTP[1]);
+                    }
+                    if(HTP[0] == 1)
+                    {
+                        sens1->calibrateGain(FluorCalibPremelt,HTP[1]);
+                    }
+                    else
+                    {
+                        sens2->calibrateGain(FluorCalibPremelt,HTP[1]);
+                    }
                 }                                
             }
 
@@ -122,25 +125,26 @@ namespace caspar
             sens1->LED_off(2);
             sens2->LED_off(1);
             sens2->LED_off(2);
+            // This logic below seems inefficient. weg 20240403
             // Calibrate every channel as regular PCR channel, then calibrate the HTP and LTP correctly.
-            // This should be temporary unitl the PCR Chan <-> Qiagen and Method map implemented.  WEG 20240305
-            if (runflag) sens1->calibrateGain(FluorCalib, 1); // E1D1 520ex 570em, HEX
-            if (runflag) sens2->calibrateGain(FluorCalib, 1); // E1D1 470ex 520em, FAM
-            if (runflag) sens1->calibrateGain(FluorCalib, 3); // E2D2 625ex 680em, CY5
-            if (runflag) sens2->calibrateGain(FluorCalib, 3); // E2D2 590ex 640em, Tex Red
+            // This should be temporary until the PCR Chan <-> Qiagen and Method map implemented.  WEG 20240305
+            if (runflag && gainCalibration) sens1->calibrateGain(FluorCalib, 1); // E1D1 520ex 570em, HEX
+            if (runflag && gainCalibration) sens2->calibrateGain(FluorCalib, 1); // E1D1 470ex 520em, FAM
+            if (runflag && gainCalibration) sens1->calibrateGain(FluorCalib, 3); // E2D2 625ex 680em, CY5
+            if (runflag && gainCalibration) sens2->calibrateGain(FluorCalib, 3); // E2D2 590ex 640em, TXRED
             // Handle the LDNA and possible HTP and LTP channels and qiagens.  Will re-calib some of above channels.
             qiagen *sensHTP, *sensLTP;
             if (HTP==LTP)  // Single channel LDNA or "two hump".  Uses HTP vars from the config files.
             {
                 sensHTP = (HTP[0]==1)? sens1 : sens2;                
-                if (runflag) sensHTP->calibrateGain(FluorCalibLDNAHTP, HTP[1]); 
+                if (runflag && gainCalibration) sensHTP->calibrateGain(FluorCalibLDNAHTP, HTP[1]); 
             } else  // Two channel LDNA or "single hump", common for laser work and fast PCR cycling.
             {
                 sensHTP = (HTP[0]==1)? sens1 : sens2;
-                if (runflag) sensHTP->calibrateGain(FluorCalibLDNAHTP, HTP[1]);
+                if (runflag && gainCalibration) sensHTP->calibrateGain(FluorCalibLDNAHTP, HTP[1]);
 
                 sensLTP = (LTP[0]==1)? sens1 : sens2;               
-                if (runflag) sensLTP->calibrateGain(FluorCalibLDNALTP, LTP[1]);
+                if (runflag && gainCalibration) sensLTP->calibrateGain(FluorCalibLDNALTP, LTP[1]);
             }
 
             changeQiagen(HTP);

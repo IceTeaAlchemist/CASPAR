@@ -518,6 +518,7 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     cout << bstream.str();
 
     // Setup the Qiagen mappings, see the [Channel] section of the recipe file.
+    // Also sets the boolean gainCalibration from recipe.
     readQiagenMappings(recipeIni);
 
     // Laser control is in the recipes file.
