@@ -57,6 +57,7 @@ var savedDefEm = "";
 var lastRequest = "";
 var lastRecipeRequest = "";
 var savedFAM = "";
+var savedTEX = "";
 var savedCY5 = "";
 var savedHEX = "";
 var savedRT = "";
@@ -72,6 +73,7 @@ var recipeDir = './configs/recipes/';
 var timestamprecord = [];
 var FAMrecord = [];
 var HEXrecord = [];
+var TEXrecord = [];
 var cy5record = [];
 
 
@@ -121,10 +123,12 @@ wss.on('connection', function connection(ws) {
         defop: savedDefOp,
         defem: savedDefEm,
         fam: savedFAM,
+        tex: savedTEX,
         cy5: savedCY5,
         hex: savedHEX,
         rt: savedRT,
         FAMdata: FAMrecord,
+        TEXdata: TEXrecord,
         HEXdata: HEXrecord,
         cy5data: cy5record,
         totcycles: savedCycles
@@ -246,7 +250,6 @@ wss.on('connection', function connection(ws) {
                 {
                     console.log(msg);
                     // Start the PCR cycling if it's not.
-                    engine.setCutoff(parseInt(msg.cutoffcycles));
                     savedCycles = parseInt(msg.cutoffcycles);
                     console.log("case: start/stop: savedCycles is " + savedCycles);
                     // var selRecipeFilename; // = 'default.ini';   // weg ???
@@ -255,6 +258,8 @@ wss.on('connection', function connection(ws) {
                     selRecipeFilename + " directory " + recipeDir );
                     console.log("\t msg.recipefilename is " + msg.recipefilename);
                     engine.setRecipeFilename(recipeDir, selRecipeFilename);
+                    engine.setCutoff(parseInt(msg.cutoffcycles)); //Override the recipe cutoff with the user supplied cutoff, if applicable.
+                    setChannels();
                     engine.start(function (err, errorvalue)
                     {
                         console.log(errorvalue);
@@ -301,6 +306,7 @@ wss.on('connection', function connection(ws) {
                     FAMrecord = [];
                     HEXrecord = [];
                     timestamprecord = [];
+                    TEXrecord = [];
                     cy5record = [];
                     DataIntervId = setInterval(sendit, 300);
                     PCRIntervId = setInterval(sendPCR, 5000);
@@ -317,6 +323,7 @@ wss.on('connection', function connection(ws) {
                     FAMrecord = [];
                     HEXrecord = [];
                     timestamprecord = [];
+                    TEXrecord = [];
                     cy5record = [];
                     isRunning = false;
                     ws.send(JSON.stringify({id: "isRunning", value: isRunning}));
@@ -346,6 +353,7 @@ wss.on('connection', function connection(ws) {
                 savedDefOp = msg.defop;
                 savedDefEm = msg.defem;
                 savedFAM = msg.fam;
+                savedTEX = msg.tex;
                 savedCY5 = msg.cy5;
                 savedHEX = msg.hex;
                 savedRT = msg.rt;
@@ -395,8 +403,8 @@ wss.on('connection', function connection(ws) {
                 // wants in the configs document.
                 let newConfig = "cname: " + msg.name.trim() + "\n" + "oname: " + msg.defaultoperator + "\n" + 
                   "ename: " + msg.defaultemail + "\n" + "pname: " + msg.defaultproject + "\n" + "rname: " + msg.defaultrecipe + "\n" +
-                  "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + 
-                  "rtval:" + msg.rt + "\n" + "cycles:" + msg.totalcycles + "\n \n";
+                  "fam: " + msg.fam + "\n" + "cy5: " + msg.cy5 + "\n" + "hex: " + msg.hex + "\n" + "reconval:" + msg.recon + "\n" +
+                  "rtval:" + msg.rt + "\n" + "cycles:" + msg.totalcycles +"\n" + "tex: " + msg.tex + "\n \n";
                 fs.appendFile('./configs/configs.txt', newConfig, (err) => { //adds to the file
                     if (err) {
                         console.error(err);
@@ -527,21 +535,64 @@ function sendPCR()
             cycle: PCRinfo[0],
             timestamp: PCRinfo[1],
             fam: PCRinfo[2],
-            hex: PCRinfo[3],
-            cy5: PCRinfo[4],
+            tex: PCRinfo[3],
+            hex: PCRinfo[4],
+            cy5: PCRinfo[5],
             secs: cycletime
         };
         console.log(datastruct);
         timestamprecord.push(PCRinfo[1]);
         FAMrecord.push(PCRinfo[2]);
-        HEXrecord.push(PCRinfo[3]);
-        cy5record.push(PCRinfo[4]);
+        TEXrecord.push(PCRinfo[3]);
+        HEXrecord.push(PCRinfo[4]);
+        cy5record.push(PCRinfo[5]);
         wss.clients.forEach(function pcrupdate(ws) {ws.send(JSON.stringify(datastruct));});
     }
     else
     {
         // Do nothing
     }
+}
+
+function setChannels()
+{
+    var famflag;
+    var texflag;
+    var hexflag;
+    var cy5flag;
+    if(savedFAM == "NFAM")
+    {
+        famflag = 0;
+    }
+    else
+    {
+        famflag = 1;
+    }
+    if(savedTEX == "NTEX")
+    {
+        texflag = 0;
+    }
+    else
+    {
+        texflag = 1;
+    }
+    if(savedHEX == "NHEX")
+    {
+        hexflag = 0;
+    }
+    else
+    {
+        hexflag = 1;
+    }
+    if(savedCY5 == "NCY5")
+    {
+        cy5flag = 0;
+    }
+    else
+    {
+        cy5flag = 1;
+    }
+    engine.setchannels(famflag, texflag, hexflag, cy5flag);
 }
 
 // Initialize the transporter for email use. 

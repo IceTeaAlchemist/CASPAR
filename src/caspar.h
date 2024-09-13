@@ -55,7 +55,7 @@ struct error
     string message;
 };
 
-// Global variable declarations. External variables are set in setup.cpp.
+// Global variable declarations. External variables are set in setup.cpp and setup.h.
 // This should include devices.ini hardware type configurations and the assay recipes.
 // Take care not to collide with local variables.
 extern adc *ADC0;
@@ -192,6 +192,7 @@ extern string devicesFile;
 extern string devicesDir;
 extern string recipeFile;
 extern string recipeDir;
+extern vector<int> channelflags;
 
 // setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
 // There is a setup.h now, move these there...if non-extern's.  WEG

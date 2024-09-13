@@ -148,17 +148,26 @@ void retrieveSample()
     yaverage.push_back(ycurrent); // Push the new value onto the averaging stack.
     double average = mean(yaverage); // Average the filter values.
     y.push_back(average); // Push the average into the y stack.
+    reading currentderiv;
+    currentderiv.timestamp = now.timestamp;
     if(y.size() > SMOOTHING) // If our values are no longer being affected by 0--i.e., the moving average filter is full:
     {
         xderivs.push_back((now.timestamp - run_start)/1000.0); // Push a time value for this derivative onto the xderiv vector.
         // double deriv = (y[y.size() - 1] - y[y.size() - 2])*10; // Calculate the derivative and push it onto the stack. (y1-y2)/(delta T). Single stencil. Replaced with 5 7/14/22 NAS
         double deriv = (-y[y.size() - 1] + 8*y[y.size() - 2] - 8*y[y.size() - 4] + y[y.size()-5])/(0.1*12.0);
         derivs.push_back(deriv);
+        currentderiv.voltage = deriv;
+    }
+    else
+    {
+        currentderiv.voltage = 0.0;
     }
     // Create a pointer to our reading.
     reading *ptr = &now;
     // Write the data into our binary file.
     fwrite(ptr, sizeof(reading), 1, output);
+    reading *ptr2 = &currentderiv;
+    fwrite(ptr2,sizeof(reading), 1, output);
     piUnlock(0);
     }
     else  // recordflag is false.
@@ -202,39 +211,80 @@ string timestamp()
 void readPCR()
 {
     auto millisecs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    pcr_out << millisecs << ",";
     pcrValues.push_back(cycles);
     pcrValues.push_back(millisecs);
-    
-    // Take our first detector value. Each of these follows the same format, so I'll only comment the first.
-    sens1->LED_on(1); // Turn the relevant LED on.
-    sens1->setMethod(1); // Set our method to the relevant one.
-    sens1->startMethod(); // Start our LED sampling.
-    delay(500); // Wait for a sample to be taken--this needs to be OVER 333 ms at least.
-    double PCRread = sens1->measure(); //Get the measurement from the qiagen.
-    sens1->stopMethod(); // Stop sampling.
-    pcr_out << PCRread << ","; // Dump the PCR value to the file and follow it with a comma for csv processing.
-    pcrValues.push_back(PCRread); // Push the PCR value onto the result array.
-    sens1->LED_off(1); // Turn the LED off.
-
-    sens2->LED_on(1);
-    sens2->setMethod(1);
-    sens2->startMethod();
-    delay(500);
-    PCRread = sens2->measure();
-    sens2->stopMethod();
+    double PCRread;
+    if(channelflags[0] == 1) //If channel is ON.
+    {
+        sens2->LED_on(1);
+        sens2->setMethod(1);
+        sens2->startMethod();
+        delay(500);
+        PCRread = sens2->measure();
+        sens2->stopMethod();
+        sens2->LED_off(1); 
+    }
+    else
+    {
+        PCRread = 0;
+    }
     pcr_out << PCRread << ",";
     pcrValues.push_back(PCRread);
-    sens2->LED_off(1); 
 
-    sens2->LED_on(2);
-    sens2->setMethod(3);
-    sens2->startMethod();
-    delay(500);
-    PCRread = sens2->measure();
-    sens2->stopMethod();
-    pcr_out << PCRread;
+    if(channelflags[1] == 1)
+    {
+        sens2->LED_on(2);
+        sens2->setMethod(3);
+        sens2->startMethod();
+        delay(500);
+        PCRread = sens2->measure();
+        sens2->stopMethod();
+        sens2->LED_off(2); 
+    }
+    else
+    {
+        PCRread = 0;
+    }
+    pcr_out << PCRread  << ",";
     pcrValues.push_back(PCRread);
-    sens2->LED_off(2); 
+
+    // Take our first detector value. Each of these follows the same format, so I'll only comment the first.
+    if(channelflags[2] == 1)
+    {
+        sens1->LED_on(1); // Turn the relevant LED on.
+        sens1->setMethod(1); // Set our method to the relevant one.
+        sens1->startMethod(); // Start our LED sampling.
+        delay(500); // Wait for a sample to be taken--this needs to be OVER 333 ms at least.
+        PCRread = sens1->measure(); //Get the measurement from the qiagen.
+        sens1->stopMethod(); // Stop sampling.
+        sens1->LED_off(1); // Turn the LED off.
+    }
+    else
+    {
+        PCRread = 0;
+    }
+    pcr_out << PCRread << ","; // Dump the PCR value to the file and follow it with a comma for csv processing.
+    pcrValues.push_back(PCRread); // Push the PCR value onto the result array.
+    
+    
+    // Take our first detector value. Each of these follows the same format, so I'll only comment the first.
+    if(channelflags[3] == 1)
+    {
+        sens1->LED_on(2); // Turn the relevant LED on.
+        sens1->setMethod(3); // Set our method to the relevant one.
+        sens1->startMethod(); // Start our LED sampling.
+        delay(500); // Wait for a sample to be taken--this needs to be OVER 333 ms at least.
+        PCRread = sens1->measure(); //Get the measurement from the qiagen.
+        sens1->stopMethod(); // Stop sampling.
+        sens1->LED_off(2); // Turn the LED off.
+    }
+    else
+    {
+        PCRread = 0;
+    }
+    pcr_out << PCRread << ","; // Dump the PCR value to the file and follow it with a comma for csv processing.
+    pcrValues.push_back(PCRread); // Push the PCR value onto the result array.
 
     pcr_out << endl; // Send a new line to the file to get ready for the next cycle.
     pcrReady = true; // Say that our PCR readings are ready for output to the gui.

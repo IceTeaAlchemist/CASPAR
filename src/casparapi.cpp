@@ -146,7 +146,8 @@ namespace caspar
                 sensLTP = (LTP[0]==1)? sens1 : sens2;               
                 if (runflag && gainCalibration) sensLTP->calibrateGain(FluorCalibLDNALTP, LTP[1]);
             }
-
+            // Establish a background fluorescence reading/start time and record it.
+            readPCR();
             changeQiagen(HTP);
             recordflag = true;
             delay(100);
@@ -390,6 +391,16 @@ namespace caspar
         openFiles();
     }
 
+    void setReads(const FunctionCallbackInfo<Value>& args)
+    {
+        Isolate* isolate = args.GetIsolate();
+        int famflag = args[0].As<Number>()->Value();
+        int texflag = args[1].As<Number>()->Value();
+        int hexflag = args[2].As<Number>()->Value();
+        int cy5flag = args[3].As<Number>()->Value();
+        channelflags = {famflag, texflag, hexflag, cy5flag};
+    }
+
     void setCutoff(const FunctionCallbackInfo<Value>& args)
     {
         Isolate* isolate = args.GetIsolate();
@@ -493,6 +504,7 @@ namespace caspar
         // weg added 20230410 for the Temperatures asyncworker.  Nick says unnecessary to do this here/nodejs.  Just a c++ thread.
         // Nan::Set(exports, New<String>("start").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Temperatures)).ToLocalChecked());
         NODE_SET_METHOD(exports, "initializePCR", initializePCR);
+        NODE_SET_METHOD(exports, "setchannels", setReads);
         NODE_SET_METHOD(exports, "stop", stopRun);
         NODE_SET_METHOD(exports, "kill", stopEngine);
         NODE_SET_METHOD(exports, "readdata", readoutData);

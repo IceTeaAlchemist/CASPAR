@@ -161,6 +161,7 @@ int cycles = 0;
 int cyclecutoff = 40;
 int cyclesfit;
 int cyclesaverage;
+vector<int> channelflags{1,1,1,1}; //Set up which channels to read. By default, all are on.
 
 // Set qiagen properties for fitting-- format is {QIAGEN, METHOD}
 vector<int> LTP;

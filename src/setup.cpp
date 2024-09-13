@@ -52,8 +52,10 @@ void setupQiagen(void)
     sens1->writeqiagen(32, {01, 244}); // ADC Sampling 500 Hz.
     sens1->writeqiagen(5, {01, 00});   // Average 1 sample, no average.
     // Set Qiagen 2 sample protocol-- 200 samples with minimum delay between them.
-    sens2->writeqiagen(0, {00, 200}); // Cycles to read, 200.
+    sens2->writeqiagen(0, {255, 255}); // Cycles to read, 65535.
     sens2->writeqiagen(1, {00, 00});  // Cycle time 0s.
+    sens2->writeqiagen(32, {01, 244}); // ADC Sampling 500 Hz.
+    sens2->writeqiagen(5, {01, 00});   // Average 1 sample, no average.
     // Note: The number of samples is basically irrelevant, just make sure it's more than 3 (Hz of
     // sample rate) * delay after the LED turns on in readPCR().
 
@@ -66,6 +68,7 @@ void setupQiagen(void)
     sens2->LED_off(2);
     sens2->LED_off(1);
     sens1->LED_off(1);
+    sens1->LED_off(2);
 
     // Set mode (beginning sampling routine after the LEDs are turned on) and method (which detector will be read).
     sens1->setMode(0);
@@ -182,6 +185,7 @@ void openFiles()
     // Dump column headings into the PCR file. Commas are so Excel will see this as a CSV.
     pcr_out << "Time,"
             << "FAM,"
+            << "TEX,"
             << "HEX,"
             << "Cy5," << endl;
     // Check that both fstreams are open, log any failures.

@@ -1,155 +1,78 @@
-cname: default
-oname: Jasons
-ename: jasons.deli@gmail.com
-pname: default
-rname: default.ini
-fam: one
-cy5: two
-hex: three
-recon: false
-rtval: false
-cycles: 3
-
-cname: laser heating RA
-oname: rosana
-ename: bill.gabella@gmail.com
-pname: laser_heating_RA
-rname: run_with_laser.ini
-fam: one
-cy5: two
-hex: three
-recon: false
-rtval: false
-cycles: 50
-
-cname: laser heating
-oname: bill rosana franz nick
-ename: bill.gabella@gmail.com
-pname: laser_heating
-rname: run_with_laser.ini
-fam: one
-cy5: two
-hex: three
-recon: false
-rtval: false
-cycles: 40
-
-cname: zTestOne
-oname: zest
-ename: zest@stuff.com
-pname: zestProjectOne
-rname: default.ini
-fam: one
-cy5: two
-hex: three
-recon: false
-rtval: false
-cycles: 45
-
-cname: zTestTwo
-oname: zestTwo
-ename: zestTwo@stuff.com
-pname: zestProjectTwo
-rname: default.ini
-fam: one
-cy5: two
-hex: three
-recon: false
-rtval: false
-cycles: 50
-
-cname: New Nanorods
+cname: New
 oname: Nick
-ename: caspar@casparvu.com
-pname: New Nanorods
-rname: default.ini
-fam: NAOne
-cy5: NATwo
-hex: S Midas
-recon: false
-rtval: false
-cycles: 50
- 
-cname: evaporation
-oname: Nick
-ename: caspar@casparvu.com
-pname: Evaporation Testing
-rname: default.ini
-fam: NAOne
-cy5: NATwo
-hex: S Midas
-recon: false
-rtval: false
+ename: kick767
+pname: Project
+rname: Recipe
+fam: FAM
+cy5: Cy5
+hex: HEX
+reconval:false
+rtval:true
 cycles:40
-
-cname: Temps
-oname:  Bill
-ename: bill.gabella@gmail.com
-pname: Temps
-rname: default.ini
-fam:  One
-cy5: Two
-hex: Three
-recon: false
-rtval: false
-cycles: 50
+tex: TEX
  
-cname: Swine Testing
+cname: Test 2
+oname: Operator
+ename: Email
+pname: proj 
+rname: recipe
+fam: FAM
+cy5: CY5
+hex: HeX
+reconval:false
+rtval:true
+cycles:40
+tex: TEX
+ 
+cname: Test Negative
 oname: Nick
-ename: caspar@casparvu.com
-pname: SwineLyophilzationTesting
-rname: default.ini
-fam: FMD
-cy5: RNAseP
-hex: SVA
-recon: true
-rtval: true
-cycles: 50
+ename: kick767@gmail.com
+pname: Test Proj
+rname: Test Recipe
+fam:  NFAM
+cy5: NCY5
+hex: HEX
+reconval:false
+rtval:false
+cycles:40
+tex:  TexasRed
  
-cname: PWM Laser AuNRs
-oname:  Rosana
-ename: caspar@casparvu.com
-pname:  PWM
-rname: default.ini
-fam: Nothing 1
-cy5: Nothing 2
-hex: S. Mitis
-recon: false
-rtval: false
-cycles: 50
+cname: All On Test
+oname:  Nick
+ename:  kick767@gmail.com
+pname: Test Proj
+rname: Recipe
+fam: FAM
+cy5: CY5
+hex: HEX
+reconval:false
+rtval:false
+cycles:40
+tex: TEX
  
-cname: Longitudinal Study
-oname: Nick and Emma
-ename: caspar@casparvu.com
-pname: Longitudinal Study
-rname: default.ini
-fam: FMD
-cy5: RNAseP
-hex: SVA
-recon: true
-rtval: true
+cname: Test S Mitis
+oname: Nick
+ename: kick767@gmail.com
+pname: Test Proj
+rname: run_with_laser_HTPLTPnew.ini
+fam:  FAM
+cy5: NCY5
+hex: NHEX
+reconval:false
+rtval:false
 cycles: 40
+tex: NTEX
  
-cname: jus testing
-oname: bill e.g.
-ename: bill.gabella@somewhere.com
-pname: stuff
-rname: default.ini
-fam: one
-cy5: three
-hex: four
-recon: true
-rtval: true
-cycles: 55
- 
-cname: HTP LTP
+cname: Old Faithful
 oname: Nick
-ename: caspar@casparvu.com
-pname: TwoTone
-rname: banana
-fam: Nothing
-cy5: Nothing
-hex: Nothing
-recon: false
-rtval: false
-cycles: 20
+ename: kcik
+pname: Test Proj
+rname: NA
+fam: FAM
+cy5: CY5
+hex: HEX
+reconval:false
+rtval:false
+cycles:40
+tex: NTEX
+ 

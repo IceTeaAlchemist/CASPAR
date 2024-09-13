@@ -316,13 +316,13 @@ int cycle()
         {
             auto maxlocation = max_element(begin(derivs), end(derivs));
             beta0[0] = *maxlocation;
-            beta0[1] = x[distance(derivs.begin(), maxlocation)];
+            beta0[1] = xderivs[distance(derivs.begin(), maxlocation)];
         }
         else   // The cooling cycle.
         {
             auto minlocation = min_element(begin(derivs), end(derivs));
             beta0[0] = *minlocation;
-            beta0[1] = x[distance(derivs.begin(), minlocation)];
+            beta0[1] = xderivs[distance(derivs.begin(), minlocation)];
         }
         GaussNewton4(xderivs, derivs, beta0, coeff, &iter);
         if(coeff[1] < x[x.size()-1])
@@ -451,7 +451,6 @@ int cycle()
                     coeff_out << "," << triggertime - (long)run_start << endl; 
                     if(state == false)  // cooling
                     {
-                        pcr_out << triggertime << ",";
                         cout << progName << ": Cycle " << cycles << " complete." << endl;
                         cycles++;
                     }
@@ -496,7 +495,6 @@ int cycle()
                             triggertime = delaytocycleend(coeff,threshcool,AMPL_MIN);
                             //lb[0] = min_vals[0];
                             //ub[0] = max_vals[0];
-                            pcr_out << triggertime << ",";
                             cycles++;
                         }
                         savestart = phasestart;
@@ -534,6 +532,14 @@ int cycle()
         delay(100);
         // Update the cyclecutoff in case it was updated.
         cutoff = cyclecutoff;
+        if(x[x.size()-1] > 12)
+        {
+            cout << "Fitting algorithm over warning limit." << endl;
+            cout << "Initial Guess: Amplitude: " << beta0[0] << " Center: " << beta0[1] << endl;
+            cout << "Coefficients tried: ";
+            cout << progName << ": coeffs[], Amplitude " << coeff[0] << " Center " << coeff[1] << " Width ";
+            cout <<  coeff[2]  << endl << "\t Offset " << coeff[3] << "  Iteration " << iter << endl;
+        }
     }   // end while running cycles, while (cycles < cutoff && runflag == true)  
     // fclose(output);
     cout << progName << ":  pwm_enable is " << pwm_enable << endl;
@@ -573,7 +579,6 @@ int cycle()
                 usleep(cool_time*10);
                 i++;
             }
-            pcr_out << data[data.size()-1].timestamp << ",";
             cycles++;
             state = modeshift(state);
             cout << "Autopilot: cycle " << cycles << " complete." << endl;

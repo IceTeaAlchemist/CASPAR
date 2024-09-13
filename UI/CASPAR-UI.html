@@ -80,7 +80,7 @@
 
   /* Specific CSS Classes for the dropdown on the first tab */
   .custom-select {position: relative; width: 99%; height:33px; border-width: 1px; font-size:12pt; background-color: #FFFFFF; padding:3px 3px;}
-    .custom-select::after {position: relative; width: 99%; height:33px; border-width: 1px; font-size:12pt; background-color: #FFFFFF; padding:3px 3px;}
+  .custom-select::after {position: relative; width: 99%; height:33px; border-width: 1px; font-size:12pt; background-color: #FFFFFF; padding:3px 3px;}
 </style>
 </head>
 
@@ -188,14 +188,15 @@
 
       <div class="div2-2" id="divCYC" style="width:100%; height:100%; display:block;"> </div> <!--graph goes here-->
 
-      <div class="div3-2">
+<!-- Doesn't do anything at the moment, update with ADC updating function.
+    <div class="div3-2">
         <p class="inrtxt4" style="font-weight:bold; text-align: center; margin-top: 20px;">ADCs:</p>
           <p class="inrtxt3" id="adctstamp"> 99:99:99 </p> 
-          <p class="inrtxt7" id="tc0" style="font-size:150%;"> <span style = "text-decoration: underline;"> TC0:</span> -99.99 <br></p>  <!--Changes-->
-          <p class="inrtxt7" id="tc1" style="font-size:150%;"> <span style = "text-decoration: underline;"> TC1:</span> -99.99 <br> </p>  <!--Changing will be implemented-->
-          <p class="inrtxt7" id="adc0" style="font-size:150%;"> <span style = "text-decoration: underline;"> ADC0:</span> -9.999 <br> </p>  <!--Changes-->
+          <p class="inrtxt7" id="tc0" style="font-size:150%;"> <span style = "text-decoration: underline;"> TC0:</span> -99.99 <br></p>  
+          <p class="inrtxt7" id="tc1" style="font-size:150%;"> <span style = "text-decoration: underline;"> TC1:</span> -99.99 <br> </p>  
+          <p class="inrtxt7" id="adc0" style="font-size:150%;"> <span style = "text-decoration: underline;"> ADC0:</span> -9.999 <br> </p>  
 
-      </div>
+      </div> -->
 
       <div class="div4-2">
         <p class="inrtxt4" style="font-weight:bold; text-align: center; margin-top: 20px;">Error Status:</p>
@@ -228,6 +229,7 @@
           <p class = 'inrtxt7' id="cirecName"> <span style = "text-decoration: underline;"> Default Recipe Name:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="citotalCycles"> <span style = "text-decoration: underline;"> Total Cycles:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciFAM"> <span style = "text-decoration: underline;"> FAM:</span> <br> </p> <!--Changes-->
+          <p class = 'inrtxt7' id="ciTEX"> <span style = "text-decoration: underline;"> TEX:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciCY5"> <span style = "text-decoration: underline;"> CY5:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciHEX"> <span style = "text-decoration: underline;"> HEX:</span> <br> </p> <!--Changes-->
           <p class = 'inrtxt7' id="ciRecon"> <span style = "text-decoration: underline;"> Reconstitution/Premelt On?:</span> <br> </p> <!--Changes-->
@@ -264,6 +266,9 @@
           <p class = 'inrtxt6' style= "display: inline-block;"> <br> FAM: </p>
             <input class = "inrinp2" type="text" id="FAM" value = " "> <!--Changes-->
               <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
+          <p class = 'inrtxt6' style= "display: inline-block;"> <br> TEX: </p>
+            <input class = "inrinp2" type="text" id="TEX" value = " "> <!--Changes-->
+              <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
           <p class = 'inrtxt6' style= "display: inline-block;"> <br> CY5: </p>
             <input class = "inrinp2" type="text" id="CY5" value = " "> <!--Changes-->
               <div style="width:100%; height:1px; margin: auto;" style= "display: block;"></div>
@@ -297,7 +302,7 @@
     var cycleNo = 0;            // Cycle the next set of PCR data will be from.
     var t = new Date();         // Current time.
     data.push([t, 0, 0]);
-    data2.push([cycleNo, 0, 0, 0]);
+    data2.push([cycleNo, 0, 0, 0, 0]);
     var taxisIncrement = 10 * 1000; // axis increment in milliseconds
 
     // Setup some "enums" though JS does not actually have those, see
@@ -305,7 +310,7 @@
     // Use the below in the dataarray[<num>] by dataarray[configEnum.opName] etc.
     // COPY to caspar.js !!
     const configEnum = {"opName":0, "email":1, "projName":2, "recName":3, "FAM":4, "CY5":5, "HEX":6, "reconCheckbox":7, 
-                        "RTCheckbox":8, "totCycles":9}; 
+                        "RTCheckbox":8, "totCycles":9, "TEX":10}; 
     Object.freeze(configEnum);
 
 
@@ -314,6 +319,7 @@
     var y = 0;
     var tc0, tc1, adc0, tstamp;
     var fam;
+    var tex;
     var cy5;
     var cycleNo = 0;
     var dateWinMin = t.getTime();
@@ -321,10 +327,12 @@
 
     // Declare the graph for PCR data.
     var pcr = new Dygraph(document.getElementById("divPCR"), data2,
-      {labels: ['Cycle','FAM','HEX','Cy5'],
+      {labels: ['Cycle','FAM','TEX','HEX','Cy5'],
        series: {
          'FAM': {
           axis:'y1'},
+         'TEX': {
+           axis:'y1'},
          'HEX': {
           axis:'y1'},
          'Cy5': {
@@ -387,6 +395,7 @@
     var senddefop; //to send
     var senddefem; //to send
     var sendfam; //to send
+    var sendtex;
     var sendcy5; //to send
     var sendhex; //to send
     var sendrecon; // to send
@@ -465,7 +474,7 @@
             if(msg.FAMdata.length > 0)
             {
               for(var i = 0; i < msg.FAMdata.length; i++) {
-                data2.push([i+1, msg.FAMdata[i], msg.HEXdata[i], msg.cy5data[i]]); //Push the new data onto the graph source.
+                data2.push([i+1, msg.FAMdata[i], msg.TEXdata[i], msg.HEXdata[i], msg.cy5data[i]]); //Push the new data onto the graph source.
               }
               // Drop the first point (0,0) if there are 2 or more points.
               //var data2plot = data2;
@@ -473,7 +482,7 @@
               data2.shift();
               //} 
               console.log("UI: data2 ", data2);
-              pcr.updateOptions({labels: ["Cycle", msg.fam, msg.hex, msg.cy5]});
+              pcr.updateOptions({labels: ["Cycle", msg.fam, msg.tex, msg.hex, msg.cy5]});
               pcr.updateOptions( {'file': data2 } ); //Update it.
             }
           break;  // end case connect
@@ -537,6 +546,8 @@
               " " + dataarray[configEnum.email];
             document.getElementById('ciFAM').innerHTML = "<span style = 'text-decoration: underline;'> FAM:</span>" + 
               " " + dataarray[configEnum.FAM];
+            document.getElementById('ciTEX').innerHTML = "<span style = 'text-decoration: underline;'> TEX:</span>" + 
+              " " + dataarray[configEnum.TEX];
             document.getElementById('ciCY5').innerHTML = "<span style = 'text-decoration: underline;'> CY5:</span>" + 
               " " + dataarray[configEnum.CY5];
             document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + 
@@ -552,6 +563,7 @@
             senddefop = dataarray[configEnum.opName];
             senddefem = dataarray[configEnum.email];
             sendfam = dataarray[configEnum.FAM];
+            sendtex = dataarray[configEnum.TEX];
             sendcy5 = dataarray[configEnum.CY5];
             sendhex = dataarray[configEnum.HEX];
             sendrecon = dataarray[configEnum.reconCheckbox];
@@ -593,9 +605,10 @@
             cycleNo = msg.cycle; //Update PCR cycle on receipt of PCR data.
             document.getElementById("currentCycle").innerHTML =  "<span style='font-weight:bold; font-size:110%'>" + cycleNo + "</span>"; //Changes Cycle Number
             fam = msg.fam; //Retrieve FAM fluorescence.
+            tex = msg.tex; //Retrieve TEX fluorescence
             cy5 = msg.cy5; //Retrieve Cy5 fluorescence.
             hex = msg.hex; //Retrieve HEX fluorescence.
-            data2.push([cycleNo, fam, hex, cy5]); //Push the new data onto the graph source.
+            data2.push([cycleNo, fam, tex, hex, cy5]); //Push the new data onto the graph source.
             // Drop the first point (0,0) if there are 2 or more points.
             if (data2.length > 1 && data2[0][0] == 0 ) { // If big array AND cycle no. 0 included; Shift only ONCE!
               data2.shift();
@@ -789,6 +802,7 @@
           document.getElementById("ciopName").innerHTML = "<span style = 'text-decoration: underline;'> Default Operator Name:</span>" + " " + msg.defop;
           document.getElementById('ciemail').innerHTML = "<span style = 'text-decoration: underline;'> Default Email:</span>" + " " + msg.defem;
           document.getElementById('ciFAM').innerHTML = "<span style = 'text-decoration: underline;'> FAM:</span>" + " " + msg.fam;
+          document.getElementById('ciTEX').innerHTML = "<span style = 'text-decoration: underline;'> TEX:</span>" + " " + msg.tex;
           document.getElementById('ciCY5').innerHTML = "<span style = 'text-decoration: underline;'> CY5:</span>" + " " + msg.cy5;
           document.getElementById('ciHEX').innerHTML = "<span style = 'text-decoration: underline;'> HEX:</span>" + " " + msg.hex;
           document.getElementById('ciRT').innerHTML = "<span style = 'text-decoration: underline;'> Reverse Transcription:</span>" + " " + dispRT2;
@@ -1017,9 +1031,9 @@
         dateWinMax = dateWinMin + 2*taxisIncrement;
         cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );
         data.push([t, 0, 0]);
-        data2.push([cycleNo, 0, 0, 0]);  // Initializing, not length to fam, etc, yet.
+        data2.push([cycleNo, 0, 0, 0, 0]);  // Initializing, not length to fam, etc, yet.
         cyc.updateOptions({ 'file': data});
-        pcr.updateOptions({labels: ["Cycle", sendfam, sendhex, sendcy5]});
+        pcr.updateOptions({labels: ["Cycle", sendfam, sendtex, sendhex, sendcy5]});
         pcr.updateOptions( {'file': data2 } ); // Update it.
 
         changeFile();
@@ -1061,6 +1075,7 @@
             deftotcycles: sendtotcycles,
             defrt: sendrt,
             fam: sendfam,
+            tex: sendtex,
             cy5: sendcy5,
             hex: sendhex,
             rt: String(document.getElementById("RTMain").checked),
@@ -1236,8 +1251,10 @@
             defaultrecipe: String(document.getElementById("defRecName").value),
             totalcycles: String(document.getElementById("totalCycles").value),
             fam: String(document.getElementById("FAM").value),
+            tex: String(document.getElementById("TEX").value),
             cy5: String(document.getElementById("CY5").value),
             hex: String(document.getElementById("HEX").value),
+            recon: String(false),
             rt: String(document.getElementById("RT").checked),
             };
           ws.send(JSON.stringify(msg));

@@ -224,3 +224,125 @@ PCR Session initialized at 2022825_15453
 Calibrating gain.
 PCR Session initialized at 2022826_16713
 Calibrating gain.
+setupPi:  PCR Session initialized at 20240226_130910
+setupPi:  PCR Session initialized at 20240226_143735
+setupPi:  PCR Session initialized at 20240226_144033
+setupPi:  PCR Session initialized at 20240226_152722
+setupPi:  PCR Session initialized at 20240226_153727
+setupPi:  PCR Session initialized at 20240226_154535
+setupPi:  PCR Session initialized at 20240226_173703
+setupPi:  PCR Session initialized at 20240229_112906
+setupPi:  PCR Session initialized at 20240229_131838
+setupPi:  PCR Session initialized at 20240301_115143
+setupPi:  PCR Session initialized at 20240301_135810
+setupPi:  PCR Session initialized at 20240301_154935
+setupPi:  PCR Session initialized at 20240301_155521
+setupPi:  PCR Session initialized at 20240304_102102
+setupPi:  PCR Session initialized at 20240304_105521
+setupPi:  PCR Session initialized at 20240304_141503
+setupPi:  PCR Session initialized at 20240304_162232
+setupPi:  PCR Session initialized at 20240305_112312
+setupPi:  PCR Session initialized at 20240305_155831
+setupPi:  PCR Session initialized at 20240305_155909
+setupPi:  PCR Session initialized at 20240305_155956
+setupPi:  PCR Session initialized at 20240305_160624
+setupPi:  PCR Session initialized at 20240305_161716
+setupPi:  PCR Session initialized at 20240305_162426
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 0 .
+setupPi:  PCR Session initialized at 20240305_165900
+setupPi:  PCR Session initialized at 20240305_171713
+setupPi:  PCR Session initialized at 20240307_110903
+setupPi:  PCR Session initialized at 20240307_111149
+setupPi:  PCR Session initialized at 20240325_132812
+setupPi:  PCR Session initialized at 20240325_152835
+setupPi:  PCR Session initialized at 20240325_173305
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 0 .
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 5 .
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 6 .
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 8 .
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 15 .
+cycle: Too many heating/cooling failures, 4 , cycling ended.
+setupPi:  PCR Session initialized at 20240327_115639
+setupPi:  PCR Session initialized at 20240327_122501
+setupPi:  PCR Session initialized at 20240404_145331
+setupPi:  PCR Session initialized at 20240404_151400
+setupPi:  PCR Session initialized at 20240404_153004
+setupPi:  PCR Session initialized at 20240404_153715
+setupPi:  PCR Session initialized at 20240404_155049
+setupPi:  PCR Session initialized at 20240503_163738
+cycle: Heated for too long, error thrown, 75 secs on cycles 0 .
+setupPi:  PCR Session initialized at 20240521_163855
+setupPi:  PCR Session initialized at 20240521_171713
+setupPi:  PCR Session initialized at 20240521_173048
+setupPi:  PCR Session initialized at 20240606_162508
+setupPi:  PCR Session initialized at 20240606_163133
+cycle: Heated for too long, error thrown, 75 secs on cycles 0 .
+setupPi:  PCR Session initialized at 20240711_123848
+setupPi:  PCR Session initialized at 20240711_124800
+cycle: Heated for too long, error thrown, 75 secs on cycles 0 .
+cycle: Heated for too long, error thrown, 40 secs on cycles 1 .
+cycle: Heated for too long, error thrown, 40 secs on cycles 1 .
+cycle: Heated for too long, error thrown, 40 secs on cycles 1 .
+cycle: Heated for too long, error thrown, 40 secs on cycles 3 .
+cycle: Heated for too long, error thrown, 40 secs on cycles 3 .
+setupPi:  PCR Session initialized at 20240807_152354
+setupPi:  PCR Session initialized at 20240819_153326
+setupPi:  PCR Session initialized at 20240823_120103
+setupPi:  PCR Session initialized at 20240823_145648
+setupPi:  PCR Session initialized at 20240827_103027
+setupPi:  PCR Session initialized at 20240827_141744
+setupPi:  PCR Session initialized at 20240827_175303
+setupPi:  PCR Session initialized at 20240830_145244
+setupPi:  PCR Session initialized at 20240830_145312
+setupPi:  PCR Session initialized at 20240830_145333
+setupPi:  PCR Session initialized at 20240830_164202
+setupPi:  PCR Session initialized at 20240905_135839
+setupPi:  PCR Session initialized at 20240905_151215
+setupPi:  PCR Session initialized at 20240905_160514
+setupPi:  PCR Session initialized at 20240905_160722
+setupPi:  PCR Session initialized at 20240905_160805
+setupPi:  PCR Session initialized at 20240905_161037
+setupPi:  PCR Session initialized at 20240905_161522
+setupPi:  PCR Session initialized at 20240905_164908
+setupPi:  PCR Session initialized at 20240905_165237
+setupPi:  PCR Session initialized at 20240905_171505
+setupPi:  PCR Session initialized at 20240906_110716
+setupPi:  PCR Session initialized at 20240906_132151
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 32 .
+setupPi:  PCR Session initialized at 20240906_141441
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 17 .
+setupPi:  PCR Session initialized at 20240906_143525
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 0 .
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 23 .
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 4 .
+setupPi:  PCR Session initialized at 20240906_152845
+setupPi:  PCR Session initialized at 20240909_150037
+setupPi:  PCR Session initialized at 20240909_165044
+setupPi:  PCR Session initialized at 20240909_165906
+setupPi:  PCR Session initialized at 20240909_170538
+setupPi:  PCR Session initialized at 20240909_171336
+setupPi:  PCR Session initialized at 20240910_101509
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 2 .
+setupPi:  PCR Session initialized at 20240910_105041
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 19 .
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 28 .
+setupPi:  PCR Session initialized at 20240910_114127
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 3 .
+setupPi:  PCR Session initialized at 20240910_114947
+setupPi:  PCR Session initialized at 20240910_141911
+setupPi:  PCR Session initialized at 20240910_144844
+setupPi:  PCR Session initialized at 20240910_152429
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 2 .
+setupPi:  PCR Session initialized at 20240910_155855
+setupPi:  PCR Session initialized at 20240910_155937
+setupPi:  PCR Session initialized at 20240910_160334
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 8 .
+setupPi:  PCR Session initialized at 20240911_111728
+setupPi:  PCR Session initialized at 20240911_115755
+setupPi:  PCR Session initialized at 20240911_115832
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 0 .
+setupPi:  PCR Session initialized at 20240911_140313
+cycle: Cooled for too long, error thrown, 40 secs. on cycles 7 .
+setupPi:  PCR Session initialized at 20240911_160234
+setupPi:  PCR Session initialized at 20240912_092017
+setupPi:  PCR Session initialized at 20240912_104148
