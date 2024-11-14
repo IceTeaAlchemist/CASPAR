@@ -41,6 +41,9 @@ int DEVICE_ID;
 int TEMP_ID; 
 adc *ADC0;  // Was define DEVICE_ID, 0x48 .  Generic for laser IMON or other.
 adc *TEMP;  // Was define TEMP_ID, 0x49 .
+int DACHandle;
+int DACChannel;
+int DACAddress;
 
 bool pwm_enable; // Turn off PWM avoid sudo node caspar.js .
 double pwm_high_ratio; //0.85;

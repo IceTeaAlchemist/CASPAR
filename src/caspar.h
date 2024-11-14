@@ -193,6 +193,9 @@ extern string devicesDir;
 extern string recipeFile;
 extern string recipeDir;
 extern vector<int> channelflags;
+extern int DACHandle;
+extern int DACChannel;
+extern int DACAddress;
 
 // setup.cpp function definitions. These handle the initial set up of each component of the caspar instrument. 
 // There is a setup.h now, move these there...if non-extern's.  WEG
@@ -227,6 +230,7 @@ int cycle(void);
 long delaytocycleend(const double coeff[4], double thresh, double ampl_min);  // was coeff[3]
 bool modeshift(bool state);
 void changeQiagen(vector<int> qiagenproperties);
+int setDACvoltage(float voltage);
 
 
 // data.cpp function definitions. These are for data handling and processing.

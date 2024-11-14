@@ -148,6 +148,7 @@ namespace caspar
             }
             // Establish a background fluorescence reading/start time and record it.
             readPCR();
+            cout << "DACHandle check #2: " << DACHandle << endl;
             changeQiagen(HTP);
             recordflag = true;
             delay(100);
@@ -320,6 +321,7 @@ namespace caspar
         delete sens2;
         delete ADC0;
         delete TEMP;
+        setDACvoltage(0.0);
     }
 
     void writeComments(const FunctionCallbackInfo<Value> &args)

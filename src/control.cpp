@@ -9,6 +9,7 @@
 #include <sstream>
 #include <chrono>
 #include <ctime>
+#include <wiringPiI2C.h>
 
 using namespace std;
 using std::chrono::duration_cast;
@@ -166,6 +167,7 @@ bool modeshift(bool state)
     {
         digitalWrite(HEATER_PIN, LOW);
         digitalWrite(FAN_PIN, HIGH);
+        setDACvoltage(0.0);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
         phaseend = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
@@ -237,6 +239,7 @@ bool modeshift(bool state)
         changeQiagen(HTP);
         piUnlock(0);
         digitalWrite(HEATER_PIN, HIGH);
+        setDACvoltage(2.0);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
         phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         delay(500);
@@ -294,6 +297,22 @@ int cycle()
     temperrors = 0;
     delay(100);
     digitalWrite(HEATER_PIN, HIGH); //BILL LOOKIE
+    cout << "DAC Check #4 " << DACHandle << endl;
+    if(DACHandle == -1)
+    {
+        DACHandle = wiringPiI2CSetup(0x60);
+        if(DACHandle < 0)
+        {
+            cout << "DAC Communication failed. " << endl;
+        }
+        else
+        {
+            cout << "Communicating with DAC with handle " << DACHandle << endl;
+        }
+    }
+    // int DACHandleLocal = wiringPiI2CSetup(0x60);
+    setDACvoltage(2.0);
+
     phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     double savestart;
     digitalWrite(FAN_PIN,LOW);
@@ -590,6 +609,7 @@ int cycle()
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     digitalWrite(FAN_PIN, LOW);
     sens1->LED_off(2);
+    setDACvoltage(0.0);
     return 0;
 }// end cycle
 
@@ -636,4 +656,37 @@ void changeQiagen(vector<int> qiagenproperties)
         cout << sens2->getBoardID() << endl;
     }
     cout << "\tFitting Qiagen is " << fittingqiagen << " with Method " << qiagenproperties[1] << "." << endl;
+}
+
+int setDACvoltage(float voltage)
+{
+	int voltstoset = voltage/5.0*4096;
+	if(voltstoset > 1638 || voltstoset < 0)
+	{
+		cout << "setDACvoltage: Exceeding laser safety parameters. Exiting without setting power." << endl;
+		return 1;
+	}
+	int commandbyte;
+	switch(DACChannel) {
+		case 0:
+			commandbyte = 0b01011000;
+			break;
+		case 1:
+			commandbyte = 0b01011010;
+			break;
+		case 2:
+			commandbyte = 0b01011100;
+			break;
+		case 3:
+			commandbyte = 0b01011110;
+			break;
+		default:
+			cout << "Invalid channel selected. Range is 0-3." << endl;
+			return 2;
+	}
+    cout << "Setting Voltage with Parameters:" << endl;
+    cout << "Handle: " << DACHandle << "    Command Byte: " << commandbyte << "    Voltage: " << voltage << endl;
+    cout << "Binary representation: " << voltstoset << endl;
+	wiringPiI2CWriteReg16(DACHandle,commandbyte,__bswap_16(voltstoset));
+	return 0;
 }

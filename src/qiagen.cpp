@@ -441,6 +441,37 @@ double qiagen::measure()
 	return fluor;
 } 
 
+vector<double> qiagen::measureMultiple()
+{
+	string vals = readqiagen(260,6);
+	vector<double> fluors;
+	int E1D1 = stoul(vals.substr(6,8),nullptr,16);
+	int E1D2 = stoul(vals.substr(14,8),nullptr,16);
+	int E2D2 = stoul(vals.substr(22,8),nullptr,16);
+	if(active_method == 4)
+	{
+		fluors.push_back(E1D1*2500.0/8388607.0);
+		fluors.push_back(E1D2*2500.0/8388607.0);
+	}
+	else if(active_method == 5)
+	{
+		fluors.push_back(E1D1*2500.0/8388607.0);
+		fluors.push_back(E2D2*2500.0/8388607.0);
+	}
+	else if(active_method == 6)
+	{
+		fluors.push_back(E1D2*2500.0/8388607.0);
+		fluors.push_back(E2D2*2500.0/8388607.0);
+	}
+	else
+	{
+		fluors.push_back(E1D1*2500.0/8388607.0);
+		fluors.push_back(E1D2*2500.0/8388607.0);
+		fluors.push_back(E2D2*2500.0/8388607.0);
+	}
+	return fluors;
+}
+
 // Loads data into the private vector<unsigned int> LED_Currents, with the
 // ordering given below by the order of the registers, 
 //  LED1 current, current default, current max, current min,

@@ -477,6 +477,19 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
     PWM_PIN = stoi(devicesIni->get_value("GPIO", "PWM_PIN"));       // Typ 23.
     ALERT_PIN = stoi(devicesIni->get_value("GPIO", "ALERT_PIN"));   // Typ 23.
 
+    DACAddress = stoi(devicesIni->get_value("DAC", "DACAddress"),0,16); // Default 0x60
+    DACChannel = stoi(devicesIni->get_value("DAC", "DACChannel")); // Default Channel C, or 2.
+
+    DACHandle = wiringPiI2CSetup(DACAddress);
+    if(DACHandle < 0)
+    {
+        cout << "DAC Communication failed. " << endl;
+    }
+    else
+    {
+        cout << "Communicating with DAC with handle " << DACHandle << endl;
+    }
+
     // Print at the end of the doHardwareConfig
     bstream << progName << ": At end of subroutine." << endl;
     cout << bstream.str();
@@ -490,6 +503,7 @@ void doHardwareConfig(string filename /*= "configs/devices.ini" */)
 // 20230305 weg, Do a check for existence of the recipe (called for configs.txt it might no), use default.ini if not.
 void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
 {
+    cout << "DACHandle check #3: " << DACHandle << endl;
     ostringstream bstream; // For complicated printouts.
     string progName = "doRecipeConfig";
 

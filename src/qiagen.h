@@ -73,6 +73,7 @@ class qiagen
 		void startMethod();
 		void stopMethod();
 		double measure();
+		vector<double> measureMultiple();
 		string readqiagen(unsigned int reg, unsigned int regs_to_read);
 		string writeqiagen(unsigned int reg, vector<unsigned int> data);
 		void fill_LED_Currents();
