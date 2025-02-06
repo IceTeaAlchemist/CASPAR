@@ -90,6 +90,7 @@ extern fstream pcr_out;
 extern fstream notes_out;
 extern fstream runtime_out;
 extern fstream temper_out;
+extern fstream melt_out;
 extern int cycles;
 extern FILE *output;
 extern int datapoints;
@@ -135,6 +136,7 @@ extern double phaseend;
 extern int cyclecutoff;
 extern int cyclesfit;
 extern int cyclesaverage;
+extern double meltout;
 extern double heattoolongfirst; // secs, 75 typically for first heating cycle.
 extern double heattoolong; // secs, 40 typ., second and up heating cycle.
 extern double cooltoolong; // secs, 40 typ., cooling cycle check.
@@ -227,6 +229,8 @@ void premelt(void);
 void runRT(void);
 void reconstitute(void);
 int cycle(void);
+int melt(void);
+bool meltshift(void);
 long delaytocycleend(const double coeff[4], double thresh, double ampl_min);  // was coeff[3]
 bool modeshift(bool state);
 void changeQiagen(vector<int> qiagenproperties);
@@ -241,6 +245,7 @@ void readPCR(void);
 string timestamp(void);
 void retrieveSample(void);
 void retrieveTemperatures(void);
+void retrieveMultiple(void);
 
 // Needed for the config files with strings like vectors "{0, -1}" .
 // Returns the vector of ints {0, -1}, in this example.

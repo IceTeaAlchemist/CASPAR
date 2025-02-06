@@ -135,6 +135,7 @@ void retrieveSample()
     if(x.size() == 0)
     {
         run_start = now.timestamp;
+        cout << "Run start is " << run_start << endl;
     }
 
     // Push our start-adjusted x into our value queue.
@@ -168,6 +169,61 @@ void retrieveSample()
     fwrite(ptr, sizeof(reading), 1, output);
     reading *ptr2 = &currentderiv;
     fwrite(ptr2,sizeof(reading), 1, output);
+    piUnlock(0);
+    }
+    else  // recordflag is false.
+    {
+        // do nothing
+    }
+}
+
+// retrieveSample - Retrieves the Qiagen data for a method with more than 1 channnel.
+// Called from casparapi.cpp in the thread mechanism.
+void retrieveMultiple()
+{
+    if(recordflag == true)
+    {
+    // Locking the thread here prevents it from interfering with global variables while they're being used by other portions of the 
+    // program that lock the same thread.
+    piLock(0);
+    // Get the current time in milliseconds.
+    auto millisecs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    // Declare a reading object and put our timestamp and fluoresence inside, then push it into our data vector.
+    reading now;
+    now.timestamp = millisecs;
+    vector<double> readout = sens2->measureMultiple();
+    // If it's our first entry this fitting, set the starting time for our fit to our current reading.
+    if(x.size() == 0)
+    {
+        run_start = millisecs;
+    }
+
+    // Push our start-adjusted x into our value queue.
+    x.push_back((millisecs - run_start)/1000.0);
+    // Get the current fluoresence reading from the struct and convert it to mV.
+    double ycurrent = readout[1];
+    if(yaverage.size() >= SMOOTHING) // If our moving average filter is full:
+    { 
+        yaverage.pop_front(); // Remove the oldest value.
+    }
+    yaverage.push_back(ycurrent); // Push the new value onto the averaging stack.
+    double average = mean(yaverage); // Average the filter values.
+    y.push_back(average); // Push the average into the y stack.
+    double machinederiv;
+    if(y.size() > SMOOTHING) // If our values are no longer being affected by 0--i.e., the moving average filter is full:
+    {
+        xderivs.push_back((millisecs- run_start)/1000.0); // Push a time value for this derivative onto the xderiv vector.
+        // double deriv = (y[y.size() - 1] - y[y.size() - 2])*10; // Calculate the derivative and push it onto the stack. (y1-y2)/(delta T). Single stencil. Replaced with 5 7/14/22 NAS
+        double deriv = (-y[y.size() - 1] + 8*y[y.size() - 2] - 8*y[y.size() - 4] + y[y.size()-5])/(0.1*12.0);
+        derivs.push_back(deriv);
+        machinederiv = deriv;
+    }
+        else
+    {
+        machinederiv = 0.0;
+    }
+    melt_out << millisecs << "," << readout[1] << "," << machinederiv << "," << readout[0] << endl;
+    meltout = readout[0];
     piUnlock(0);
     }
     else  // recordflag is false.

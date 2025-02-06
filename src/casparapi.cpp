@@ -65,6 +65,21 @@ namespace caspar
         return 0;
     }
 
+    void pollMelt()
+    {
+        while (runflag == true)
+        {
+            retrieveMultiple();
+            delay(10);
+        }
+    }
+
+    PI_THREAD(meltsampler)
+    {
+        pollMelt();
+        return 0;
+    }
+
     class CASPARCycler : public AsyncWorker
     {
     public:
@@ -165,6 +180,61 @@ namespace caspar
         }
     };// end CASPARCycler
 
+    class CASPARMelt : public AsyncWorker
+    {
+    public:
+        CASPARMelt(Callback *callback) : AsyncWorker(callback) {}
+        ~CASPARMelt(){};
+
+        void Execute()
+        {
+            clearactivedata();
+            runflag = true;
+            if (runflag) sens2->calibrateGain(FluorCalib, 3);
+            if (runflag) sens2->calibrateGain(1000, 1);
+            data.clear();
+            sens1->stopMethod();
+            sens2->stopMethod();
+            sens2->setMethod(4);
+            sens2->writeqiagen(0, {255,255});
+            sens2->startMethod();
+            sens2->LED_on(1);
+            sens2->LED_on(2);
+            sens1->LED_off(1);
+            sens1->LED_off(2);
+            fittingqiagen = 2;
+            string meltstart = timestamp();
+            string meltfile = "./data/melts/melt_" + meltstart;
+            string tempfile = "./data/melts/melttemp_" + meltstart;
+            if(melt_out.is_open())
+            {
+                melt_out.close();
+            }
+            if(temper_out.is_open())
+            {
+                temper_out.close();
+            }
+            melt_out.open(meltfile, std::ios_base::out);
+            temper_out.open(tempfile, std::ios_base::out);
+            piThreadCreate(meltsampler);
+            piThreadCreate(readTemperatures);
+            delay(100);
+            recordflag = true;
+            melt();
+            melt_out.close();
+            temper_out.close();
+        }
+
+        void HandleOKCallback()
+        {
+            Nan::HandleScope scope;
+            v8::Local<v8::Array> results = New<v8::Array>(1);
+            Nan::Set(results, 0, New<v8::Number>(0));
+            Local<Value> argv[] = {Null(), results};
+            callback->Call(2, argv);
+        }
+    };// end CASPARMelt
+
     void initializePCR(const FunctionCallbackInfo<Value> &args)
     {
         cout << "casparapi.cpp: initializePCR(): At the start of routine." << endl;
@@ -220,6 +290,38 @@ namespace caspar
         // Local<Number> num = Number::New(isolate, jsoutput);
         Nan::Set(datahandoff, 0, New<v8::Number>(jsoutput));
         Nan::Set(datahandoff, 1, New<v8::Number>(derivoutput));
+        args.GetReturnValue().Set(datahandoff);
+    }
+
+    void readoutMelt(const FunctionCallbackInfo<Value> &args)
+    {
+        Isolate *isolate = args.GetIsolate();
+        v8::Local<v8::Array> datahandoff = New<v8::Array>(3);
+        double jsoutputcontrol;
+        double jsoutputmelt;
+        double derivoutput = 0;
+        if (runflag == true && recordflag == true && y.size() > 0)
+        {
+            jsoutputcontrol = y[y.size() - 1];
+            jsoutputmelt = meltout;
+        }
+        else
+        {
+            jsoutputcontrol = 0;
+            jsoutputmelt = 0;
+        }
+        if (derivs.size() > 5 && runflag == true && recordflag == true)
+        {
+            derivoutput = derivs[derivs.size() - 1];
+        }
+        else
+        {
+            derivoutput = 0;
+        }
+        // Local<Number> num = Number::New(isolate, jsoutput);
+        Nan::Set(datahandoff, 0, New<v8::Number>(jsoutputcontrol));
+        Nan::Set(datahandoff, 1, New<v8::Number>(derivoutput));
+        Nan::Set(datahandoff, 2, New<v8::Number>(jsoutputmelt));
         args.GetReturnValue().Set(datahandoff);
     }
 
@@ -303,6 +405,7 @@ namespace caspar
         recordflag = false;
         digitalWrite(HEATER_PIN, LOW);
         digitalWrite(FAN_PIN, LOW);
+        setDACvoltage(0.0);
         cout << "stopRun:  pwm_enable is " << pwm_enable << endl;
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
         sens1->LED_off(1);
@@ -493,6 +596,12 @@ namespace caspar
         AsyncQueueWorker(new CASPARCycler(callback));
     }
 
+    NAN_METHOD(StartMelt)
+    {
+        Callback *callback = new Callback(info[0].As<Function>());
+        AsyncQueueWorker(new CASPARMelt(callback));
+    }
+
     // Nick suggest NOT doing it this way.  Keep it as a pithread in C++.
     // NAN_METHOD(Temperatures)
     // {
@@ -503,6 +612,7 @@ namespace caspar
     void Initialize(Local<Object> exports)
     {
         Nan::Set(exports, New<String>("start").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Ignition)).ToLocalChecked());
+        Nan::Set(exports, New<String>("startmelt").ToLocalChecked(), GetFunction(New<FunctionTemplate>(StartMelt)).ToLocalChecked());
         // weg added 20230410 for the Temperatures asyncworker.  Nick says unnecessary to do this here/nodejs.  Just a c++ thread.
         // Nan::Set(exports, New<String>("start").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Temperatures)).ToLocalChecked());
         NODE_SET_METHOD(exports, "initializePCR", initializePCR);
@@ -510,6 +620,7 @@ namespace caspar
         NODE_SET_METHOD(exports, "stop", stopRun);
         NODE_SET_METHOD(exports, "kill", stopEngine);
         NODE_SET_METHOD(exports, "readdata", readoutData);
+        NODE_SET_METHOD(exports, "readmelt", readoutMelt);
         //NODE_SET_METHOD(exports, "readtemp", readoutTemp);
         NODE_SET_METHOD(exports, "readPCR", readoutPCR);
         NODE_SET_METHOD(exports, "changefiles", reopenFiles);

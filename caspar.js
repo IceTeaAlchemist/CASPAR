@@ -413,6 +413,39 @@ wss.on('connection', function connection(ws) {
                 });
                 break;
             /////////////////////////////////////////////////
+            case "meltstart":
+                console.log(msg);
+                engine.startmelt(function (err, errorvalue)
+                {
+                    console.log(errorvalue);
+                    clearInterval(DataIntervId);
+                    engine.stop();
+                    console.log('Melt shutdown.');
+                    if(errorvalue[0] > 0)
+                    {
+                        var errorreport = 
+                        {
+                            id: "errorreport",
+                            value: errorvalue[0]
+                        }
+                        ws.send(JSON.stringify(errorreport));
+                    }
+                });
+                console.log("=".repeat(32));
+                console.log("===  casparapi.js: ws.on(message): case \"meltstart\":  Melt started.");
+                console.log("=".repeat(32));
+                // Start the periodic melt data send.
+                DataIntervId = setInterval(sendmelt, 300);
+                break;
+            case "meltstop":
+                console.log(msg);
+                // Stop the cycling if it's running.
+                    // Turn off the data sends.
+                    clearInterval(DataIntervId);
+                    // Tell the engine to turn off.
+                    engine.stop();
+                    console.log('Melt shutdown.');
+                break;
             case "sendemail":
                 // Retrieve filenames from engine, and send them to an email address.
                 var filenames = engine.getfiles();  // Matched to readoutfiles() in casparapi.cpp .
@@ -514,6 +547,18 @@ function sendit()
     };
     wss.clients.forEach( function dataupdate(ws) {ws.send(JSON.stringify(datastruct));} );
     
+}
+
+function sendmelt()
+{
+    var meltdata = engine.readmelt();
+    var datastruct = {
+        id: "meltdata",
+        fluor: meltdata[0],
+        deriv: meltdata[1],
+        melt: meltdata[2]
+    };
+    wss.clients.forEach( function dataupdate(ws) {ws.send(JSON.stringify(datastruct));} );
 }
 //////////////////////
 function sendPCR()

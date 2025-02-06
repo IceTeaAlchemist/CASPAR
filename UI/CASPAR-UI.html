@@ -101,7 +101,8 @@
         Not Running </span> </button>
     <button id="startStopPCRTop" style="float:right; background-color: LimeGreen" onclick = "startStopConfirmation()" >
       Start PCR</button> <!--Changes-->
-      <button id="startStopMelt" style="float:right;" onclick="startStopMelt()" > Start Melt (BETA) </button>
+      <button id="stopMelt" style="float:right;" onclick="stopMelt()" > Stop Melt (BETA) </button>
+      <button id="startMelt" style="float:right;" onclick="startMelt()" > Start Melt (BETA) </button>
     </div>
 
   <div id="divider" style="width:100%; height:8px; margin: auto;"></div>
@@ -374,7 +375,7 @@
           title: 'Cycling Information',
           xlabel: 'Time',
           ylabel: 'Fluorescence (mV)',
-          y2label: 'Derivative (mV/s)',
+          y2label: 'Control Derivative (mV/s)',
           drawPoints: true,
           showRoller: true,
           digitsAfterDecimal: 3,
@@ -642,6 +643,19 @@
               {data.push([x,y,deriv]);
                cyc.updateOptions( { 'file': data } );}
           break;
+
+          case "meltdata":
+            x = new Date();
+            y = msg.melt;
+            deriv = msg.deriv;
+            if (x.getTime() >= dateWinMax) {
+              dateWinMin += taxisIncrement;
+              dateWinMax += taxisIncrement;
+              cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );
+            }
+            if(y > -100)
+              {data.push([x,y,deriv]);
+               cyc.updateOptions( { 'file': data } );}
 
           // Receive the ADC data and use local time stamp (or not??).
           case "updateADCs":
@@ -1135,6 +1149,33 @@
       };
       ws.send(JSON.stringify(msg)); //sends message
     }// end of function startStopPCR() 
+    function startMelt() {
+      if(String(document.getElementById('startStopPCR').innerHTML) == "Start PCR")
+      {
+        data = [];
+        t = new Date();
+        dateWinMin = t.getTime();
+        dateWinMax = dateWinMin + 2*taxisIncrement;
+        cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );
+        data.push([t, 0, 0]);
+        cyc.updateOptions({ 'file': data});
+        var msg = {
+          id: "meltstart",
+        }
+        ws.send(JSON.stringify(msg));
+      }
+      else
+      {
+        console.log("Error: PCR currently running. Cannot start a melt.");
+      }
+    }
+
+    function stopMelt() {
+      var msg = {
+        id: "meltstop",
+      }
+      ws.send(JSON.stringify(msg));
+    }
 
     var timeFinishDisplay; //Important to send
 

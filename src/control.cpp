@@ -156,7 +156,8 @@ long delaytocycleend(const double coeff[4], double thresh, double ampl_min)
     cout << " and test condition \"below\" " << endl;
     cout << "\t (coeff[0]-coeff[3])*thresh + coeff[3] " << ((coeff[0]-coeff[3])*thresh + coeff[3]) << endl;
    
-    return data[data.size()-1].timestamp;
+    // return data[data.size()-1].timestamp; Altered for melt... may cause issues.
+    return x[x.size()-1];
 }
 
 // Shifts the shift between heating and cooling. Takes the current mode as an argument, 
@@ -238,14 +239,47 @@ bool modeshift(bool state)
         readPCR();
         changeQiagen(HTP);
         piUnlock(0);
-        digitalWrite(HEATER_PIN, HIGH);
-        setDACvoltage(2.0);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
+        digitalWrite(HEATER_PIN, HIGH); //Moved 1/24/25 for dual control with laser. Move before delay for fastest cycling.
+        setDACvoltage(2.0);
         phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         delay(500);
         // Turn the cycling LED back on.
         recordflag = true;
         // digitalWrite(BOX_FAN,HIGH);
+        return true;
+    }
+}
+
+// Shifts the shift between heating and cooling. Takes the current mode as an argument, 
+// returns the new one.  state = false is cooling, true is heating.
+bool meltshift(bool state)
+{
+    if(state == true)  // Had been heating.
+    {
+        digitalWrite(HEATER_PIN, LOW);
+        // digitalWrite(FAN_PIN, HIGH);
+        setDACvoltage(0.0);
+        if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
+        phaseend = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        delay(500);
+        return false;  // Return false, cooling state.
+    }
+    else  // state = false, the cooling state.
+    {
+        digitalWrite(FAN_PIN,LOW);
+        phaseend = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        recordflag = false;
+      
+        piLock(0);
+        sens1->LED_off(1);
+        sens2->LED_off(1);
+        sens1->LED_off(2);
+        sens2->LED_off(2);
+        sens1->stopMethod();
+        sens2->stopMethod();
+        piUnlock(0);
         return true;
     }
 }
@@ -551,26 +585,21 @@ int cycle()
         delay(100);
         // Update the cyclecutoff in case it was updated.
         cutoff = cyclecutoff;
-        if(x[x.size()-1] > 12)
+/*        if(x[x.size()-1] > 12) //This is a debug loop, if you need to see what it's trying when it's failing to find a fit.
         {
             cout << "Fitting algorithm over warning limit." << endl;
             cout << "Initial Guess: Amplitude: " << beta0[0] << " Center: " << beta0[1] << endl;
             cout << "Coefficients tried: ";
             cout << progName << ": coeffs[], Amplitude " << coeff[0] << " Center " << coeff[1] << " Width ";
             cout <<  coeff[2]  << endl << "\t Offset " << coeff[3] << "  Iteration " << iter << endl;
-        }
+        }*/
     }   // end while running cycles, while (cycles < cutoff && runflag == true)  
     // fclose(output);
-    cout << progName << ":  pwm_enable is " << pwm_enable << endl;
-    if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
-    state = true;
-    digitalWrite(FAN_PIN, LOW);
-    digitalWrite(HEATER_PIN, HIGH);
     if(cycles >= fittingcutoff && cycles < cutoff && runflag == true)
     {
         int recentcycle = heating_times.size()-1;
-        int heat_time = 0;
-        int cool_time = 0;
+        double heat_time = 0;
+        double cool_time = 0;
         for(int i = 0; i < usedtimes; i++)
         {
             heat_time += heating_times[recentcycle - i];
@@ -582,20 +611,22 @@ int cycle()
         cout << "Cycles used: " << usedtimes << endl;
         cout << "Heating time: " << heat_time << "ms." << endl;
         cout << "Cooling time: " << cool_time << "ms." << endl;
+        int delay_adjustment = 500;
         int i = 0;
         while (cycles < cutoff && runflag == true)
         {
             i = 0;
+            heat_time = heat_time;
             while(i < 100 && runflag == true)
             {
-                usleep(heat_time*10);
+                usleep((heat_time-delay_adjustment)*10);
                 i++;
             }
             i = 0;
             state = modeshift(state);
             while(i < 100 && runflag == true)
             {
-                usleep(cool_time*10);
+                usleep((cool_time-delay_adjustment)*10);
                 i++;
             }
             cycles++;
@@ -612,6 +643,277 @@ int cycle()
     setDACvoltage(0.0);
     return 0;
 }// end cycle
+
+/* Melt protocol
+ */
+int melt()
+{
+    string progName = "melt";
+    ostringstream bstream;
+    digitalWrite(HEATER_PIN,LOW);
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
+    //int mode = 2;  // Double hump.  See below for check with single_hump boolean.
+    bool doublehump = true;  // Needs both peaks as a comparator.
+    // doublehump = false; //fix this
+    bool dtrigger = false;
+    int fittingvars = 4;
+    double beta0[fittingvars] = {10, 10, 1, 0};
+    double lb[fittingvars] = {min_vals[0], min_vals[1], min_vals[2], 0};
+    double ub[fittingvars] = {max_vals[0], max_vals[1], max_vals[2], 0};
+    double coeff[fittingvars];
+    double iter;
+    double coeffprev[fittingvars];
+    double coeffdouble[fittingvars];
+    // double thresh = 0.05;  // Looked at LV and recipe for CDZ double hump has 0.05 here, 20221026 weg.
+    // double threshcool = 0.135;
+    // double dthreshheat = 0.25; // Other version has 0.25, 20220915 weg.
+    // double dthreshcool = 0.8; // Other version has 0.8, ditto weg.
+    double thresh = THRESH;
+    double threshcool = THRESHCOOL;
+    double dthreshheat = DTHRESHHEAT;
+    double dthreshcool = DTHRESHCOOL;
+    double AMPL_MIN, CTR_MIN;
+    bool CHECKFIT;  // The list of conditions to call it a good fit.
+    double heattoolongActual; // For taking the value of heattoolongfirst (cycles 0) or heattoolong.
+    error anerror;  // For filling the errorArray.
+    coeffprev[0] = 0;
+    coeffprev[1] = 0;
+    coeffprev[2] = 0;
+    coeffprev[3] = 0;
+    vector<int> heating_times;
+    vector<int> cooling_times;
+    long triggertime; // 20220822 weg, from int to long
+    bool past_the_hump;
+    temperrors = 0;
+    delay(100);
+    digitalWrite(HEATER_PIN, HIGH); //BILL LOOKIE
+    setDACvoltage(1.25);
+    phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    double savestart;
+    digitalWrite(FAN_PIN,LOW);
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
+    delay(500);
+    clearactivedata();
+    delay(1000);// Tried 100ms and it for sure causes a segmentation violation AFTER
+    // the heater starts!!  Mess with this at your peril.  20221028 weg
+
+    // Begin heating.
+     
+    bool state = true;  // Set the heating flag.
+    delay(100);
+    int meltcycle = 0;
+    while (runflag == true && meltcycle == 0)
+    {
+        piLock(0);
+        if(state == true)  // The heating cycle.
+        {
+            auto maxlocation = max_element(begin(derivs), end(derivs));
+            beta0[0] = *maxlocation;
+            beta0[1] = xderivs[distance(derivs.begin(), maxlocation)];
+        }
+        else   // The cooling cycle.
+        {
+            auto minlocation = min_element(begin(derivs), end(derivs));
+            beta0[0] = *minlocation;
+            beta0[1] = xderivs[distance(derivs.begin(), minlocation)];
+        }
+        GaussNewton4(xderivs, derivs, beta0, coeff, &iter);
+        if(coeff[1] < x[x.size()-1])
+        {
+            past_the_hump = true;
+        }
+        else
+        {
+            past_the_hump = false;
+        }
+        piUnlock(0);
+
+        // Check the heat or cool too long.  How to handle the clearing of data after first hump---save it somewhere.
+        // Separately for cooling and heating, heattoolongfirst, heattoolong, and cooltoolong in caspar.h and in the
+        // recipes file.  Counter cycles = 0 in casparapi and setup.
+        if ( state == true )  // The heating cycle.
+        {
+            if (cycles == 0) heattoolongActual = heattoolongfirst;
+            else heattoolongActual = heattoolong;
+
+            if(x[x.size()-1] > heattoolongActual)
+            {
+                temperrors++;
+                bstream.str("");
+                bstream << progName << ": Heated for too long, error thrown, " << heattoolongActual << " secs";
+                bstream << " on cycles " << cycles << " ." << endl;
+                cout << bstream.str();
+                runtime_out << bstream.str();
+
+                anerror.timestamp = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+                anerror.progname = progName;
+                anerror.message = bstream.str();
+                errorArray.push_back(anerror);
+
+                state = meltshift(state);
+                dtrigger = false;
+                clearactivedata();
+            }
+
+        }
+        else  // The cooling cycle.
+        {
+            if(x[x.size()-1] > cooltoolong)// Check for first or second hump, add in the time from the first hump.
+            {
+                temperrors++;
+                bstream.str(""); 
+                bstream << progName << ": Cooled for too long, error thrown, " << cooltoolong << " secs.";
+                bstream << " on cycles " << cycles << " ." << endl;
+                cout << bstream.str();
+                runtime_out << bstream.str();
+
+                anerror.timestamp = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+                anerror.progname = progName;
+                anerror.message = bstream.str();
+                errorArray.push_back(anerror);       
+
+                state = meltshift(state);  // modeshift has piLock() in it!  Make sure it is unlocked when this is executed.
+                dtrigger = false;
+                clearactivedata();
+                // Should there be some printouts here, like above, cycle end, and a pcr_out?? weg 20230911
+                cycles++;  // If in these errors there is NO gaussian fit, so below will not trigger the cycles incrementing.
+            }
+        }
+
+
+        //  if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1) // Other version, 20220915 weg.
+        //  Check that if there is a gaussian fit, typ AMPL_MIN is 10.0 and CTR_MIN 2.0.
+        //  The thresholds are THRESH = 0.05, THRESHCOOL = 0.135, DTHRESHHEAT = 0.25, and DTHRESHCOOL = 0.8,
+        //  and CONVERGENCE_THRESHOLD = 1 .
+        if (state==true) // In heating cycle.
+        {
+            AMPL_MIN = AMPL_MIN_HTP;  // Heating may not always be a positive bump!!  Sign handled by AMPL_MIN*() below.
+            CTR_MIN = CTR_MIN_HTP;
+        } else  // In cooling cycle.
+        {
+            AMPL_MIN = AMPL_MIN_LTP;  // Should be negative if Fluor starts high and is going low. weg 20240208
+            CTR_MIN = CTR_MIN_LTP;           
+        }
+        if ( (iter < ITER_MAX && AMPL_MIN*(coeff[0]-AMPL_MIN) > 0 && coeff[1] > CTR_MIN )  ) // Can have negative sigmas! 
+        // Successfully found a fit for the deriv of fluorescence.
+        {
+            if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && 
+                    abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && 
+                    abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD &&
+                    abs(abs(coeffprev[3] - coeff[3])) < CONVERGENCE_THRESHOLD)
+            {
+                cout << progName << ": coeffs[], Amplitude " << coeff[0] << " Center " << coeff[1] << " Width ";
+                cout <<  coeff[2]  << endl << "\t Offset " << coeff[3] << "  Iteration " << iter << endl;
+                if(doublehump == false)
+                {
+                    if(state == true)  // heating
+                    {
+                        triggertime = delaytocycleend(coeff,thresh,AMPL_MIN);
+                    }
+                    else  // cooling
+                    {
+                        triggertime = delaytocycleend(coeff,threshcool,AMPL_MIN);
+                    }
+                    cout << progName << ": Control triggered at " << triggertime - (long)run_start;
+                    cout << " milliseconds after initiation." << endl;
+                    
+                    if(state == false)  // cooling
+                    {
+                        cout << progName << ": Cycle " << cycles << " complete." << endl;
+                        cycles++;
+                    }
+                    savestart = phasestart;
+                    state = meltshift(state);
+                    clearactivedata();
+                    if(state == false)//These are inverted due to the modeshift function swapping state before we get here.
+                    {
+                        heating_times.push_back(phaseend-savestart);
+                        cout << "Phase time: " << heating_times[heating_times.size()-1] << endl;
+                    }
+                    else
+                    {
+                        cooling_times.push_back(phaseend-savestart);
+                        cout << "Phase time: " << cooling_times[cooling_times.size()-1] << endl;
+                    }
+                }
+                else // doublehump is true
+                {
+                    if(dtrigger == false)  // Just found the first hump. 
+                    {
+                        dtrigger = true;
+                        if(state == true)  // heating
+                        {
+                            triggertime = delaytocycleend(coeff,dthreshheat,AMPL_MIN);
+                        }
+                        else   // cooling
+                        {
+                            triggertime = delaytocycleend(coeff,dthreshcool,AMPL_MIN);
+                        }
+                    }
+                    else  // dtrigger is true, looking for the second/double hump.
+                    {
+                        cout << "State: " << state << endl;
+                        if(state == true)   // heating
+                        {
+                            triggertime = delaytocycleend(coeff,0.01,AMPL_MIN);
+                            //lb[0] = -max_vals[0];
+                            //ub[0] = -min_vals[0];
+                        }
+                        else  // cooling
+                        {
+                            triggertime = delaytocycleend(coeff,threshcool,0.01);
+                            //lb[0] = min_vals[0];
+                            //ub[0] = max_vals[0];
+                            meltcycle++;
+                            cout << progName << "Melt complete. Check file for data." << endl;
+                            runflag = false;
+                            cycles++;
+                        }
+                        savestart = phasestart;
+                        state = meltshift(state);
+                        if(state == false)//These are inverted due to the modeshift function swapping state before we get here.
+                        {
+                            heating_times.push_back(phaseend-savestart);
+                            cout << "Phase time: " << heating_times[heating_times.size()-1] << endl;
+                        }
+                        else
+                        {
+                            cooling_times.push_back(phaseend-savestart);
+                            cout << "Phase time: " << cooling_times[cooling_times.size()-1] << endl;
+                        }
+                        dtrigger = false;
+                    }
+                    cout << progName << ": Control triggered at " << triggertime - (long)run_start;
+                    cout << " milliseconds after initiation." << endl;
+               
+                    clearactivedata();
+                }   // end doublehump is true
+            }
+            coeffdouble[0] = coeffprev[0];
+            coeffdouble[1] = coeffprev[1];
+            coeffdouble[2] = coeffprev[2];
+            coeffdouble[3] = coeffprev[3];
+            coeffprev[0] = coeff[0];
+            coeffprev[1] = coeff[1];
+            coeffprev[2] = coeff[2];
+            coeffprev[3] = coeff[3];
+        }// end if there is a gaussian fit.
+        delay(100);
+    } 
+    // fclose(output);
+    cout << progName << ":  pwm_enable is " << pwm_enable << endl;
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
+    state = true;
+    digitalWrite(FAN_PIN, LOW);
+    runflag = false;
+    digitalWrite(HEATER_PIN, LOW);
+    cout << progName << ":  pwm_enable is " << pwm_enable << endl;
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
+    digitalWrite(FAN_PIN, LOW);
+    sens1->LED_off(2);
+    setDACvoltage(0.0);
+    return 0;
+}// end melt
 
 // changeQiagen - Switch to another Qiagen and Method.  The
 // qiagenproperties is {Qiagen, Method} and is usually called HTP or LTP.

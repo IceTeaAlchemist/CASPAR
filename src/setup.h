@@ -133,6 +133,7 @@ vector<reading> data;
 vector<error> errorArray;
 vector<double> x;
 vector<double> y;
+double meltout = 0;
 vector<double> xderivs;
 vector<double> derivs;
 
@@ -158,6 +159,7 @@ fstream pcr_out;
 fstream runtime_out;
 fstream notes_out;
 fstream temper_out;
+fstream melt_out;
 
 // Declare cycle number variable.  ADD THESE TO RECIPE.
 int cycles = 0;
