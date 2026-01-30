@@ -45,6 +45,22 @@ namespace caspar
         pollTemperatureNADC();
         return 0;
     }
+    
+    void pollTemperatureSingle()
+    {
+        TEMP->SetMultiplex(0,3);
+        usleep(40000);
+        while (runflag == true)
+        {
+            retrieveTemp();
+            delay(16);  // in ms
+        }
+    }
+    PI_THREAD(readTemps)
+    {
+        pollTemperatureSingle();
+        return 0;
+    }
 
 
     // Setup a thread for reading the Qiagen LDNA channel using the
@@ -120,15 +136,15 @@ namespace caspar
                 }                                
             }
 
-            changeQiagen(HTP);
+            changeQiagen(RT);
             piThreadCreate(sampler);
             piThreadCreate(readTemperatures);  // weg 20230410 adding in ADCs.
             delay(100);
             recordflag = true;
             if (RTflag)
             {
-                premelt();
-                reconstitute();
+                //premelt();
+                //reconstitute();
                 premelt();
                 runRT();
             }
@@ -143,7 +159,7 @@ namespace caspar
             // This logic below seems inefficient. weg 20240403
             // Calibrate every channel as regular PCR channel, then calibrate the HTP and LTP correctly.
             // This should be temporary until the PCR Chan <-> Qiagen and Method map implemented.  WEG 20240305
-            if (runflag && gainCalibration) sens1->calibrateGain(FluorCalib, 1); // E1D1 520ex 570em, HEX
+            if (runflag && gainCalibration) sens1->calibrateGain(300, 1); // E1D1 520ex 570em, HEX
             if (runflag && gainCalibration) sens2->calibrateGain(FluorCalib, 1); // E1D1 470ex 520em, FAM
             if (runflag && gainCalibration) sens1->calibrateGain(FluorCalib, 3); // E2D2 625ex 680em, CY5
             if (runflag && gainCalibration) sens2->calibrateGain(FluorCalib, 3); // E2D2 590ex 640em, TXRED
@@ -190,8 +206,8 @@ namespace caspar
         {
             clearactivedata();
             runflag = true;
-            if (runflag) sens2->calibrateGain(FluorCalib, 3);
-            if (runflag) sens2->calibrateGain(1000, 1);
+            if (runflag) sens2->calibrateGain(FluorCalibLDNAHTP, 3);
+            if (runflag) sens2->calibrateGain(FluorCalib, 1);
             data.clear();
             sens1->stopMethod();
             sens2->stopMethod();
@@ -217,7 +233,7 @@ namespace caspar
             melt_out.open(meltfile, std::ios_base::out);
             temper_out.open(tempfile, std::ios_base::out);
             piThreadCreate(meltsampler);
-            piThreadCreate(readTemperatures);
+            piThreadCreate(readTemps);
             delay(100);
             recordflag = true;
             melt();
@@ -296,10 +312,11 @@ namespace caspar
     void readoutMelt(const FunctionCallbackInfo<Value> &args)
     {
         Isolate *isolate = args.GetIsolate();
-        v8::Local<v8::Array> datahandoff = New<v8::Array>(3);
+        v8::Local<v8::Array> datahandoff = New<v8::Array>(4);
         double jsoutputcontrol;
         double jsoutputmelt;
         double derivoutput = 0;
+        double meltderivoutput = 0;
         if (runflag == true && recordflag == true && y.size() > 0)
         {
             jsoutputcontrol = y[y.size() - 1];
@@ -313,15 +330,18 @@ namespace caspar
         if (derivs.size() > 5 && runflag == true && recordflag == true)
         {
             derivoutput = derivs[derivs.size() - 1];
+            meltderivoutput = meltderivout;
         }
         else
         {
             derivoutput = 0;
+            meltderivoutput = 0;
         }
         // Local<Number> num = Number::New(isolate, jsoutput);
         Nan::Set(datahandoff, 0, New<v8::Number>(jsoutputcontrol));
         Nan::Set(datahandoff, 1, New<v8::Number>(derivoutput));
         Nan::Set(datahandoff, 2, New<v8::Number>(jsoutputmelt));
+        Nan::Set(datahandoff, 3, New<v8::Number>(meltderivoutput));
         args.GetReturnValue().Set(datahandoff);
     }
 

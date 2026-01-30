@@ -43,6 +43,7 @@ void premelt()
 
     // Turn the heater on and the fan off, then delay to allow the data to fill again.
     digitalWrite(HEATER_PIN, HIGH);
+    setDACvoltage(1.5);
     digitalWrite(FAN_PIN, LOW);
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
     delay(3000);
@@ -83,13 +84,16 @@ void premelt()
                 // Accept the fit and log the coefficients.
                 cout << "premelt: Coeffs: " << coeff[0] << " " << coeff[1] << " " << coeff[2] << endl;
                 // Keep going until we've found the endpoint of the current gaussian.
-                delaytocycleend(coeff, 0.05, AMPL_MIN_PREMELT);  // Hardcoded heating threshold number!!
+                //delaytocycleend(coeff, 0.05, AMPL_MIN_PREMELT);  // Hardcoded heating threshold number!!
                 //Generate the heating curve for this gaussian.
                 heatgen(coeff,dtrigger);
+                RTfluor = heatquery(coeff, 0.5);
+                
                 if(dtrigger == false) // If we're on the first hump:
                 {
                     clearactivedata(); // Clear our data.
                     dtrigger = true; // Tell the machine we're now fitting the second hump.
+                    tempflag = true; // Nick edit: Prevent overheat. Remove after swine testing.
                 }
                 else
                 {
@@ -116,8 +120,21 @@ void premelt()
  */
 void runRT()
 {
-    holdtemp(RT_TEMP, RT_LENGTH);
-    waittotemp(RT_WAITTOTEMP);
+    holdfluor(RTfluor,RT_LENGTH);
+    setDACvoltage(0.0);
+    digitalWrite(HEATER_PIN,LOW);
+    int falliterator = 0;
+    if(runflag == true)
+    {
+        digitalWrite(FAN_PIN,HIGH);
+    }
+    while(runflag == true, falliterator < 500)
+    {
+        delay(10);
+        falliterator++;
+    }
+    digitalWrite(FAN_PIN, LOW);
+    // waittotemp(RT_WAITTOTEMP);
 }
 
 /* Runs the RT algorithm.
@@ -166,9 +183,19 @@ bool modeshift(bool state)
 {
     if(state == true)  // Had been heating.
     {
-        digitalWrite(HEATER_PIN, LOW);
-        digitalWrite(FAN_PIN, HIGH);
-        setDACvoltage(0.0);
+        if(cool_power > 0 && !overdriveflag)
+        {
+            setDACvoltage(cool_power);
+        }
+        else
+        {
+            digitalWrite(HEATER_PIN, LOW);
+            setDACvoltage(0.0);
+        }
+        if(active_cooling || overdriveflag)
+        {
+            digitalWrite(FAN_PIN, HIGH);
+        }
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
         phaseend = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
@@ -195,15 +222,30 @@ bool modeshift(bool state)
                 sens2->LED_off(1);
             }
         }
-        changeQiagen(LTP);
+        if(meltflag)
+        {
+            changeQiagen(MELTP);
+        }
+        else
+        {
+            changeQiagen(LTP);
+        }
         piUnlock(0);
-        delay(500);
+        if(!meltflag)
+        {
+            delay(500);
+        }
         return false;  // Return false, cooling state.
     }
     else  // state = false, the cooling state.
     {
         digitalWrite(FAN_PIN,LOW);
         phaseend = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        if(HOLD_ON)
+        {
+            holdfluor(y[y.size()-1], HOLD_LENGTH);
+        }
+        setDACvoltage(0.0);
         recordflag = false;
       
         piLock(0);
@@ -237,13 +279,23 @@ bool modeshift(bool state)
         sens1->stopMethod();
         sens2->stopMethod();
         readPCR();
-        changeQiagen(HTP);
+        if(meltflag)
+        {
+            changeQiagen(MELTP);
+        }
+        else
+        {
+            changeQiagen(HTP);
+        }
         piUnlock(0);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
         digitalWrite(HEATER_PIN, HIGH); //Moved 1/24/25 for dual control with laser. Move before delay for fastest cycling.
-        setDACvoltage(2.0);
+        setDACvoltage(power_setting);
         phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-        delay(500);
+        if(!meltflag)
+        {
+            delay(500);
+        }
         // Turn the cycling LED back on.
         recordflag = true;
         // digitalWrite(BOX_FAN,HIGH);
@@ -259,7 +311,7 @@ bool meltshift(bool state)
     {
         digitalWrite(HEATER_PIN, LOW);
         // digitalWrite(FAN_PIN, HIGH);
-        setDACvoltage(0.0);
+        setDACvoltage(cool_power);
         if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
         phaseend = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
@@ -292,10 +344,15 @@ int cycle()
     ostringstream bstream;
     digitalWrite(HEATER_PIN,LOW);
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
+    power_setting = LASER_POWER;
     //int mode = 2;  // Double hump.  See below for check with single_hump boolean.
     bool doublehump = !single_hump;  // Calc from recipe, if HTP==LTP, single_hump is false.
     // doublehump = false; //fix this
     bool dtrigger = false;
+    overdriveflag = false;
+    bool inversioncool = true;
+    double inversioncooltarget;
+    bool inversiontrigger = false;
     int fittingvars = 4;
     double beta0[fittingvars] = {10, 10, 1, 0};
     double lb[fittingvars] = {min_vals[0], min_vals[1], min_vals[2], 0};
@@ -325,9 +382,13 @@ int cycle()
     int usedtimes = cyclesaverage; //same here.
     vector<int> heating_times;
     vector<int> cooling_times;
+    vector<double> high_fluors;
+    vector<double> low_fluors;
+    double triggerfluor;
     cout << progName << ": cutoff (and cyclecutoff) are " << cutoff << " ." << endl;
     long triggertime; // 20220822 weg, from int to long
     bool past_the_hump;
+    meltflag = false;
     temperrors = 0;
     delay(100);
     digitalWrite(HEATER_PIN, HIGH); //BILL LOOKIE
@@ -345,7 +406,7 @@ int cycle()
         }
     }
     // int DACHandleLocal = wiringPiI2CSetup(0x60);
-    setDACvoltage(2.0);
+    setDACvoltage(power_setting);
 
     phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     double savestart;
@@ -362,7 +423,7 @@ int cycle()
     delay(100);
     // Update the cutoff at the end of while loop or just use cyclecutoff and not cutoff?? (weg)
 
-    while (cycles < fittingcutoff && cycles < cutoff && runflag == true)
+    while (cycles < fittingcutoff && cycles < cutoff && runflag == true && cycles < overdrive_start)
     {
         piLock(0);
         if(state == true)  // The heating cycle.
@@ -462,6 +523,16 @@ int cycle()
             sens1->LED_off(2);
             return 1;
         }
+        
+        // Bypass the heating control algorithm if inversion cooling is being used.
+        if(inversioncool == true && state == false && y[y.size()-1] < inversioncooltarget && doublehump == true)
+        {
+            inversiontrigger = true;
+        }
+        else
+        {
+            inversiontrigger = false;
+        }
 
 
         //  if (iter < 24 && abs(coeff[0]) > 10 && coeff[1] > 1) // Other version, 20220915 weg.
@@ -477,13 +548,13 @@ int cycle()
             AMPL_MIN = AMPL_MIN_LTP;  // Should be negative if Fluor starts high and is going low. weg 20240208
             CTR_MIN = CTR_MIN_LTP;           
         }
-        if ( (iter < ITER_MAX && AMPL_MIN*(coeff[0]-AMPL_MIN) > 0 && coeff[1] > CTR_MIN )  ) // Can have negative sigmas! 
+        if ( (iter < ITER_MAX && AMPL_MIN*(coeff[0]-AMPL_MIN) > 0 && coeff[1] > CTR_MIN)  || inversiontrigger) // Can have negative sigmas! 
         // Successfully found a fit for the deriv of fluorescence.
         {
-            if (past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && 
+            if ((past_the_hump == true && abs(coeffprev[0] - coeff[0]) < CONVERGENCE_THRESHOLD && 
                     abs(coeffprev[1] - coeff[1]) < CONVERGENCE_THRESHOLD && 
                     abs(abs(coeffprev[2]) - abs(coeff[2])) < CONVERGENCE_THRESHOLD &&
-                    abs(abs(coeffprev[3] - coeff[3])) < CONVERGENCE_THRESHOLD)
+                    abs(abs(coeffprev[3] - coeff[3])) < CONVERGENCE_THRESHOLD) || inversiontrigger)
             {
                 cout << progName << ": coeffs[], Amplitude " << coeff[0] << " Center " << coeff[1] << " Width ";
                 cout <<  coeff[2]  << endl << "\t Offset " << coeff[3] << "  Iteration " << iter << endl;
@@ -492,13 +563,18 @@ int cycle()
                     if(state == true)  // heating
                     {
                         triggertime = delaytocycleend(coeff,thresh,AMPL_MIN);
+                        triggerfluor = y[y.size()-1];
+                        high_fluors.push_back(triggerfluor);
                     }
                     else  // cooling
                     {
                         triggertime = delaytocycleend(coeff,threshcool,AMPL_MIN);
+                        triggerfluor = y[y.size()-1];
+                        low_fluors.push_back(triggerfluor);
                     }
                     cout << progName << ": Control triggered at " << triggertime - (long)run_start;
                     cout << " milliseconds after initiation." << endl;
+                    cout << "With fluorophore reading of " << triggerfluor << "." << endl;
                     
                     coeff_out << triggertime << "," << coeff[0] << "," << coeff[1] << "," << coeff[2] << "," << coeff[3];
                     coeff_out << "," << triggertime - (long)run_start << endl; 
@@ -523,33 +599,54 @@ int cycle()
                 }
                 else // doublehump is true
                 {
-                    if(dtrigger == false)  // Just found the first hump. 
+                    if(dtrigger == false && inversiontrigger == false)  // Just found the first hump and inversion hasn't occurred yet.
                     {
                         dtrigger = true;
                         if(state == true)  // heating
                         {
                             triggertime = delaytocycleend(coeff,dthreshheat,AMPL_MIN);
+                            inversioncooltarget = calculateInversion(coeff[1],coeff[2]);
+                            cout << "Inversion cooling target fluor is: " << inversioncooltarget << endl;
+                            setDACvoltage(overdrive_power);
                         }
                         else   // cooling
                         {
                             triggertime = delaytocycleend(coeff,dthreshcool,AMPL_MIN);
                         }
                     }
-                    else  // dtrigger is true, looking for the second/double hump.
+                    else if(dtrigger == true || inversiontrigger == true) // dtrigger is true, looking for the second/double hump.
                     {
                         if(state == true)   // heating
                         {
+                            setDACvoltage(power_setting);
                             triggertime = delaytocycleend(coeff,thresh,AMPL_MIN);
+                            triggerfluor = y[y.size()-1];
+                            high_fluors.push_back(triggerfluor);
                             //lb[0] = -max_vals[0];
                             //ub[0] = -min_vals[0];
+                        }
+                        else if(state == false && inversiontrigger == true)
+                        {
+                            triggertime = x[x.size()-1];
+                            triggerfluor = y[y.size()-1];
+                            low_fluors.push_back(triggerfluor);
+                            //lb[0] = min_vals[0];
+                            //ub[0] = max_vals[0];
+                            cycles++;
+                            cout << "\n\nINVERSION TRIGGERED." << endl << endl;
+                            inversiontrigger = false;
                         }
                         else  // cooling
                         {
                             triggertime = delaytocycleend(coeff,threshcool,AMPL_MIN);
+                            triggerfluor = y[y.size()-1];
+                            low_fluors.push_back(triggerfluor);
                             //lb[0] = min_vals[0];
                             //ub[0] = max_vals[0];
                             cycles++;
+                            inversiontrigger = false;
                         }
+                        cout << "Double hump control: Trigger fluor is " << triggerfluor << endl;
                         savestart = phasestart;
                         state = modeshift(state);
                         if(state == false)//These are inverted due to the modeshift function swapping state before we get here.
@@ -595,8 +692,62 @@ int cycle()
         }*/
     }   // end while running cycles, while (cycles < cutoff && runflag == true)  
     // fclose(output);
+    
+    // Overdrive protocol, for running slow and then fast. 
+    if(cycles < fittingcutoff && cycles < cutoff && cycles >= overdrive_start && runflag == true)
+    {
+        overdriveflag = true;
+        double heat_target = 0;
+        int used_values = 0;
+        double cool_target = 0;
+        power_setting = overdrive_power;
+        setDACvoltage(power_setting);
+        for(int i = 0; i < high_fluors.size(); i++)
+        {
+            heat_target += high_fluors[i];
+            cool_target += low_fluors[i];
+            used_values++;
+        }
+        heat_target = heat_target/used_values;
+        cool_target = cool_target/used_values;
+        cout << "Initiating overdrive." <<endl;
+        cout << "Cycles used: " << used_values << endl;
+        cout << "Heat target: " << heat_target << "mV." << endl;
+        cout << "Cooling time: " << cool_target << "mV." << endl;
+        int delay_adjustment = 0;
+        while (cycles < fittingcutoff && runflag == true)
+        {
+            while(y[y.size()-1] < heat_target - 10 && runflag == true)
+            {
+                usleep(50000);
+            }
+            savestart = phasestart;
+            state = modeshift(state);
+            heating_times.push_back(phaseend-savestart);
+            cout << "Phase time: " << heating_times[heating_times.size()-1] << endl;
+            while(y[y.size()-1] > cool_target && runflag == true)
+            {
+                usleep(50000);
+            }
+            cycles++;
+            savestart = phasestart;
+            if(cycles >= fittingcutoff && cycles < cutoff)
+            {
+                meltflag = autopilotmelt;
+            }
+            if(runflag == true)
+            {
+                state = modeshift(state);
+            }
+            cooling_times.push_back(phaseend-savestart);
+            cout << "Phase time: " << cooling_times[cooling_times.size()-1] << endl;
+            cout << "Overdrive: Cycle " << cycles << " complete." << endl;
+        }
+    }
+    
     if(cycles >= fittingcutoff && cycles < cutoff && runflag == true)
     {
+        meltflag = autopilotmelt;
         int recentcycle = heating_times.size()-1;
         double heat_time = 0;
         double cool_time = 0;
@@ -611,7 +762,7 @@ int cycle()
         cout << "Cycles used: " << usedtimes << endl;
         cout << "Heating time: " << heat_time << "ms." << endl;
         cout << "Cooling time: " << cool_time << "ms." << endl;
-        int delay_adjustment = 500;
+        int delay_adjustment = 0;
         int i = 0;
         while (cycles < cutoff && runflag == true)
         {
@@ -630,7 +781,10 @@ int cycle()
                 i++;
             }
             cycles++;
-            state = modeshift(state);
+            if(runflag == true)
+            {
+                state = modeshift(state);
+            }
             cout << "Autopilot: cycle " << cycles << " complete." << endl;
         }
     }
@@ -640,6 +794,9 @@ int cycle()
     if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
     digitalWrite(FAN_PIN, LOW);
     sens1->LED_off(2);
+    sens1->LED_off(1);
+    sens2->LED_off(2);
+    sens2->LED_off(1);
     setDACvoltage(0.0);
     return 0;
 }// end cycle
@@ -687,7 +844,7 @@ int melt()
     temperrors = 0;
     delay(100);
     digitalWrite(HEATER_PIN, HIGH); //BILL LOOKIE
-    setDACvoltage(1.25);
+    setDACvoltage(LASER_POWER);
     phasestart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     double savestart;
     digitalWrite(FAN_PIN,LOW);
@@ -940,6 +1097,10 @@ void changeQiagen(vector<int> qiagenproperties)
         sens1->writeqiagen(0, {255,255});
         sens1->startMethod();
         sens1->LED_on(LED);
+        if(qiagenproperties[1] == 4)
+        {
+            sens1->LED_on(2);
+        }
     }
     else
     {
@@ -947,6 +1108,10 @@ void changeQiagen(vector<int> qiagenproperties)
         sens2->writeqiagen(0, {255,255});
         sens2->startMethod();
         sens2->LED_on(LED);
+        if(qiagenproperties[1] == 4)
+        {
+            sens2->LED_on(2);
+        }
     }
     cout << progName << ": Shifting to method " << qiagenproperties[1] << " on Qiagen " << qiagenproperties[0] << "." << endl;
     cout << "\tBoard is ";
@@ -986,9 +1151,25 @@ int setDACvoltage(float voltage)
 			cout << "Invalid channel selected. Range is 0-3." << endl;
 			return 2;
 	}
-    cout << "Setting Voltage with Parameters:" << endl;
-    cout << "Handle: " << DACHandle << "    Command Byte: " << commandbyte << "    Voltage: " << voltage << endl;
-    cout << "Binary representation: " << voltstoset << endl;
+ //   cout << "Setting Voltage with Parameters:" << endl;
+ //   cout << "Handle: " << DACHandle << "    Command Byte: " << commandbyte << "    Voltage: " << voltage << endl;
+ //   cout << "Binary representation: " << voltstoset << endl;
+    cout << "Setting voltage: " << voltage << endl;
 	wiringPiI2CWriteReg16(DACHandle,commandbyte,__bswap_16(voltstoset));
 	return 0;
+}
+
+double calculateInversion(double midpoint, double width)
+{
+    int i = 0;
+    bool notfound = true;
+    while(i < x.size() && notfound)
+    {
+        if(x[i] > midpoint - width*1.35)
+        {
+            notfound = false;
+        }
+        i++;
+    }
+    return y[i];
 }

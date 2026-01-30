@@ -54,7 +54,7 @@ cname: Test S Mitis
 oname: Nick
 ename: kick767@gmail.com
 pname: Test Proj
-rname: run_with_laser_HTPLTPnew.ini
+rname: Recipe
 fam:  FAM
 cy5: NCY5
 hex: NHEX
@@ -75,4 +75,30 @@ reconval:false
 rtval:false
 cycles:40
 tex: NTEX
+ 
+cname: NoCost
+oname:  Nick
+ename: kick767@gmail.com
+pname: Grant No Cost Extension
+rname: default
+fam: Target
+cy5: Nothing
+hex: Off Target
+reconval:false
+rtval:false
+cycles:40
+tex: LTP
+ 
+cname: Melt Test
+oname: Nick
+ename: kick767@gmail.com
+pname: Melt Test
+rname: default
+fam: PCR Signal
+cy5: Nada
+hex: Zippo
+reconval:false
+rtval:false
+cycles:40
+tex: Nothing
  

@@ -45,6 +45,7 @@ struct reading
 {
     long timestamp;
     double voltage;
+    double melt;
 };
 
 //Declare error class (or struct?).
@@ -70,6 +71,7 @@ extern vector<double> tempkey;
 extern vector<double> fluorkey;
 extern vector<double> x;
 extern vector<double> y;
+extern vector<double> meltvals;
 extern vector<reading> data0_tempers;
 extern vector<reading> data1_tempers;
 extern vector<reading> data0_adc0;
@@ -85,6 +87,8 @@ extern vector<double> xderivs;
 extern vector<double> derivs;
 extern deque<double> yaverage;
 extern deque<double> derivaverage;
+extern deque<double> meltaverage;
+
 extern fstream coeff_out;
 extern fstream pcr_out;
 extern fstream notes_out;
@@ -109,6 +113,7 @@ extern string runlog;
 extern int runerror;
 extern int temperrors;
 extern bool RTflag;
+extern bool meltflag;
 //
 extern bool pwm_enable;
 extern double pwm_high_ratio;
@@ -137,13 +142,17 @@ extern int cyclecutoff;
 extern int cyclesfit;
 extern int cyclesaverage;
 extern double meltout;
+extern double meltderivout;
 extern double heattoolongfirst; // secs, 75 typically for first heating cycle.
 extern double heattoolong; // secs, 40 typ., second and up heating cycle.
 extern double cooltoolong; // secs, 40 typ., cooling cycle check.
 extern int allowed_temp_errors; // 3-ish
 extern vector<int> LTP;
 extern vector<int> HTP;
+extern vector<int> MELTP;
+extern vector<int> RT;
 extern vector<float> PIDNos;
+extern double RTfluor;
 extern bool single_hump; // If using same HTP == LTP then double hump, single_hump=false.
 extern int fittingqiagen;
 extern config *devicesIni;  // devices.ini file via config reading, hardware in the box.
@@ -184,6 +193,17 @@ extern double THRESH; // 0.05  # Looked at LV and recipe for CDZ double hump has
 extern double THRESHCOOL; // 0.135
 extern double DTHRESHHEAT;  // 0.25 # Other version has 0.25, 20220915 weg.
 extern double DTHRESHCOOL; // 0.8  # Other version has 0.8, ditto weg.
+extern bool HOLD_ON;
+extern double HOLD_LENGTH;
+extern double LASER_POWER;
+extern double hold_power;
+extern double cool_power;
+extern bool active_cooling;
+extern bool autopilotmelt;
+extern int overdrive_start;
+extern double overdrive_power;
+extern double power_setting;
+extern bool overdriveflag;
 // casparapi L65-102.
 extern double FluorCalibPremelt; // 150
 extern double FluorCalib; // 300
@@ -218,10 +238,12 @@ extern void setupPWMLaser();
 // heat.cpp function definitions. These handle generation of fluoresence based heat curves and temperature-based control.
 
 double heatquery(double temp);
+double heatquery(const double coeff[3], double percent);
 double fluorquery(double fluor);
 void waittotemp(double temp);
 void heatgen(const double coeff[4], bool trigger);  // was coeff[3]
 void holdtemp(double temp, double time);
+void holdfluor(double fluor, double time);
 
 // control.cpp function definitions. These handle the control loop for cycling and RT.
 
@@ -235,6 +257,7 @@ long delaytocycleend(const double coeff[4], double thresh, double ampl_min);  //
 bool modeshift(bool state);
 void changeQiagen(vector<int> qiagenproperties);
 int setDACvoltage(float voltage);
+double calculateInversion(double midpoint, double width);
 
 
 // data.cpp function definitions. These are for data handling and processing.
@@ -246,6 +269,7 @@ string timestamp(void);
 void retrieveSample(void);
 void retrieveTemperatures(void);
 void retrieveMultiple(void);
+void retrieveTemp(void);
 
 // Needed for the config files with strings like vectors "{0, -1}" .
 // Returns the vector of ints {0, -1}, in this example.

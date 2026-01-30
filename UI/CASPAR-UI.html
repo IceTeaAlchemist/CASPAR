@@ -303,7 +303,7 @@
     var data2 = [];
     var cycleNo = 0;            // Cycle the next set of PCR data will be from.
     var t = new Date();         // Current time.
-    data.push([t, 0, 0]);
+    data.push([t, 0, 0, 0, 0]);
     data2.push([cycleNo, 0, 0, 0, 0]);
     var taxisIncrement = 10 * 1000; // axis increment in milliseconds
 
@@ -359,11 +359,15 @@
 
     // Declare our graph for cycling data.
     var cyc = new Dygraph(document.getElementById("divCYC"), data,
-      {labels: ['Time','Fluor','Deriv'],
+      {labels: ['Time','Fluor','Melt Fluor','Deriv', 'Melt Deriv'],
        series: {
           'Fluor': {
           axis:'y1'}, // Put our fluorescence on the left axis.
+          'Melt Fluor': {
+          axis:'y1'}, // Put our fluorescence on the left axis.
           'Deriv': {
+          axis:'y2'}, // Put our temperature on the right axis.
+          'Melt Deriv': {
           axis:'y2'}, // Put our temperature on the right axis.
           },
           axes: { // Declare two sets of axes.
@@ -640,21 +644,23 @@
             }
           //Update the data, then graph it.
             if(y > -100)
-              {data.push([x,y,deriv]);
+              {data.push([x,y,0,deriv,0]);
                cyc.updateOptions( { 'file': data } );}
           break;
 
           case "meltdata":
             x = new Date();
             y = msg.melt;
+            txrmelt = msg.fluor;
             deriv = msg.deriv;
+            meltderiv = msg.meltderiv;
             if (x.getTime() >= dateWinMax) {
               dateWinMin += taxisIncrement;
               dateWinMax += taxisIncrement;
               cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );
             }
             if(y > -100)
-              {data.push([x,y,deriv]);
+              {data.push([x,txrmelt,y,deriv,meltderiv]);
                cyc.updateOptions( { 'file': data } );}
 
           // Receive the ADC data and use local time stamp (or not??).
@@ -1045,7 +1051,7 @@
         dateWinMin = t.getTime();
         dateWinMax = dateWinMin + 2*taxisIncrement;
         cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );
-        data.push([t, 0, 0]);
+        data.push([t, 0, 0,0,0]);
         data2.push([cycleNo, 0, 0, 0, 0]);  // Initializing, not length to fam, etc, yet.
         cyc.updateOptions({ 'file': data});
         pcr.updateOptions({labels: ["Cycle", sendfam, sendtex, sendhex, sendcy5]});
@@ -1157,7 +1163,7 @@
         dateWinMin = t.getTime();
         dateWinMax = dateWinMin + 2*taxisIncrement;
         cyc.updateOptions( { dateWindow : [dateWinMin, dateWinMax] } );
-        data.push([t, 0, 0]);
+        data.push([t, 0, 0,0,0]);
         cyc.updateOptions({ 'file': data});
         var msg = {
           id: "meltstart",

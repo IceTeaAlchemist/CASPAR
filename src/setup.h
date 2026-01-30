@@ -134,6 +134,7 @@ vector<error> errorArray;
 vector<double> x;
 vector<double> y;
 double meltout = 0;
+double meltderivout = 0;
 vector<double> xderivs;
 vector<double> derivs;
 
@@ -148,10 +149,12 @@ vector<double> x1_tempers;
 vector<double> y1_tempers;
 vector<double> x0_adc0;
 vector<double> y0_adc0;
+vector<double> meltvals;
 
 // Declare deques for the moving average filter. SMOOTHING is NOT defined in caspar.h.  Read from config file.
 deque<double> yaverage;
 deque<double> derivaverage;
+deque<double> meltaverage;
 
 // Declare fstream objects globally.
 fstream coeff_out;
@@ -171,9 +174,14 @@ vector<int> channelflags{1,1,1,1}; //Set up which channels to read. By default, 
 // Set qiagen properties for fitting-- format is {QIAGEN, METHOD}
 vector<int> LTP;
 vector<int> HTP;
+vector<int> MELTP;
+vector<int> RT = {2,1};
 vector<float> PIDNos;
 bool single_hump = false;  // If true then single hump running, if false double.
 int fittingqiagen;
+
+double RTfluor;
+
 
 // Declare the file operator and a few check variables for the thread.
 FILE *output;
@@ -186,6 +194,19 @@ bool recordflag;
 int runerror;
 int temperrors;
 bool RTflag;
+bool meltflag;
+bool overdriveflag;
+bool HOLD_ON;
+double HOLD_LENGTH;
+double LASER_POWER;
+double hold_power = 1.00;
+double cool_power = 0.0;
+bool active_cooling = true;
+int overdrive_start;
+double overdrive_power = 1.95;
+double power_setting = 1.95;
+bool autopilotmelt = true;
+
 
 // Get initialization time, format YYYYMMDD_HHMMSS .
 string ts;

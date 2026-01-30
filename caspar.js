@@ -435,7 +435,7 @@ wss.on('connection', function connection(ws) {
                 console.log("===  casparapi.js: ws.on(message): case \"meltstart\":  Melt started.");
                 console.log("=".repeat(32));
                 // Start the periodic melt data send.
-                DataIntervId = setInterval(sendmelt, 300);
+                DataIntervId = setInterval(sendmelt, 100);
                 break;
             case "meltstop":
                 console.log(msg);
@@ -556,7 +556,8 @@ function sendmelt()
         id: "meltdata",
         fluor: meltdata[0],
         deriv: meltdata[1],
-        melt: meltdata[2]
+        melt: meltdata[2],
+        meltderiv:meltdata[3],
     };
     wss.clients.forEach( function dataupdate(ws) {ws.send(JSON.stringify(datastruct));} );
 }

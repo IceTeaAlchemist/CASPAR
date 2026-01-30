@@ -579,6 +579,7 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
 
     LTP = convertstr2vecint(recipeIni->get_value("Cycling", "LTP"));
     HTP = convertstr2vecint(recipeIni->get_value("Cycling", "HTP"));
+    MELTP = convertstr2vecint(recipeIni->get_value("Cycling", "MELTP"));
     PIDNos = convertstr2vecfloats(recipeIni->get_value("Cycling", "PID"));
     // int fittingqiagen;
     // If LTP == HTP then it is in double hump, if not equal then single hump.
@@ -607,6 +608,17 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     cyclecutoff = stoi(recipeIni->get_value("Cycling", "cyclesMax"));
     cyclesfit = stoi(recipeIni->get_value("Cycling", "cyclesFit"));
     cyclesaverage = stoi(recipeIni->get_value("Cycling", "autopilotAverage"));
+    autopilotmelt = (recipeIni->get_value("Cycling", "AUTOPILOT_MELT") == "true");
+    overdrive_start = stoi(recipeIni->get_value("Cycling", "overdriveStart"));
+    overdrive_power = stof(recipeIni->get_value("Cycling", "overdrivePower"));
+    
+    HOLD_LENGTH = stof(recipeIni->get_value("Cycling", "HOLD_LENGTH"));
+    HOLD_ON = (recipeIni->get_value("Cycling", "HOLD_ON") == "true");
+    LASER_POWER = stof(recipeIni->get_value("Cycling", "LaserPower"));
+    active_cooling = (recipeIni->get_value("Cycling", "ActiveCooling") == "true");
+    cool_power = stof(recipeIni->get_value("Cycling", "CoolingPower"));
+    
+    
 
     // Declare the file operator and a few check variables for the thread.
     // FILE *output;
@@ -618,7 +630,8 @@ void doRecipeConfig(string filename /*= "configs/recipes/default.ini" */)
     recordflag = false;
     runerror;
     temperrors;
-    RTflag = false;
+    RTflag = RT_Enable;
+    meltflag = false;
 
     // Get initialization time, format YYYYMMDD_HHMMSS .
     string ts = timestamp();

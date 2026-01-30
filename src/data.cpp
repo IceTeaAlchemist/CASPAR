@@ -45,9 +45,11 @@ void clearactivedata()
 {
     x.clear();
     y.clear();
+    meltvals.clear();
     xderivs.clear();
     derivs.clear();
     yaverage.clear();
+    meltaverage.clear();
 }
 
 
@@ -121,14 +123,31 @@ void retrieveSample()
     // Declare a reading object and put our timestamp and fluoresence inside, then push it into our data vector.
     reading now;
     now.timestamp = millisecs;
-
-    if(fittingqiagen == 1)
+    now.melt = 0;
+    if (meltflag && MELTP[1] > 3) //If we're taking advantage of the new melt protocol... Note that this ASSUMES that channel 1 is your intercalating signal.
     {
-        now.voltage = sens1->measure();
+        vector<double> multiread;
+        if(fittingqiagen == 1)
+        {
+            multiread = sens1->measureMultiple();
+        }
+        else
+        {
+            multiread = sens2->measureMultiple();
+        }
+        now.voltage = multiread[1];
+        now.melt = multiread[0];
     }
     else
     {
-        now.voltage = sens2->measure();
+        if(fittingqiagen == 1)
+        {
+            now.voltage = sens1->measure();
+        }
+        else
+        {
+            now.voltage = sens2->measure();
+        }
     }
     data.push_back(now);
     // If it's our first entry this fitting, set the starting time for our fit to our current reading.
@@ -167,8 +186,8 @@ void retrieveSample()
     reading *ptr = &now;
     // Write the data into our binary file.
     fwrite(ptr, sizeof(reading), 1, output);
-    reading *ptr2 = &currentderiv;
-    fwrite(ptr2,sizeof(reading), 1, output);
+ /*   reading *ptr2 = &currentderiv;
+    fwrite(ptr2,sizeof(reading), 1, output);*/
     piUnlock(0);
     }
     else  // recordflag is false.
@@ -202,28 +221,37 @@ void retrieveMultiple()
     x.push_back((millisecs - run_start)/1000.0);
     // Get the current fluoresence reading from the struct and convert it to mV.
     double ycurrent = readout[1];
+    double meltcurrent = readout[0];
     if(yaverage.size() >= SMOOTHING) // If our moving average filter is full:
     { 
         yaverage.pop_front(); // Remove the oldest value.
+        meltaverage.pop_front();
     }
     yaverage.push_back(ycurrent); // Push the new value onto the averaging stack.
+    meltaverage.push_back(meltcurrent);
     double average = mean(yaverage); // Average the filter values.
+    double meltval = mean(meltaverage); //Average the melt filter values.
     y.push_back(average); // Push the average into the y stack.
+    meltvals.push_back(meltval);
     double machinederiv;
+    double meltderiv;
     if(y.size() > SMOOTHING) // If our values are no longer being affected by 0--i.e., the moving average filter is full:
     {
         xderivs.push_back((millisecs- run_start)/1000.0); // Push a time value for this derivative onto the xderiv vector.
         // double deriv = (y[y.size() - 1] - y[y.size() - 2])*10; // Calculate the derivative and push it onto the stack. (y1-y2)/(delta T). Single stencil. Replaced with 5 7/14/22 NAS
         double deriv = (-y[y.size() - 1] + 8*y[y.size() - 2] - 8*y[y.size() - 4] + y[y.size()-5])/(0.1*12.0);
+        meltderiv = (-meltvals[meltvals.size() - 1] + 8*meltvals[meltvals.size() - 2] - 8*meltvals[meltvals.size() - 4] + meltvals[meltvals.size()-5])/(0.1*12.0);
         derivs.push_back(deriv);
         machinederiv = deriv;
     }
-        else
+    else
     {
         machinederiv = 0.0;
+        meltderiv = 0.0;
     }
-    melt_out << millisecs << "," << readout[1] << "," << machinederiv << "," << readout[0] << endl;
+    melt_out << millisecs << "," << readout[1] << "," << machinederiv << "," << readout[0] << "," << meltderiv << endl;
     meltout = readout[0];
+    meltderivout = meltderiv;
     piUnlock(0);
     }
     else  // recordflag is false.
@@ -413,4 +441,40 @@ void retrieveTemperatures()
 
 }// end retrieveTemperatures
 
+// retrieveTemp - Retrieves the Temperature ADC data for melt comparison. ONLY reads from the sample thermocouple.
+void retrieveTemp()
+{
+    string progName = "retrieveTemp";
 
+    // cout << progName << ": recordflag is " << recordflag << endl;
+    if(recordflag == true)
+    {
+    // Locking the thread here prevents it from interfering with global variables while they're being 
+    // used by other portions of the program that lock the same thread.
+    piLock(1);  // Use 1 as the temperatures key.
+    // Declare a reading object and put our timestamp and fluoresence inside, then push it into our 
+    // data vector.
+    reading now0_tempers, now1_tempers, now0_adc0;   // timestamp and voltage for reading
+    
+    // Reading two temperatures, ends up at slightly different times.  
+    // Configure a0-a3 on asd115.
+    now0_tempers.voltage = TEMP->convertToDegC( TEMP->getvoltage() );
+    // Get the current time in milliseconds.
+    now0_tempers.timestamp = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+
+    temper_out << now0_tempers.timestamp <<"\t" << now0_tempers.voltage << endl;
+
+    // cout << progName << ": now0 " << now0_tempers.timestamp <<"\t" << now0_tempers.voltage << "\t";
+    // cout << "\t now1 " << now1_tempers.timestamp <<"\t" << now1_tempers.voltage << endl;
+
+    piUnlock(1);
+    }
+    else  // recordflag is false.
+    {
+        // do nothing
+    }
+
+
+
+
+}// end retrieveTemp

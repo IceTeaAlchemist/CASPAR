@@ -1,6 +1,7 @@
 #include <iostream>
 #include <wiringPi.h>
 #include "caspar.h"
+#include <math.h>
 
 using namespace std;
 
@@ -45,6 +46,39 @@ double heatquery(double temp)
         }
     }
     return -1; // Else, return a negative 1--temperature out of our keyed range.
+}
+
+/* Returns the fluoresence value for a given percent of maximum fluorescence.
+ *
+ * Args:
+ *  coeff: Fit for the fluorescence curve.
+ *  percent: fraction of the curve's amplitude to be found.
+ * 
+ * Returns:
+ *  Success: Fluoresence for the requested percent.
+ *  Failure: -1. 
+ */
+double heatquery(const double coeff[3], double percent)
+{
+    int i = 0;
+    double endy = y[y.size()-1];
+    double endx = x[x.size()-1];
+    double endindex = y.size()-1;
+    cout << "x, y pair:" << endx << " " << endy << endl;
+    cout << "End index: " << endindex << endl;
+    cout << "Fitting values: " << coeff[1] << " " <<  coeff[2] << endl;
+    cout << "X value: " << endx << endl;
+    double zscore = (endx-coeff[1])/coeff[2];
+    double frac = (1 + erf(zscore/sqrt(2)))/2;
+    cout << "Fit triggered at " << zscore << " standard deviations after the midpoint." << endl;
+    cout << "Overall fraction: " << frac << endl;
+    while(x[i] < coeff[1] - 3*coeff[2])
+    {
+        i++;
+    }
+    double starty = y[i];
+    double deltay = (endy - starty)/frac;
+    return starty + percent*(deltay);
 }
 
 /* Generates the vector of heats and corresponding fluorescences for waittotemp and holdtemp. Be sure you're using this 
@@ -123,6 +157,67 @@ void holdtemp(double temp, double time)
         }
         delay(10); // Wait 10 milliseconds before checking again.
         start++; // Increment our wait.
+    }
+}
+
+// This is a modified version of HoldFluor. It will NOT WORK WELL with the heat gun. 
+void holdfluor(double fluor, double time)
+{
+    // Turn the heater on.
+    digitalWrite(HEATER_PIN,HIGH);
+    if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
+    setDACvoltage(hold_power+0.5);
+    int delaytime = 30; //delay time in milliseconds.
+
+    // Set target fluorescence.
+    double fluortarget = fluor;
+    cout << "holdfluor: Target fluor: " << fluortarget << endl;
+    int start = 0;
+    double ycurrent;
+    cout << "holdfluor: Activate hold." << endl; // Log that we're holding to the console.
+    double deltapower = 0;
+    while(start < time * 100 && runflag == true)
+    {
+        ycurrent = y[y.size()-1];
+        if (ycurrent < fluortarget-10) // If our current fluoresence is below the target minus 20:
+        {
+            // digitalWrite(HEATER_PIN, HIGH); // Turn the heater on.
+            if (pwm_enable) pwmWrite(PWM_PIN, pwm_high);
+            if(y[y.size()-1] <= y[y.size() -6])
+            {
+                deltapower = (fluortarget - ycurrent)*0.0005;
+                if(hold_power + deltapower < 2.0)
+                {
+                    hold_power = hold_power + deltapower;
+                    setDACvoltage(hold_power);
+                }
+            }
+        }
+        else if (ycurrent > fluortarget + 10) // If it's above the target:
+        {
+            if(y[y.size()-1] >= y[y.size() -6])
+            {
+                deltapower = (fluortarget - ycurrent)*0.0005;
+                if(hold_power + deltapower > 0)
+                {
+                    hold_power = hold_power + deltapower;
+                    setDACvoltage(hold_power);
+                }
+            }
+            // digitalWrite(HEATER_PIN, LOW); // Turn the heater off.
+            if (pwm_enable) pwmWrite(PWM_PIN, pwm_low);
+        }
+        else
+        {
+            deltapower = (fluortarget - ycurrent) * 0.0001;
+            if(hold_power + deltapower < 2.0 && hold_power + deltapower > 0)
+            {
+                hold_power = hold_power + deltapower;
+                setDACvoltage(hold_power);
+            }
+        }
+        delay(delaytime); // Wait 10 milliseconds before checking again.
+        start = start + delaytime/10; // Increment our wait.
     }
 }
 
